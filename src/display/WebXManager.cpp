@@ -1,8 +1,8 @@
 #include "WebXManager.h"
 #include "WebXDisplay.h"
-#include <events/WebXEventListener.h>
 #include "WebXWindow.h"
 #include "WebXController.h"
+#include <events/WebXEventListener.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
 

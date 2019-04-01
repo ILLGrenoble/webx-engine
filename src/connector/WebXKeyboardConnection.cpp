@@ -4,7 +4,6 @@
 #include <display/WebXDisplay.h>
 #include <display/WebXWindow.h>
 #include <events/WebXEventListener.h>
-#include <image/WebXPNGImageConverter.h>
 #include <image/WebXImage.h>
 #include <fort/fort.h>
 #include <stdlib.h>
@@ -97,16 +96,7 @@ void WebXKeyboardConnection::exportWindowImages() {
         WebXWindow * window = (*it);
 
         printf("\n");
-
-        WebXRectangle subWindowRectangle = window->getRectangle();
-        WebXWindow * managedWindow = WebXManager::instance()->getDisplay()->getManagedWindow(window);
-        if (managedWindow != NULL) {
-            subWindowRectangle = managedWindow->getSubWindowRectangle();
-             window->updateImage(&subWindowRectangle, WebXPNGImageConverter());
-
-        } else {
-             window->updateImage(NULL, WebXPNGImageConverter());
-        }
+        WebXManager::instance()->getDisplay()->updateImage(window);
 
         WebXImage * image = window->getImage();;
         if (image != NULL) {

@@ -1,11 +1,13 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
+#include <image/WebXPNGImageConverter.h>
 #include <algorithm>
 #include <X11/Xatom.h>
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
-    _rootWindow(NULL) {
+    _rootWindow(NULL),
+    _imageConverter(NULL) {
 
 }
 
@@ -16,6 +18,11 @@ WebXDisplay::~WebXDisplay() {
     this->deleteWindow(this->_rootWindow);
 
     this->_rootWindow = NULL;
+
+    if (this->_imageConverter) {
+        delete this->_imageConverter;
+        this->_imageConverter = NULL;
+    }
 }
 
 void WebXDisplay::init() {
@@ -29,6 +36,8 @@ void WebXDisplay::init() {
 
     Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
     this->_screenSize = WebXSize(screen->width, screen->height);
+
+    this->_imageConverter = new WebXPNGImageConverter();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -156,6 +165,18 @@ void WebXDisplay::debugTree(Window window, int indent) {
                 this->debugTree(tree.children[i], indent);
             }
         }
+    }
+}
+
+void WebXDisplay::updateImage(WebXWindow * window) const {
+    WebXRectangle subWindowRectangle = window->getRectangle();
+    WebXWindow * managedWindow = this->getManagedWindow(window);
+    if (managedWindow != NULL) {
+        subWindowRectangle = managedWindow->getSubWindowRectangle();
+        window->updateImage(&subWindowRectangle, this->_imageConverter);
+
+    } else {
+        window->updateImage(NULL, this->_imageConverter);
     }
 }
 

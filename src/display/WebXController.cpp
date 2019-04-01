@@ -81,7 +81,7 @@ void WebXController::mainLoop() {
 
 void WebXController::updateDisplay() {
     tthread::lock_guard<tthread::mutex> windowsLock(this->_windowsMutex);
-    this->_windows = this->_display->getVisibleWindows();;
+    this->_windows = this->_display->getVisibleWindows();
     this->_displayDirty = false;
 
     tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);

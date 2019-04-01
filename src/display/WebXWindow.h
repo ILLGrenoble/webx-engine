@@ -40,7 +40,7 @@ public:
     WebXWindow * getTopParent() const;
     WebXRectangle getSubWindowRectangle() const;
 
-    void updateImage(WebXRectangle * subWindowRectangle, const WebXImageConverter & imageConverter);
+    void updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
 
     WebXImage * getImage() const {
         return this->_image;

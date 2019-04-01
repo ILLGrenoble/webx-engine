@@ -8,9 +8,9 @@
 #include <tinythread/tinythread.h>
 
 class WebXWindow;
+class WebXImageConverter;
 
 class WebXDisplay {
-
 public:
     WebXDisplay(Display * display);
     virtual ~WebXDisplay();
@@ -46,6 +46,8 @@ public:
         }
         return NULL;
     }
+
+    void updateImage(WebXWindow * window) const;
 
 private:
     struct WebXTreeDetails {
@@ -90,6 +92,7 @@ private:
 
     tthread::mutex _visibleWindowsMutex;
 
+    WebXImageConverter * _imageConverter;
 };
 
 

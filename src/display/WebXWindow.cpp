@@ -94,7 +94,7 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
     return subWindowRectangle;
 }
 
-void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, const WebXImageConverter & imageConverter) {
+void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
 
     if (this->_image != NULL) {
         delete this->_image;
@@ -109,7 +109,7 @@ void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, const WebXImage
         printf("Failed to get image for window 0x%08lx\n", this->_x11Window);
 
     } else {
-        this->_image = imageConverter.convert(image, subWindowRectangle);
+        this->_image = imageConverter->convert(image, subWindowRectangle);
     }
 }
 
