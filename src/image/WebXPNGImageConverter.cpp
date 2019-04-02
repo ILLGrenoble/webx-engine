@@ -123,6 +123,6 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWi
         png_destroy_write_struct(&png, (png_info **)NULL);
     }
 
-    WebXImage * webXImage = new WebXPNGImage(image->width, image->height, rawData.buffer, rawData.size);
+    WebXImage * webXImage = new WebXPNGImage(image->width, image->height, rawData.buffer, rawData.size, image_depth);
     return webXImage;
 }

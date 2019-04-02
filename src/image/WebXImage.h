@@ -11,7 +11,7 @@ typedef enum {
 
 class WebXImage {
 public:
-    WebXImage(WebXImageType type, unsigned int width, unsigned int height);
+    WebXImage(WebXImageType type, unsigned int width, unsigned int height, unsigned int depth);
     virtual ~WebXImage();
 
     WebXImageType getType() const {
@@ -22,8 +22,12 @@ public:
         return this->_width;
     }
 
-    unsigned int getHeiht() const {
+    unsigned int getHeight() const {
         return this->_height;
+    }
+
+    unsigned int getDepth() const {
+        return this->_depth;
     }
 
     virtual bool save(const std::string & fileName) = 0;
@@ -32,6 +36,7 @@ private:
     WebXImageType _type;
     unsigned int _width;
     unsigned int _height;
+    unsigned int _depth;
 
 };
 

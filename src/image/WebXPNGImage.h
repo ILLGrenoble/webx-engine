@@ -5,7 +5,7 @@
 
 class WebXPNGImage : public WebXImage {
 public:
-    WebXPNGImage(unsigned int width, unsigned int height, char * rawData, size_t length);
+    WebXPNGImage(unsigned int width, unsigned int height, char * rawData, size_t length, unsigned int depth);
     virtual ~WebXPNGImage();
 
     virtual bool save(const std::string & fileName);
