@@ -90,4 +90,4 @@ private:
 };
 
 
-#endif /* WEBX_WINDOW */
+#endif /* WEBX_WINDOW_H */

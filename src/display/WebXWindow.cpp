@@ -102,7 +102,7 @@ void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConver
     }
 
     WebXRectangle geometry = this->getRectangle();
-    printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, geometry.x, geometry.y, geometry.width, geometry.height);
+    // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, geometry.x, geometry.y, geometry.width, geometry.height);
     XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, geometry.width, geometry.height, AllPlanes, ZPixmap);
 
     if (!image) {

@@ -19,7 +19,7 @@ public:
     void stop();
 
 public:
-    virtual void onDisplayChanged(const std::vector<WebXWindow *> & windows);
+    virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows);
 
 private:
     static void threadMain(void * arg);

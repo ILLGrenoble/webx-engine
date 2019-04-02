@@ -26,6 +26,8 @@ WebXDisplay::~WebXDisplay() {
 }
 
 void WebXDisplay::init() {
+    this->_imageConverter = new WebXPNGImageConverter();
+
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
     this->_rootWindow = this->createWindow(rootX11Window, true);
     if (this->_rootWindow) {
@@ -36,8 +38,6 @@ void WebXDisplay::init() {
 
     Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
     this->_screenSize = WebXSize(screen->width, screen->height);
-
-    this->_imageConverter = new WebXPNGImageConverter();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -86,6 +86,20 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
             if (it != this->_visibleWindows.end()) {
                 this->_visibleWindows.erase(it);
             }
+
+            std::vector<WebXWindowProperties>::iterator it2 = this->_visibleWindowsProperties.begin();
+            bool found = false;
+            while (!found && it2 != this->_visibleWindowsProperties.end()) {
+                if ((*it2).id == (unsigned long)window->getX11Window()) {
+                    found = true;
+
+                } else {
+                    it2++;
+                }
+            }
+            if (found) {
+                this->_visibleWindowsProperties.erase(it2);
+            }
         }
 
         // Remove from parent
@@ -126,6 +140,7 @@ void WebXDisplay::updateVisibleWindows() {
 
     // Clear current list
     this->_visibleWindows.clear();
+    this->_visibleWindowsProperties.clear();
 
     WebXTreeDetails tree;
     if (queryTree(this->_x11Display, this->_rootWindow->getX11Window(), tree)) {
@@ -136,8 +151,17 @@ void WebXDisplay::updateVisibleWindows() {
                 child->updateAttributes();
                 if (child->isVisible(this->_rootWindow->getRectangle())) {
                     this->_visibleWindows.push_back(child);
+                    this->_visibleWindowsProperties.push_back(WebXWindowProperties(child));
                 } 
             }
+        }
+    }
+
+    // Initialise window image
+    for (std::vector<WebXWindow *>::iterator it = this->_visibleWindows.begin(); it != _visibleWindows.end(); it++) {
+        WebXWindow * window = *it;
+        if (window->getImage() == NULL) {
+            this->updateImage(window);
         }
     }
 }

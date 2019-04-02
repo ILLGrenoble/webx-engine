@@ -96,7 +96,7 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWi
         }
 
         if (convert_alpha) {
-            printf("Modifying alpha channel in rectangle [(%d, %d), %dx%d]\n", subWindowRectangle->x, subWindowRectangle->y, subWindowRectangle->width, subWindowRectangle->height);
+            // printf("Modifying alpha channel in rectangle [(%d, %d), %dx%d]\n", subWindowRectangle->x, subWindowRectangle->y, subWindowRectangle->width, subWindowRectangle->height);
 
             for (int j = subWindowRectangle->y; j < (subWindowRectangle->y + subWindowRectangle->height); j++) {
                 u_int8_t * data = row_pointers[j] + 4 * subWindowRectangle->x + 3;
@@ -107,7 +107,7 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWi
             }
         }
 
-        printf("Producing PNG with depth of %dbpp\n", image_depth);
+        // printf("Producing PNG with depth of %dbpp\n", image_depth);
 
         png_write_image(png, row_pointers);
         free(row_pointers);

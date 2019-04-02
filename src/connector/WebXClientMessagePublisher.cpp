@@ -40,7 +40,7 @@ void WebXClientMessagePublisher::stop() {
     }
 }
 
-void WebXClientMessagePublisher::onDisplayChanged(const std::vector<WebXWindow *> & windows) {
+void WebXClientMessagePublisher::onDisplayChanged(const std::vector<WebXWindowProperties> & windows) {
     // Create new message
     WebXWindowsMessage * message = new WebXWindowsMessage(windows);
     this->_messageQueue->put(message);

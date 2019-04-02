@@ -6,6 +6,7 @@
 #include <vector>
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
+#include "WebXWindowProperties.h"
 
 class WebXWindow;
 class WebXImageConverter;
@@ -30,6 +31,11 @@ public:
     const std::vector<WebXWindow *> & getVisibleWindows() {
         tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
         return this->_visibleWindows;
+    }
+
+    const std::vector<WebXWindowProperties> & getVisibleWindowsProperties() {
+        tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+        return this->_visibleWindowsProperties;
     }
 
     WebXWindow * getRootWindow() const {
@@ -89,6 +95,7 @@ private:
     std::map<Window, WebXWindow *> _allWindows;
     std::map<const WebXWindow *, WebXWindow *> _managedWindows;
     std::vector<WebXWindow *> _visibleWindows;
+    std::vector<WebXWindowProperties> _visibleWindowsProperties;
 
     tthread::mutex _visibleWindowsMutex;
 

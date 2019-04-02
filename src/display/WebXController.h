@@ -5,8 +5,8 @@
 #include <set>
 #include <chrono>
 #include <tinythread/tinythread.h>
+#include "WebXWindowProperties.h"
 
-class WebXWindow;
 class WebXDisplay;
 class WebXConnection;
 
@@ -40,7 +40,7 @@ public:
         this->_connections.erase(connection);
     }
 
-    const std::vector<WebXWindow *> & getWindows() {
+    const std::vector<WebXWindowProperties> & getWindows() {
         tthread::lock_guard<tthread::mutex> lock(this->_windowsMutex);
         return this->_windows;
     }
@@ -55,7 +55,7 @@ private:
     static unsigned int DISPLAY_REFRESH_RATE;
 
     WebXDisplay * _display;
-    std::vector<WebXWindow *> _windows;
+    std::vector<WebXWindowProperties> _windows;
 
     bool _displayDirty;
     long _displayRefreshUs;

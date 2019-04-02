@@ -2,15 +2,14 @@
 #define WEBX_CONNECTION_H
 
 #include <vector>
-
-class WebXWindow;
+#include "WebXWindowProperties.h"
 
 class WebXConnection {
 public:
     WebXConnection() {}
     virtual ~WebXConnection() {}
 
-    virtual void onDisplayChanged(const std::vector<WebXWindow *> & windows) = 0;
+    virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows) = 0;
 };
 
 

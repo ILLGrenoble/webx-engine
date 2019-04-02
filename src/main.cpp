@@ -5,7 +5,6 @@
 
 int main() {
     WebXKeyboardConnection * keyboardConnection = new WebXKeyboardConnection();
-    WebXManager::instance()->getController()->addConnection(keyboardConnection);
     keyboardConnection->run();
 
     // blocking

@@ -1,6 +1,5 @@
 #include "WebXController.h"
 #include "WebXDisplay.h"
-#include "WebXWindow.h"
 #include "WebXConnection.h"
 #include <algorithm>
 #include <thread>
@@ -81,7 +80,7 @@ void WebXController::mainLoop() {
 
 void WebXController::updateDisplay() {
     tthread::lock_guard<tthread::mutex> windowsLock(this->_windowsMutex);
-    this->_windows = this->_display->getVisibleWindows();
+    this->_windows = this->_display->getVisibleWindowsProperties();
     this->_displayDirty = false;
 
     tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);

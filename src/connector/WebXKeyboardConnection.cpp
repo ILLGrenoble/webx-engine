@@ -38,10 +38,6 @@ void WebXKeyboardConnection::stop() {
     }
 }
 
-void WebXKeyboardConnection::onDisplayChanged(const std::vector<WebXWindow *> & windows) {
-    this->_windows = windows;
-}
-
 void WebXKeyboardConnection::threadMain(void * arg) {
     WebXKeyboardConnection * self  = (WebXKeyboardConnection *)arg;
     self->mainLoop();
@@ -64,7 +60,8 @@ void WebXKeyboardConnection::printWindows() {
     ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
     ft_write_ln(table, "ID", "Managed ID", "Title", "x", "y", "Width", "Height");
 
-    for (std::vector<WebXWindow *>::const_iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
+    const std::vector<WebXWindow *> windows = WebXManager::instance()->getDisplay()->getVisibleWindows();
+    for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = *it;
 
         std::string name = window->getName();
@@ -94,7 +91,6 @@ void WebXKeyboardConnection::exportWindowImages() {
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = (*it);
 
-        printf("\n");
         WebXManager::instance()->getDisplay()->updateImage(window);
 
         WebXImage * image = window->getImage();;

@@ -107,7 +107,6 @@ void WebXEventListener::handleEvent(const WebXEvent & event) {
     }
 }
 
-
 void WebXEventListener::addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler) {
     this->_eventHandlers[eventType] = handler;
 }

@@ -3,17 +3,17 @@
 
 #include <vector>
 #include "WebXMessage.h"
-#include <display/WebXWindow.h>
+#include <display/WebXWindowProperties.h>
 
 class WebXWindowsMessage : public WebXMessage {
 public:
-    WebXWindowsMessage(const std::vector<WebXWindow *> & windows) {
+    WebXWindowsMessage(const std::vector<WebXWindowProperties> & windows) {
         this->_windows = nlohmann::json{};
-        for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
-            WebXWindow * window = *it;
-            const WebXRectangle & rectangle = window->getRectangle();
+        for (std::vector<WebXWindowProperties>::const_iterator it = windows.begin(); it != windows.end(); it++) {
+            const WebXWindowProperties & window = *it;
+            const WebXRectangle & rectangle = window.rectangle;
             _windows.push_back({
-            {"id", window->getX11Window()}, 
+            {"id", window.id}, 
             {"rectangle", {
                 {"x", rectangle.x},
                 {"y", rectangle.y},
