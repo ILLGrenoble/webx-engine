@@ -6,27 +6,24 @@
 
 class WebXConnectionResponse : public WebXClientConnectorResponse {
 public:
-    WebXConnectionResponse(int publisherPort, int collectorPort, WebXSize screenSize) :
-        _publisherPort(publisherPort),
-        _collectorPort(collectorPort),
-        _screenSize(screenSize) {}
-    virtual ~WebXConnectionResponse() {}
-
-    virtual void toJson(nlohmann::json& j) const {
-        j = nlohmann::json{
-            {"publisherPort", this->_publisherPort}, 
-            {"collectorPort", this->_collectorPort}, 
+    WebXConnectionResponse(int publisherPort, int collectorPort, WebXSize screenSize) {
+        this->_connectionDetails = nlohmann::json{
+            {"publisherPort", publisherPort}, 
+            {"collectorPort", collectorPort}, 
             {"screenSize", {
-                {"width", this->_screenSize.width},
-                {"height", this->_screenSize.height}
+                {"width", screenSize.width},
+                {"height", screenSize.height}
             }}
         };
     }
+    virtual ~WebXConnectionResponse() {}
+
+    virtual const nlohmann::json & getJson() const {
+        return this->_connectionDetails;
+    }
 
 private:
-    int _publisherPort;
-    int _collectorPort;
-    WebXSize _screenSize;
+    nlohmann::json _connectionDetails;
 };
 
 

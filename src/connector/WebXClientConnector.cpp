@@ -2,8 +2,8 @@
 #include "response/WebXClientConnectorResponse.h"
 #include "response/WebXConnectionResponse.h"
 #include "response/WebXWindowsResponse.h"
-#include "WebXClientPublisher.h"
-#include "WebXClientCollector.h"
+#include "WebXClientMessagePublisher.h"
+#include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXController.h>
@@ -41,16 +41,13 @@ WebXClientConnector * WebXClientConnector::initInstance() {
 }
 
 void WebXClientConnector::init() {
-    this->_publisher = new WebXClientPublisher();
+    this->_publisher = new WebXClientMessagePublisher();
     WebXManager::instance()->getController()->addConnection(this->_publisher);
 
-    this->_collector = new WebXClientCollector();
+    this->_collector = new WebXClientCommandCollector();
 }
 
 void WebXClientConnector::run() {
-    this->_publisher->run();
-    this->_collector->run();
-
     //  Prepare our context and socket
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_REP);
@@ -60,6 +57,9 @@ void WebXClientConnector::run() {
     char address[16];
     snprintf(address, sizeof(address) - 1, "tcp://*:%4d", WebXClientConnector::CONNECTOR_PORT);
     socket.bind(address);
+
+    this->_publisher->run(&context, WebXClientConnector::PUBLISHER_PORT);
+    this->_collector->run(&context, WebXClientConnector::COLLECTOR_PORT);
 
     this->_running = true;
     while (this->_running) {
@@ -85,8 +85,7 @@ void WebXClientConnector::run() {
 
             // Send response
             if (response != NULL) {
-                nlohmann::json jResponse;
-                response->toJson(jResponse);
+                const nlohmann::json & jResponse = response->getJson();
                 std::string responseData = jResponse.dump();
 
                 zmq::message_t replyMessage(responseData.size());
@@ -102,6 +101,9 @@ void WebXClientConnector::run() {
             printf("ZeroMQ interrupted from message recv.\n");
         }
     }
+
+    this->_publisher->stop();
+    this->_collector->stop();
 }
 
 void WebXClientConnector::stop() {

@@ -1,18 +1,21 @@
-#ifndef WEBX_CLIENT_PUBLISHER_H
-#define WEBX_CLIENT_PUBLISHER_H
+#ifndef WEBX_CLIENT_MESSAGE_PUBLISHER_H
+#define WEBX_CLIENT_MESSAGE_PUBLISHER_H
 
 #include <display/WebXConnection.h>
 #include <utils/WebXQueue.h>
 #include <tinythread/tinythread.h>
 
 class WebXMessage;
+namespace zmq {
+class context_t;
+}
 
-class WebXClientPublisher : public WebXConnection {
+class WebXClientMessagePublisher : public WebXConnection {
 public:
-    WebXClientPublisher();
-    virtual ~WebXClientPublisher();
+    WebXClientMessagePublisher();
+    virtual ~WebXClientMessagePublisher();
 
-    void run();
+    void run(zmq::context_t * context, int port);
     void stop();
 
 public:
@@ -27,7 +30,10 @@ private:
     tthread::mutex _mutex;
     bool _running;
     WebXQueue<WebXMessage> * _messageQueue;
+
+    zmq::context_t * _context;
+    int _port;
 };
 
 
-#endif /* WEBX_CLIENT_PUBLISHER_H */
+#endif /* WEBX_CLIENT_MESSAGE_PUBLISHER_H */

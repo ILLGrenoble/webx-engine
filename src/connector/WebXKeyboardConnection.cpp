@@ -1,5 +1,4 @@
 #include "WebXKeyboardConnection.h"
-#include "WebXMessage.h"
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXWindow.h>

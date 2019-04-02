@@ -2,11 +2,11 @@
 #define WEBX_ENTRY_H
 
 #include <csignal>
-#include "WebXClientRequest.h"
+#include "request/WebXClientRequest.h"
 
 class WebXManager;
-class WebXClientPublisher;
-class WebXClientCollector;
+class WebXClientMessagePublisher;
+class WebXClientCommandCollector;
 class WebXClientConnectorResponse;
 
 class WebXClientConnector {
@@ -43,8 +43,8 @@ private:
     static int COLLECTOR_PORT;
     static int PUBLISHER_PORT;
 
-    WebXClientPublisher * _publisher;
-    WebXClientCollector * _collector;
+    WebXClientMessagePublisher * _publisher;
+    WebXClientCommandCollector * _collector;
 
     bool _running;
 };

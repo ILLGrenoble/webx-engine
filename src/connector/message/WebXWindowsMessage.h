@@ -1,13 +1,13 @@
-#ifndef WEBX_WINDOWS_RESPONSE_H
-#define WEBX_WINDOWS_RESPONSE_H
+#ifndef WEBX_WINDOWS_MESSAGE_H
+#define WEBX_WINDOWS_MESSAGE_H
 
 #include <vector>
-#include "WebXClientConnectorResponse.h"
+#include "WebXMessage.h"
 #include <display/WebXWindow.h>
 
-class WebXWindowsResponse : public WebXClientConnectorResponse {
+class WebXWindowsMessage : public WebXMessage {
 public:
-    WebXWindowsResponse(const std::vector<WebXWindow *> & windows) {
+    WebXWindowsMessage(const std::vector<WebXWindow *> & windows) {
         this->_windows = nlohmann::json{};
         for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
             WebXWindow * window = *it;
@@ -22,7 +22,7 @@ public:
             }}});
         }
     }
-    virtual ~WebXWindowsResponse() {}
+    virtual ~WebXWindowsMessage() {}
 
     virtual const nlohmann::json & getJson() const {
         return this->_windows;
@@ -33,4 +33,4 @@ private:
 };
 
 
-#endif /* WEBX_WINDOWS_RESPONSE_H */
+#endif /* WEBX_WINDOWS_RESMESSAGE*/
