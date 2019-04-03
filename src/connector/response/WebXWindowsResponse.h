@@ -2,10 +2,10 @@
 #define WEBX_WINDOWS_RESPONSE_H
 
 #include <vector>
-#include "WebXClientConnectorResponse.h"
+#include "WebXResponse.h"
 #include <display/WebXWindowProperties.h>
 
-class WebXWindowsResponse : public WebXClientConnectorResponse {
+class WebXWindowsResponse : public WebXResponse {
 public:
     WebXWindowsResponse(const std::vector<WebXWindowProperties> & windows) :
         _windows(windows) {
@@ -13,7 +13,7 @@ public:
     virtual ~WebXWindowsResponse() {}
 
     virtual void toJson(nlohmann::json & j) const {
-        j = nlohmann::json();
+        j = nlohmann::json::array();
         for (std::vector<WebXWindowProperties>::const_iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
             const WebXWindowProperties & window = *it;
             const WebXRectangle & rectangle = window.rectangle;

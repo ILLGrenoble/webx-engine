@@ -12,7 +12,7 @@ public:
     virtual ~WebXWindowsMessage() {}
 
     virtual void toJson(nlohmann::json & j) const {
-        j = nlohmann::json();
+        j = nlohmann::json::array();
         for (std::vector<WebXWindowProperties>::const_iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
             const WebXWindowProperties & window = *it;
             const WebXRectangle & rectangle = window.rectangle;

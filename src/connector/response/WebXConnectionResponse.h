@@ -1,10 +1,10 @@
 #ifndef WEBX_CONNECTION_RESPONSE_H
 #define WEBX_CONNECTION_RESPONSE_H
 
-#include "WebXClientConnectorResponse.h"
+#include "WebXResponse.h"
 #include <utils/WebXSize.h>
 
-class WebXConnectionResponse : public WebXClientConnectorResponse {
+class WebXConnectionResponse : public WebXResponse {
 public:
     WebXConnectionResponse(int publisherPort, int collectorPort, WebXSize screenSize) :
         _publisherPort(publisherPort),

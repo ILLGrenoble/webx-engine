@@ -1,5 +1,4 @@
 #include "WebXClientConnector.h"
-#include "response/WebXClientConnectorResponse.h"
 #include "response/WebXConnectionResponse.h"
 #include "response/WebXWindowsResponse.h"
 #include "WebXClientMessagePublisher.h"
@@ -71,7 +70,7 @@ void WebXClientConnector::run() {
 
             // Handle message
             std::string requestData = std::string(static_cast<char*>(requestMessage.data()), requestMessage.size());
-            // printf("%s\n", requestData.c_str());
+            printf("request: %s\n", requestData.c_str());
 
             // Convert to json
             nlohmann::json jRequest = nlohmann::json::parse(requestData);
@@ -81,13 +80,14 @@ void WebXClientConnector::run() {
             // printf("Got request %d \"%s\" %d\n", request.type, request.stringPayload.c_str(), request.integerPayload);
 
             // Handle message and get response
-            WebXClientConnectorResponse * response = this->handleRequest(request);
+            WebXResponse * response = this->handleRequest(request);
 
             // Send response
             if (response != NULL) {
                 nlohmann::json jResponse;
                 response->toJson(jResponse);
                 std::string responseData = jResponse.dump();
+                printf("response: %s\n", responseData.c_str());
 
                 zmq::message_t replyMessage(responseData.size());
                 memcpy(replyMessage.data(), responseData.c_str(), responseData.size());
@@ -126,7 +126,7 @@ void WebXClientConnector::shutdown() {
     printf("... client connector stopped\n");
 }
 
-WebXClientConnectorResponse * WebXClientConnector::handleRequest(const WebXClientRequest & request) {
+WebXResponse * WebXClientConnector::handleRequest(const WebXClientRequest & request) {
     if (request.type == WebXClientRequest::Type::Connect) {
         return this->handleConnectionRequest();
     
@@ -137,11 +137,11 @@ WebXClientConnectorResponse * WebXClientConnector::handleRequest(const WebXClien
     return NULL;
 }
 
-WebXClientConnectorResponse * WebXClientConnector::handleConnectionRequest() {
+WebXResponse * WebXClientConnector::handleConnectionRequest() {
     return new WebXConnectionResponse(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, WebXManager::instance()->getDisplay()->getScreenSize());
 }
 
-WebXClientConnectorResponse * WebXClientConnector::handleWindowsRequest() {
+WebXResponse * WebXClientConnector::handleWindowsRequest() {
     return new WebXWindowsResponse(WebXManager::instance()->getController()->getWindows());
 }
 

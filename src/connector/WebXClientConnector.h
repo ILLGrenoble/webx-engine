@@ -7,7 +7,7 @@
 class WebXManager;
 class WebXClientMessagePublisher;
 class WebXClientCommandCollector;
-class WebXClientConnectorResponse;
+class WebXResponse;
 
 class WebXClientConnector {
 private:
@@ -32,9 +32,9 @@ public:
     }
 
 private:
-    WebXClientConnectorResponse * handleRequest(const WebXClientRequest & request);
-    WebXClientConnectorResponse * handleConnectionRequest();
-    WebXClientConnectorResponse * handleWindowsRequest();
+    WebXResponse * handleRequest(const WebXClientRequest & request);
+    WebXResponse * handleConnectionRequest();
+    WebXResponse * handleWindowsRequest();
 
 
 private:

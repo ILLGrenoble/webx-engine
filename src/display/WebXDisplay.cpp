@@ -150,18 +150,15 @@ void WebXDisplay::updateVisibleWindows() {
             if (child != NULL) {
                 child->updateAttributes();
                 if (child->isVisible(this->_rootWindow->getRectangle())) {
+
+                    // Initialise window image
+                    if (child->getImage() == NULL) {
+                        this->updateImage(child);
+                    }
                     this->_visibleWindows.push_back(child);
                     this->_visibleWindowsProperties.push_back(WebXWindowProperties(child));
                 } 
             }
-        }
-    }
-
-    // Initialise window image
-    for (std::vector<WebXWindow *>::iterator it = this->_visibleWindows.begin(); it != _visibleWindows.end(); it++) {
-        WebXWindow * window = *it;
-        if (window->getImage() == NULL) {
-            this->updateImage(window);
         }
     }
 }

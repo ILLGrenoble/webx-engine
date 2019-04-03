@@ -9,7 +9,7 @@ unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
-    _displayDirty(false),
+    _displayDirty(true),
     _displayRefreshUs(1000000.0 / WebXController::DISPLAY_REFRESH_RATE),
     _lastDisplayRefreshTime(std::chrono::high_resolution_clock::now()),
     _thread(NULL),
