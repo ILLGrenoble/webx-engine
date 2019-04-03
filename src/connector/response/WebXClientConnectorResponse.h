@@ -8,7 +8,7 @@ public:
     WebXClientConnectorResponse() {}
     virtual ~WebXClientConnectorResponse() {}
 
-    virtual const nlohmann::json & getJson() const = 0;
+    virtual void toJson(nlohmann::json &) const = 0;
 };
 
 

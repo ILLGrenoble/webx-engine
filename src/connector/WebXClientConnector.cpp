@@ -85,7 +85,8 @@ void WebXClientConnector::run() {
 
             // Send response
             if (response != NULL) {
-                const nlohmann::json & jResponse = response->getJson();
+                nlohmann::json jResponse;
+                response->toJson(jResponse);
                 std::string responseData = jResponse.dump();
 
                 zmq::message_t replyMessage(responseData.size());

@@ -7,12 +7,16 @@
 
 class WebXWindowsMessage : public WebXMessage {
 public:
-    WebXWindowsMessage(const std::vector<WebXWindowProperties> & windows) {
-        this->_windows = nlohmann::json{};
-        for (std::vector<WebXWindowProperties>::const_iterator it = windows.begin(); it != windows.end(); it++) {
+    WebXWindowsMessage(const std::vector<WebXWindowProperties> & windows) :
+        _windows(windows) {}
+    virtual ~WebXWindowsMessage() {}
+
+    virtual void toJson(nlohmann::json & j) const {
+        j = nlohmann::json();
+        for (std::vector<WebXWindowProperties>::const_iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
             const WebXWindowProperties & window = *it;
             const WebXRectangle & rectangle = window.rectangle;
-            _windows.push_back({
+            j.push_back({
             {"id", window.id}, 
             {"rectangle", {
                 {"x", rectangle.x},
@@ -22,14 +26,9 @@ public:
             }}});
         }
     }
-    virtual ~WebXWindowsMessage() {}
-
-    virtual const nlohmann::json & getJson() const {
-        return this->_windows;
-    }
 
 private:
-    nlohmann::json _windows;
+    std::vector<WebXWindowProperties> _windows;
 };
 
 

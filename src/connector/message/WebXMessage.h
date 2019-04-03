@@ -8,7 +8,7 @@ public:
     WebXMessage() {}
     virtual ~WebXMessage() {}
 
-    virtual const nlohmann::json & getJson() const = 0;
+    virtual void toJson(nlohmann::json & j) const = 0;
 };
 
 
