@@ -102,9 +102,6 @@ void WebXClientConnector::run() {
             printf("ZeroMQ interrupted from message recv.\n");
         }
     }
-
-    this->_publisher->stop();
-    this->_collector->stop();
 }
 
 void WebXClientConnector::stop() {
