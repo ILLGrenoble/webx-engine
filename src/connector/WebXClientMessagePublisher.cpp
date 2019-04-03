@@ -69,7 +69,7 @@ void WebXClientMessagePublisher::mainLoop() {
             nlohmann::json jMessage;
             message->toJson(jMessage);
             std::string messageData = jMessage.dump();
-            // printf("%s\n", messageData.c_str());
+            printf("%s\n", messageData.c_str());
 
             zmq::message_t replyMessage(messageData.size());
             memcpy(replyMessage.data(), messageData.c_str(), messageData.size());

@@ -6,6 +6,7 @@
 #include <vector>
 #include <utils/WebXRectangle.h>
 #include <image/WebXImageConverter.h>
+#include <image/WebXImage.h>
 
 class WebXWindow {
 
@@ -67,6 +68,13 @@ public:
 
     bool isVisible(const WebXRectangle & viewport) const {
         return this->_isViewable && this->_rectangle.isVisible(viewport);
+    }
+
+    unsigned int getBitsPerPixel() const {
+        if (this->_image != NULL) {
+            return this->_image->getDepth();
+        }
+        return 0;
     }
 
     void clean();

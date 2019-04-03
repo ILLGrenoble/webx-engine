@@ -18,7 +18,8 @@ public:
             const WebXWindowProperties & window = *it;
             const WebXRectangle & rectangle = window.rectangle;
             j.push_back({
-            {"id", window.id}, 
+            {"id", window.id},
+            {"bpp", window.bpp},
             {"rectangle", {
                 {"x", rectangle.x},
                 {"y", rectangle.y},
