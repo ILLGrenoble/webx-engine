@@ -16,16 +16,14 @@ public:
         j["windows"] = {};
         for (std::vector<WebXWindowProperties>::const_iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
             const WebXWindowProperties & window = *it;
-            const WebXRectangle & rectangle = window.rectangle;
             j["windows"].push_back({
             {"id", window.id}, 
             {"bpp", window.bpp}, 
-            {"rectangle", {
-                {"x", rectangle.x},
-                {"y", rectangle.y},
-                {"width", rectangle.width},
-                {"height", rectangle.height}
-            }}});
+            {"x", window.x},
+            {"y", window.y},
+            {"width", window.width},
+            {"height", window.height}
+            });
         }
     }
 
