@@ -32,7 +32,7 @@ public:
 
     virtual bool save(const std::string & fileName) = 0;
 
-    virtual char * getRawData() const = 0;
+    virtual unsigned char * getRawData() const = 0;
     virtual size_t getRawDataSize() const = 0;
 
 private:

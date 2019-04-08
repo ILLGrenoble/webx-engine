@@ -25,7 +25,7 @@ private:
             size(0) {}
         virtual ~RawData() {}
 
-        char * buffer;
+        unsigned char * buffer;
         size_t size;
     };
 

@@ -11,9 +11,9 @@ void WebXPNGImageConverter::RawDataWriter(png_struct * png, png_byte * data, siz
 
     /* allocate or grow buffer */
     if(rawData->buffer) {
-        rawData->buffer = (char *)realloc(rawData->buffer, nsize);
+        rawData->buffer = (unsigned char *)realloc(rawData->buffer, nsize);
     } else {
-        rawData->buffer = (char *)malloc(nsize);
+        rawData->buffer = (unsigned char *)malloc(nsize);
     }
 
     if (!rawData->buffer) {
