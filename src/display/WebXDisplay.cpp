@@ -201,6 +201,25 @@ void WebXDisplay::updateImage(WebXWindow * window) const {
     }
 }
 
+std::shared_ptr<WebXImage> WebXDisplay::getImageForVisibleWindow(Window windowId) {
+    tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+
+    bool found = false;
+    std::vector<WebXWindow *>::iterator it = this->_visibleWindows.begin(); 
+    while (it != this->_visibleWindows.end() && !found) {
+        found = (*it)->getX11Window() == windowId;
+        if (!found) {
+            it++;
+        }
+    }
+
+    if (found) {
+        return (*it)->getImage();
+    }
+
+    return nullptr;
+}
+
 void WebXDisplay::updateManagedWindows() {
     Window root = this->_rootWindow->getX11Window();
     Atom atom = XInternAtom(this->_x11Display, "_NET_CLIENT_LIST", True);

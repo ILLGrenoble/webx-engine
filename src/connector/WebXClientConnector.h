@@ -35,6 +35,7 @@ private:
     WebXResponse * handleRequest(const WebXClientRequest & request);
     WebXResponse * handleConnectionRequest();
     WebXResponse * handleWindowsRequest();
+    WebXResponse * handleImageRequest(long windowId);
 
 
 private:

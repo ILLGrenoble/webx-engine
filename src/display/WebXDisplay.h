@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <map>
 #include <vector>
+#include <memory>
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
 #include "WebXWindowProperties.h"
@@ -54,6 +55,8 @@ public:
     }
 
     void updateImage(WebXWindow * window) const;
+
+    std::shared_ptr<WebXImage> getImageForVisibleWindow(Window windowId);
 
 private:
     struct WebXTreeDetails {

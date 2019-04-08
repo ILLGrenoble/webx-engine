@@ -1,6 +1,7 @@
 #include "WebXClientConnector.h"
 #include "response/WebXConnectionResponse.h"
 #include "response/WebXWindowsResponse.h"
+#include "response/WebXImageResponse.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
@@ -129,6 +130,9 @@ WebXResponse * WebXClientConnector::handleRequest(const WebXClientRequest & requ
     
     } else if (request.type == WebXClientRequest::Type::Windows) {
         return this->handleWindowsRequest();
+    
+    } else if (request.type == WebXClientRequest::Type::Image) {
+        return this->handleImageRequest(request.numericPayload);
     }
 
     return NULL;
@@ -140,5 +144,9 @@ WebXResponse * WebXClientConnector::handleConnectionRequest() {
 
 WebXResponse * WebXClientConnector::handleWindowsRequest() {
     return new WebXWindowsResponse(WebXManager::instance()->getController()->getWindows());
+}
+
+WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
+    return new WebXImageResponse(WebXManager::instance()->getDisplay()->getImageForVisibleWindow(windowId));
 }
 

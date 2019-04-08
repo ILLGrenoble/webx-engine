@@ -4,6 +4,8 @@
 #include <X11/Xlib.h>
 #include <string>
 #include <vector>
+#include <memory>
+#include <tinythread/tinythread.h>
 #include <utils/WebXRectangle.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
@@ -43,7 +45,8 @@ public:
 
     void updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
 
-    WebXImage * getImage() const {
+    std::shared_ptr<WebXImage> getImage() {
+        tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
         return this->_image;
     }
 
@@ -70,8 +73,9 @@ public:
         return this->_isViewable && this->_rectangle.isVisible(viewport);
     }
 
-    unsigned int getBitsPerPixel() const {
-        if (this->_image != NULL) {
+    unsigned int getBitsPerPixel() {
+        tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
+        if (!this->_image) {
             return this->_image->getDepth();
         }
         return 0;
@@ -94,7 +98,8 @@ private:
     std::string _name;
     bool _isViewable;
 
-    WebXImage * _image;
+    tthread::mutex _imageMutex;
+    std::shared_ptr<WebXImage> _image;
 };
 
 

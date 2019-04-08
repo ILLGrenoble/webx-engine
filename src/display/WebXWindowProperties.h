@@ -5,7 +5,7 @@
 
 class WebXWindowProperties {
 public:
-    WebXWindowProperties(const WebXWindow * window) :
+    WebXWindowProperties(WebXWindow * window) :
         id((unsigned long)window->getX11Window()),
         x(window->getRectangle().x),
         y(window->getRectangle().y),

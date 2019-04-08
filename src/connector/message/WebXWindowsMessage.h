@@ -32,4 +32,4 @@ private:
 };
 
 
-#endif /* WEBX_WINDOWS_RESMESSAGE*/
+#endif /* WEBX_WINDOWS_MESSAGE_H*/

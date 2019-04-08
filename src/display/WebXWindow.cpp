@@ -8,8 +8,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _isRoot(isRoot),
     _parent(NULL),
     _rectangle(WebXRectangle(x, y, width, height)),
-    _isViewable(isViewable),
-    _image(NULL) {
+    _isViewable(isViewable) {
 
     this->updateName();
 }
@@ -19,10 +18,6 @@ WebXWindow::~WebXWindow() {
 }
 
 void WebXWindow::clean() {
-    if (this->_image != NULL) {
-        delete this->_image;
-        this->_image = NULL;
-    }
 }
 
 void WebXWindow::updateName() {
@@ -95,21 +90,16 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
 }
 
 void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
-
-    if (this->_image != NULL) {
-        delete this->_image;
-        this->_image = NULL;
-    }
-
-    WebXRectangle geometry = this->getRectangle();
-    // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, geometry.x, geometry.y, geometry.width, geometry.height);
-    XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, geometry.width, geometry.height, AllPlanes, ZPixmap);
+    tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
+    WebXRectangle rectangle = this->getRectangle();
+    // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, rectangle.width, rectangle.height, AllPlanes, ZPixmap);
 
     if (!image) {
         printf("Failed to get image for window 0x%08lx\n", this->_x11Window);
 
     } else {
-        this->_image = imageConverter->convert(image, subWindowRectangle);
+        this->_image = std::shared_ptr<WebXImage>(imageConverter->convert(image, subWindowRectangle));
     }
 }
 

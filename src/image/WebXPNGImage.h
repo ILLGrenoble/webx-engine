@@ -10,6 +10,15 @@ public:
 
     virtual bool save(const std::string & fileName);
 
+    virtual char * getRawData() const {
+        return this->_rawData;
+    }
+
+    virtual size_t getRawDataSize() const {
+        return this->_length;
+    }
+
+
 private:
      char * _rawData;
      size_t _length;

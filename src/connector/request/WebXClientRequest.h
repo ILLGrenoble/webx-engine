@@ -16,7 +16,7 @@ struct WebXClientRequest {
 
     Type type;
     std::string stringPayload;
-    int integerPayload;
+    long numericPayload;
 };
 
 void to_json(nlohmann::json& j, const WebXClientRequest & request);
