@@ -147,6 +147,6 @@ WebXResponse * WebXClientConnector::handleWindowsRequest() {
 }
 
 WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
-    return new WebXImageResponse(WebXManager::instance()->getDisplay()->getImageForVisibleWindow(windowId));
+    return new WebXImageResponse(windowId, WebXManager::instance()->getDisplay()->getImageForVisibleWindow(windowId));
 }
 

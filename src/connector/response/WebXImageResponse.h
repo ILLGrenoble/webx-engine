@@ -9,13 +9,15 @@ class WebXImage;
 
 class WebXImageResponse : public WebXResponse {
 public:
-    WebXImageResponse(std::shared_ptr<WebXImage> image) :
+    WebXImageResponse(unsigned long windowId, std::shared_ptr<WebXImage> image) :
+        _windowId(windowId),
         _image(image) {}
     virtual ~WebXImageResponse() {}
 
     virtual void toJson(nlohmann::json & j) const;
 
 private:
+    unsigned long _windowId;
     std::shared_ptr<WebXImage> _image;
 };
 

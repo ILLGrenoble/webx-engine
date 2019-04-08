@@ -4,7 +4,7 @@
 
 void WebXImageResponse::toJson(nlohmann::json & j) const {
     j = nlohmann::json{
+            {"windowId", this->_windowId},
             {"data", base64_encode(this->_image->getRawData(), this->_image->getRawDataSize())}
         };
-
 }

@@ -9,13 +9,15 @@ class WebXImage;
 
 class WebXImageMessage : public WebXMessage {
 public:
-    WebXImageMessage(std::shared_ptr<WebXImage> image) :
+    WebXImageMessage(unsigned long windowId, std::shared_ptr<WebXImage> image) :
+        _windowId(windowId),
         _image(image) {}
     virtual ~WebXImageMessage() {}
 
     virtual void toJson(nlohmann::json & j) const;
 
 private:
+    unsigned long _windowId;
     std::shared_ptr<WebXImage> _image;
 };
 
