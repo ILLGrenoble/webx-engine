@@ -34,6 +34,9 @@ public:
         return this->_controller;
     }
 
+    void pauseEventListener();
+    void resumeEventListener();
+
 private:
     void handleWindowCreateEvent(const WebXEvent & event);
     void handleWindowDestroyEvent(const WebXEvent & event);

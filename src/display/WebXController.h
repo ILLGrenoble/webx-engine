@@ -49,16 +49,19 @@ private:
     static void threadMain(void * arg);
     void mainLoop();
     void updateDisplay();
+    void updateImage(unsigned long windowId);
 
 private:
     static unsigned int THREAD_RATE;
     static unsigned int DISPLAY_REFRESH_RATE;
+    static unsigned int IMAGE_REFRESH_RATE;
 
     WebXDisplay * _display;
     std::vector<WebXWindowProperties> _windows;
 
     bool _displayDirty;
     long _displayRefreshUs;
+    long _imageRefreshUs;
     std::chrono::high_resolution_clock::time_point _lastDisplayRefreshTime;
 
     tthread::thread * _thread;

@@ -91,6 +91,14 @@ void WebXManager::shutdown() {
     }
 }
 
+void WebXManager::pauseEventListener() {
+    this->_eventListener->pause();
+}
+
+void WebXManager::resumeEventListener() {
+    this->_eventListener->resume();
+}
+
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
     // printf("Got Create Event for window 0x%08lx\n", event.getX11Window());
 

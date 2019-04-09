@@ -8,7 +8,8 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _isRoot(isRoot),
     _parent(NULL),
     _rectangle(WebXRectangle(x, y, width, height)),
-    _isViewable(isViewable) {
+    _isViewable(isViewable),
+    _imageCaptureTime(std::chrono::high_resolution_clock::now()) {
 
     this->updateName();
 }
@@ -101,6 +102,7 @@ void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConver
     } else {
         this->_image = std::shared_ptr<WebXImage>(imageConverter->convert(image, subWindowRectangle));
     }
+    this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 }
 
 void WebXWindow::addChild(WebXWindow * child) {

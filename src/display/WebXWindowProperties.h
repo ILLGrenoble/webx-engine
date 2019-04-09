@@ -11,7 +11,8 @@ public:
         y(window->getRectangle().y),
         width(window->getRectangle().width),
         height(window->getRectangle().height),
-        bpp(window->getBitsPerPixel()) {
+        bpp(window->getBitsPerPixel()),
+        imageCaptureTime(window->getImageCaptureTime()) {
     }
     WebXWindowProperties(const WebXWindowProperties & window) :
         id(window.id),
@@ -19,7 +20,8 @@ public:
         y(window.y),
         width(window.width),
         height(window.height),
-        bpp(window.bpp) {
+        bpp(window.bpp),
+        imageCaptureTime(window.imageCaptureTime) {
     }
     virtual ~WebXWindowProperties() {}
 
@@ -31,6 +33,7 @@ public:
             this->width = window.width;
             this->height = window.height;
             this->bpp = window.bpp;
+            this->imageCaptureTime = window.imageCaptureTime;
         }
         return *this;
     }
@@ -41,6 +44,7 @@ public:
     int y;
     int width;
     int height;
+    std::chrono::high_resolution_clock::time_point imageCaptureTime;
 };
 
 

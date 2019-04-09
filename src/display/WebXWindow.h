@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <chrono>
 #include <tinythread/tinythread.h>
 #include <utils/WebXRectangle.h>
 #include <image/WebXImageConverter.h>
@@ -48,6 +49,10 @@ public:
     std::shared_ptr<WebXImage> getImage() {
         tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
         return this->_image;
+    }
+
+    std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
+        return this->_imageCaptureTime;
     }
 
     WebXWindow * getParent() const {
@@ -100,6 +105,7 @@ private:
 
     tthread::mutex _imageMutex;
     std::shared_ptr<WebXImage> _image;
+    std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 };
 
 

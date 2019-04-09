@@ -20,6 +20,7 @@ public:
 
 public:
     virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows);
+    virtual void onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image);
 
 private:
     static void threadMain(void * arg);

@@ -1,19 +1,22 @@
 #include "WebXController.h"
 #include "WebXDisplay.h"
+#include "WebXManager.h"
 #include "WebXConnection.h"
 #include <algorithm>
 #include <thread>
 
 unsigned int WebXController::THREAD_RATE = 120;
 unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
+unsigned int WebXController::IMAGE_REFRESH_RATE = 1;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
     _displayDirty(true),
     _displayRefreshUs(1000000.0 / WebXController::DISPLAY_REFRESH_RATE),
+    _imageRefreshUs(1000000.0 / WebXController::IMAGE_REFRESH_RATE),
     _lastDisplayRefreshTime(std::chrono::high_resolution_clock::now()),
     _thread(NULL),
-    _threadSleepUs(1000000.0 / WebXController::DISPLAY_REFRESH_RATE),
+    _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped) {
 }
 
@@ -74,6 +77,16 @@ void WebXController::mainLoop() {
                 this->updateDisplay();
                 this->_lastDisplayRefreshTime = now;
             }
+
+            // for (std::vector<WebXWindowProperties>::iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
+            //     WebXWindowProperties & window = *it;
+            //     std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - window.imageCaptureTime;
+            //     if (timeSinceImageUpdateUs.count() > this->_imageRefreshUs) {
+            //         this->updateImage(window.id);
+            //         window.imageCaptureTime = now;
+            //     }
+            // }
+
         }
     }
 }
@@ -88,4 +101,20 @@ void WebXController::updateDisplay() {
         connection->onDisplayChanged(this->_windows);
     }
 }
+
+void WebXController::updateImage(unsigned long windowId) {
+    WebXWindow * window = this->_display->getWindow(windowId);
+    if (window != NULL) {
+        WebXManager::instance()->pauseEventListener();
+        this->_display->updateImage(window);
+        WebXManager::instance()->resumeEventListener();
+
+        tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+        for (WebXConnection * connection : this->_connections) {
+            connection->onImageChanged(windowId, window->getImage());
+        }
+    }
+
+}
+
 
