@@ -5,13 +5,25 @@
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/shape.h>
+#include <X11/Xutil.h>
+
 
 WebXEventListener::WebXEventListener(Display * display) :
     _x11Display(display),
     _thread(NULL),
     _stopped(false),
-    _paused(false) {
+    _paused(false),
+    _damageEventBase(0),
+    _damageErrorBase(0),
+    _damageAvailable(false) {
 
+    if (XDamageQueryExtension(this->_x11Display, &this->_damageEventBase, &this->_damageErrorBase)) {
+        this->_damageAvailable = true;
+    
+    } else {
+        fprintf(stderr, "No damage extension\n");
+        exit(1);
+    }
 }
 
 WebXEventListener::~WebXEventListener() {
@@ -78,7 +90,8 @@ void WebXEventListener::threadMain(void * arg) {
 void WebXEventListener::mainLoop() {
     XEvent x11Event;
 
-    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
+    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask | ExposureMask | StructureNotifyMask |
+                     PropertyChangeMask);
 
     while (!this->_stopped) {
         do {
@@ -90,7 +103,7 @@ void WebXEventListener::mainLoop() {
                 delete value;
 
             } else if (!this->_stopped) {
-                WebXEvent event(x11Event);
+                WebXEvent event(x11Event, this->_damageEventBase);
                 this->handleEvent(event);
             }
         } while (!this->_stopped && QLength(this->_x11Display));

@@ -53,6 +53,7 @@ if (APPLE)
         ${CMAKE_THREAD_LIBS_INIT}
         -lzmq
         -lX11
+        -lXdamage
     )
 
     target_include_directories(

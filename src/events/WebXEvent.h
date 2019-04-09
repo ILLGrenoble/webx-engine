@@ -12,12 +12,13 @@ enum WebXEventType {
     Configure,
     Gravity,
     Circulate,
+    Damaged,
     Other
 };
 
 class WebXEvent {
 public:
-    WebXEvent(const XEvent & xEvent);
+    WebXEvent(const XEvent & xEvent, int damageEventBase);
     virtual ~WebXEvent();
 
     Window getX11Window() const {
@@ -61,6 +62,7 @@ private:
     int _width;
     int _height;
     Window _parent;
+    int _damageEventBase;
 };
 
 

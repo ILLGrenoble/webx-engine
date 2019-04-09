@@ -23,6 +23,10 @@ public:
     void addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler);
     void removeEventHandler(WebXEventType eventType);
 
+    bool getDamageAvailable() const {
+        return this->_damageAvailable;
+    }
+
 private:
     static void threadMain(void * arg);
     void mainLoop();
@@ -38,6 +42,10 @@ private:
     bool _paused;
     WebXQueue<bool> _pauseQueue;
     XClientMessageEvent _dummyEvent;
+
+    int _damageEventBase;
+    int _damageErrorBase;
+    bool _damageAvailable;
 };
 
 

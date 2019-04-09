@@ -1,8 +1,10 @@
 #include "WebXEvent.h"
+#include <X11/extensions/Xdamage.h>
 #include <stdio.h>
 
-WebXEvent::WebXEvent(const XEvent & xEvent) :
-    _xEvent(xEvent) {
+WebXEvent::WebXEvent(const XEvent & xEvent, int damageEventBase) :
+    _xEvent(xEvent),
+    _damageEventBase(damageEventBase) {
 
     this->convert();
 }
@@ -63,7 +65,16 @@ void WebXEvent::convert() {
         break;
 
     default:
-        this->_type = WebXEventType::Other;
-        this->_x11Window = 0;
+        printf("other\n");
+        if (this->_xEvent.type == this->_damageEventBase +  XDamageNotify) {
+            this->_type = WebXEventType::Damaged;
+            XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *)&this->_xEvent;
+            this->_x11Window = damageEvent->drawable;
+            printf("Damage event on window 0x%0lx\n", this->_x11Window);
+
+        } else {
+            this->_type = WebXEventType::Other;
+            this->_x11Window = 0;
+        }
     }
 }
