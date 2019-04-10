@@ -2,6 +2,7 @@
 #define WEBX_WINDOW_H
 
 #include <X11/Xlib.h>
+#include <X11/extensions/Xdamage.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -80,13 +81,20 @@ public:
 
     unsigned int getBitsPerPixel() {
         tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
-        if (!this->_image) {
+        if (this->_image) {
             return this->_image->getDepth();
         }
         return 0;
     }
 
-    void clean();
+    void enableDamage();
+    void disableDamage();
+    void setDamaged(const WebXRectangle & area);
+    void clearDamaged();
+
+    const WebXRectangle & getDamageRectangle() const {
+        return this->_damageRectangle;
+    }
 
 private:
     void updateName();
@@ -94,6 +102,7 @@ private:
 private:
     Display * _display;
     Window _x11Window;
+    Damage _damage;
     bool _isRoot;
 
     WebXWindow * _parent;
@@ -106,6 +115,11 @@ private:
     tthread::mutex _imageMutex;
     std::shared_ptr<WebXImage> _image;
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
+
+    bool _isDamaged;
+    WebXRectangle _damageRectangle;
+    tthread::mutex _damageMutex;
+
 };
 
 

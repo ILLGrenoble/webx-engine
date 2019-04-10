@@ -2,6 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXController.h"
+#include "WebXWindowDamageProperties.h"
 #include <events/WebXEventListener.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
@@ -81,6 +82,7 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Configure, std::bind(&WebXManager::handleWindowConfigureEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Gravity, std::bind(&WebXManager::handleWindowGravityEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
+    this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->run(this->_display->getRootWindow());
 }
 
@@ -140,6 +142,13 @@ void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
 
 void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
     printf("Got Circulate Event for window 0x%08lx\n", event.getX11Window());
+}
+
+void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
+    WebXWindow * window = this->_display->getWindow(event.getX11Window());
+
+    window->setDamaged(event.getRectangle());
+    this->_controller->onWindowDamaged(WebXWindowDamageProperties(window));
 }
 
 void WebXManager::updateDisplay() {

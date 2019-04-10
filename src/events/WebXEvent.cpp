@@ -65,12 +65,18 @@ void WebXEvent::convert() {
         break;
 
     default:
-        printf("other\n");
         if (this->_xEvent.type == this->_damageEventBase +  XDamageNotify) {
             this->_type = WebXEventType::Damaged;
             XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *)&this->_xEvent;
             this->_x11Window = damageEvent->drawable;
-            printf("Damage event on window 0x%0lx\n", this->_x11Window);
+            this->_x = damageEvent->area.x;
+            this->_y = damageEvent->area.y;
+            this->_width = damageEvent->area.width;
+            this->_height = damageEvent->area.height;
+
+            printf("Damage event on window 0x%0lx area = [%d %d %d %d], geometry = [%d %d %d %d]\n", this->_x11Window, 
+                damageEvent->area.x, damageEvent->area.y, damageEvent->area.width, damageEvent->area.height,
+                damageEvent->geometry.x, damageEvent->geometry.y, damageEvent->geometry.width, damageEvent->geometry.height);
 
         } else {
             this->_type = WebXEventType::Other;

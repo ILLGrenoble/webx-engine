@@ -67,6 +67,7 @@ else()
         ${PROJECT_NAME}
         ${LIBPNG_LIBRARIES}
         ${X11_LIBRARIES}
+        -lXdamage
         ${CMAKE_THREAD_LIBS_INIT}
         ${ZeroMQ_LIBRARY}
     )

@@ -90,8 +90,7 @@ void WebXEventListener::threadMain(void * arg) {
 void WebXEventListener::mainLoop() {
     XEvent x11Event;
 
-    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask | ExposureMask | StructureNotifyMask |
-                     PropertyChangeMask);
+    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
 
     while (!this->_stopped) {
         do {

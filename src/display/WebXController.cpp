@@ -7,7 +7,7 @@
 
 unsigned int WebXController::THREAD_RATE = 120;
 unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
-unsigned int WebXController::IMAGE_REFRESH_RATE = 1;
+unsigned int WebXController::IMAGE_REFRESH_RATE = 15;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
@@ -22,6 +22,26 @@ WebXController::WebXController(WebXDisplay * display) :
 
 WebXController::~WebXController() {
     this->stop();
+}
+
+void WebXController::onWindowDamaged(const WebXWindowDamageProperties & windowDamage) {
+    tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
+    bool found = false;
+    std::vector<WebXWindowDamageProperties>::iterator it = this->_damages.begin();
+    while (it != this->_damages.end() && !found) {
+        WebXWindowDamageProperties & existingWindowDamage = *it;
+        if (existingWindowDamage.windowId == windowDamage.windowId) {
+            found = true;
+        } else {
+            it++;
+        }
+    }
+
+    if (found) {
+        this->_damages.erase(it);
+    }
+
+    this->_damages.push_back(windowDamage);
 }
 
 void WebXController::run() {
@@ -78,15 +98,20 @@ void WebXController::mainLoop() {
                 this->_lastDisplayRefreshTime = now;
             }
 
-            // for (std::vector<WebXWindowProperties>::iterator it = this->_windows.begin(); it != this->_windows.end(); it++) {
-            //     WebXWindowProperties & window = *it;
-            //     std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - window.imageCaptureTime;
-            //     if (timeSinceImageUpdateUs.count() > this->_imageRefreshUs) {
-            //         this->updateImage(window.id);
-            //         window.imageCaptureTime = now;
-            //     }
-            // }
+            // Avoid any damages being added during update
+            tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
 
+            for (std::vector<WebXWindowDamageProperties>::iterator it = this->_damages.begin(); it != this->_damages.end(); ) {
+                WebXWindowDamageProperties & windowDamage = *it;
+                std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - windowDamage.imageCaptureTime;
+                if (timeSinceImageUpdateUs.count() > this->_imageRefreshUs) {
+                    this->updateImage(windowDamage.windowId);
+                    this->_damages.erase(it);
+                
+                } else {
+                    it++;
+                }
+            }
         }
     }
 }
@@ -108,6 +133,8 @@ void WebXController::updateImage(unsigned long windowId) {
         WebXManager::instance()->pauseEventListener();
         this->_display->updateImage(window);
         WebXManager::instance()->resumeEventListener();
+
+        printf("Sending image event for window 0x%0lx\n", windowId);
 
         tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
         for (WebXConnection * connection : this->_connections) {

@@ -2,6 +2,7 @@
 #define WEBX_EVENT_H
 
 #include <X11/Xlib.h>
+#include <utils/WebXRectangle.h>
 
 enum WebXEventType {
     Create = 0,
@@ -47,6 +48,10 @@ public:
 
     Window getParent() const {
         return this->_parent;
+    }
+
+    WebXRectangle getRectangle() const {
+        return WebXRectangle(this->_x, this->_y, this->_width, this->_height);
     }
 
 private:

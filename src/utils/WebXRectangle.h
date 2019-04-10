@@ -40,6 +40,24 @@ public:
             this->y + this->height > 0;
     } 
 
+    void clear() {
+        this->x = 0;
+        this->y = 0;
+        this->width = 0;
+        this->height = 0;
+    }
+
+    void combine(const WebXRectangle & rectangle) {
+        this->x = rectangle.x < this->x ? rectangle.x : this->x;
+        this->y = rectangle.y < this->y ? rectangle.y : this->y;
+
+        int maxX = (rectangle.x + rectangle.width) > (this->x + this->width) ? (rectangle.x + rectangle.width) : (this->x + this->width);
+        int maxY = (rectangle.y + rectangle.height) > (this->y + this->height) ? (rectangle.y + rectangle.height) : (this->x + this->height);
+
+        this->width = maxX - this->x;
+        this->height = maxY - this->y;
+    }
+
     int x;
     int y;
     int width;

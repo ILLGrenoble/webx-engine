@@ -79,28 +79,31 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
         this->deleteTree(window);
 
         // Delete from visible windows
-        {
-            tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+        tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
 
-            std::vector<WebXWindow *>::iterator it = std::find(this->_visibleWindows.begin(), this->_visibleWindows.end(), window);
-            if (it != this->_visibleWindows.end()) {
-                this->_visibleWindows.erase(it);
-            }
+        std::vector<WebXWindow *>::iterator it = std::find(this->_visibleWindows.begin(), this->_visibleWindows.end(), window);
+        if (it != this->_visibleWindows.end()) {
+            // Remove window
+            window->disableDamage();
+            this->_visibleWindows.erase(it);
+        }
 
-            std::vector<WebXWindowProperties>::iterator it2 = this->_visibleWindowsProperties.begin();
-            bool found = false;
-            while (!found && it2 != this->_visibleWindowsProperties.end()) {
-                if ((*it2).id == (unsigned long)window->getX11Window()) {
-                    found = true;
+        // Remove window properties
+        std::vector<WebXWindowProperties>::iterator it2 = this->_visibleWindowsProperties.begin();
+        bool found = false;
+        while (!found && it2 != this->_visibleWindowsProperties.end()) {
+            if ((*it2).id == (unsigned long)window->getX11Window()) {
+                found = true;
 
-                } else {
-                    it2++;
-                }
-            }
-            if (found) {
-                this->_visibleWindowsProperties.erase(it2);
+            } else {
+                it2++;
             }
         }
+        if (found) {
+            this->_visibleWindowsProperties.erase(it2);
+        }
+
+
 
         // Remove from parent
         WebXWindow * parent = window->getParent();
@@ -138,6 +141,9 @@ void WebXDisplay::updateVisibleWindows() {
 
     tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
 
+    // Make a copy of current visible windows
+    std::vector<WebXWindow *> oldVisibleWindows = this->_visibleWindows;
+
     // Clear current list
     this->_visibleWindows.clear();
     this->_visibleWindowsProperties.clear();
@@ -152,13 +158,25 @@ void WebXDisplay::updateVisibleWindows() {
                 if (child->isVisible(this->_rootWindow->getRectangle())) {
 
                     // Initialise window image
-                    if (child->getImage() == NULL) {
+                    if (!child->getImage()) {
                         this->updateImage(child);
                     }
+
+                    child->enableDamage();
                     this->_visibleWindows.push_back(child);
+
+                    // Add window properties
                     this->_visibleWindowsProperties.push_back(WebXWindowProperties(child));
                 } 
             }
+        }
+    }
+
+    // Determine which windows are no longer visible and disable damage on them
+    for (auto it = oldVisibleWindows.begin(); it != oldVisibleWindows.end(); it++) {
+        WebXWindow * oldVisibleWindow = *it;
+        if (find(this->_visibleWindows.begin(), this->_visibleWindows.end(), oldVisibleWindow) == this->_visibleWindows.end()) {
+            oldVisibleWindow->disableDamage();
         }
     }
 }

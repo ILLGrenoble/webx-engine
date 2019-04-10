@@ -94,6 +94,8 @@ void WebXClientConnector::run() {
                 memcpy(replyMessage.data(), responseData.c_str(), responseData.size());
                 socket.send(replyMessage);
 
+                delete response;
+
             } else {
                 zmq::message_t replyMessage(0);
                 socket.send(replyMessage);
@@ -147,6 +149,12 @@ WebXResponse * WebXClientConnector::handleWindowsRequest() {
 }
 
 WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
-    return new WebXImageResponse(windowId, WebXManager::instance()->getDisplay()->getImageForVisibleWindow(windowId));
+    std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImageForVisibleWindow(windowId);
+    if (image) {
+        return new WebXImageResponse(windowId, image);
+    
+    } else {
+        return NULL;
+    }
 }
 

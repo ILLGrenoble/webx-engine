@@ -46,6 +46,7 @@ private:
     void handleWindowConfigureEvent(const WebXEvent & event);
     void handleWindowGravityEvent(const WebXEvent & event);
     void handleWindowCirculateEvent(const WebXEvent & event);
+    void handleWindowDamageEvent(const WebXEvent & event);
  
     void updateDisplay();
 

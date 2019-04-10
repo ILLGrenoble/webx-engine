@@ -6,6 +6,7 @@
 #include <chrono>
 #include <tinythread/tinythread.h>
 #include "WebXWindowProperties.h"
+#include "WebXWindowDamageProperties.h"
 
 class WebXDisplay;
 class WebXConnection;
@@ -24,6 +25,8 @@ public:
     void onDisplayChanged() {
         this->_displayDirty = true;
     }
+
+    void onWindowDamaged(const WebXWindowDamageProperties & windowDamage);
 
     void run();
     void stop();
@@ -70,6 +73,9 @@ private:
     tthread::mutex _connectionsMutex;
     tthread::mutex _windowsMutex;
     WebXControllerState _state;
+
+    std::vector<WebXWindowDamageProperties> _damages;
+    tthread::mutex _damageMutex;
 
     std::set<WebXConnection *> _connections;
 };
