@@ -91,9 +91,7 @@ void WebXKeyboardConnection::exportWindowImages() {
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = (*it);
 
-        WebXManager::instance()->getDisplay()->updateImage(window);
-
-        std::shared_ptr<WebXImage> image = window->getImage();;
+        std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->updateImage(window->getX11Window());
         if (image) {
             char filename[64];
             snprintf(filename, sizeof(filename) - 1, "images/window-0x%08lx.png", window->getX11Window());

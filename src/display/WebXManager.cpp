@@ -145,10 +145,7 @@ void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
-    WebXWindow * window = this->_display->getWindow(event.getX11Window());
-
-    window->setDamaged(event.getRectangle());
-    this->_controller->onWindowDamaged(WebXWindowDamageProperties(window));
+    this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 
 void WebXManager::updateDisplay() {

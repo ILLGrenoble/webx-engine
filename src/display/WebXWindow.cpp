@@ -23,7 +23,11 @@ WebXWindow::~WebXWindow() {
 void WebXWindow::enableDamage() {
     tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
     if (this->_damage == 0) {
-        this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportBoundingBox);
+        // Raw damage
+        this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportRawRectangles);
+
+        // Cumulative damage
+        // this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportBoundingBox);
     }
 }
 
@@ -125,7 +129,7 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
     return subWindowRectangle;
 }
 
-void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
+std::shared_ptr<WebXImage> WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
     tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
     WebXRectangle rectangle = this->getRectangle();
     // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
@@ -139,6 +143,8 @@ void WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConver
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
     this->clearDamaged();
+
+    return this->_image;
 }
 
 void WebXWindow::addChild(WebXWindow * child) {

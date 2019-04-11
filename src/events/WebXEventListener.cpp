@@ -71,14 +71,18 @@ void WebXEventListener::pause() {
         // Send dummy event to unblock XNextEvent
         XSendEvent(this->_x11Display, this->_rootWindow->getX11Window(), 0, SubstructureNotifyMask, (XEvent*)&this->_dummyEvent);
         XFlush(this->_x11Display);
+
+        // Wait for pause acknowledge
+        bool * value = this->_pauseAckQueue.get();
+        delete value;
     }
 }
 
 void WebXEventListener::resume() {
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
     if (_thread != NULL && this->_paused) {
-        this->_pauseQueue.put(new bool(true));
         this->_paused = false;
+        this->_pauseQueue.put(new bool(true));
     }
 }
 
@@ -97,6 +101,9 @@ void WebXEventListener::mainLoop() {
             XNextEvent(this->_x11Display, &x11Event);
 
             if (this->_paused) {
+                // Acknowledge pause
+                this->_pauseAckQueue.put(new bool(true));
+
                 // Wait until resumed
                 bool * value = this->_pauseQueue.get();
                 delete value;

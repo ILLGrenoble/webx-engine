@@ -41,6 +41,7 @@ private:
     bool _stopped;
     bool _paused;
     WebXQueue<bool> _pauseQueue;
+    WebXQueue<bool> _pauseAckQueue;
     XClientMessageEvent _dummyEvent;
 
     int _damageEventBase;

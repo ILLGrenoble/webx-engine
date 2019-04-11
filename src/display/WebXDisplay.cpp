@@ -158,9 +158,9 @@ void WebXDisplay::updateVisibleWindows() {
                 if (child->isVisible(this->_rootWindow->getRectangle())) {
 
                     // Initialise window image
-                    if (!child->getImage()) {
-                        this->updateImage(child);
-                    }
+                    // if (!child->getImage()) {
+                    //     this->updateImage(child);
+                    // }
 
                     child->enableDamage();
                     this->_visibleWindows.push_back(child);
@@ -207,35 +207,99 @@ void WebXDisplay::debugTree(Window window, int indent) {
     }
 }
 
-void WebXDisplay::updateImage(WebXWindow * window) const {
-    WebXRectangle subWindowRectangle = window->getRectangle();
-    WebXWindow * managedWindow = this->getManagedWindow(window);
-    if (managedWindow != NULL) {
-        subWindowRectangle = managedWindow->getSubWindowRectangle();
-        window->updateImage(&subWindowRectangle, this->_imageConverter);
+std::shared_ptr<WebXImage> WebXDisplay::updateImage(Window x11Window) {
+    tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    // Ignore damage if window is not visible
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+
+        return this->updateImage(window);
 
     } else {
-        window->updateImage(NULL, this->_imageConverter);
+        return nullptr;
     }
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImageForVisibleWindow(Window windowId) {
+std::shared_ptr<WebXImage> WebXDisplay::getImageForVisibleWindow(Window x11Window) {
     tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
 
-    bool found = false;
-    std::vector<WebXWindow *>::iterator it = this->_visibleWindows.begin(); 
-    while (it != this->_visibleWindows.end() && !found) {
-        found = (*it)->getX11Window() == windowId;
-        if (!found) {
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    // Ignore damage if window is not visible
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+        return window->getImage();
+    
+    } else {
+        return nullptr;
+    }
+}
+
+void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea) {
+    tthread::lock_guard<tthread::mutex> damageLock(this->_damagedWindowsMutex);
+    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
+
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    // Ignore damage if window is not visible
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+
+        // Create window damage
+        WebXWindowDamageProperties windowDamage = WebXWindowDamageProperties(window);
+
+        // See if window damage already exists
+        auto it = std::find_if(this->_damagedWindows.begin(), this->_damagedWindows.end(), 
+            [&x11Window](const WebXWindowDamageProperties & obj) {
+                return obj.windowId == x11Window;
+            });
+
+        // Modify or add window damage
+        if (it != this->_damagedWindows.end()) {
+            WebXWindowDamageProperties & existingDamagedWindow = *it;
+            existingDamagedWindow = windowDamage;
+        
+        } else {
+            this->_damagedWindows.push_back(windowDamage);
+        }
+    }
+}
+
+std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imageUpdateUs) {
+    tthread::lock_guard<tthread::mutex> lock(this->_damagedWindowsMutex);
+
+    std::vector<WebXWindowDamageProperties> windowDamageToRepair;
+
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    for (auto it = this->_damagedWindows.begin(); it != this->_damagedWindows.end();) {
+        WebXWindowDamageProperties & windowDamage = *it;
+
+        std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - windowDamage.imageCaptureTime;
+        if (timeSinceImageUpdateUs.count() > imageUpdateUs) {
+            windowDamageToRepair.push_back(windowDamage);
+            it = this->_damagedWindows.erase(it);
+
+        } else {
             it++;
         }
     }
 
-    if (found) {
-        return (*it)->getImage();
-    }
-
-    return nullptr;
+    return windowDamageToRepair;
 }
 
 void WebXDisplay::updateManagedWindows() {
@@ -355,4 +419,16 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
     }
 
     return parent;
+}
+
+std::shared_ptr<WebXImage> WebXDisplay::updateImage(WebXWindow * window) const {
+    WebXRectangle subWindowRectangle = window->getRectangle();
+    WebXWindow * managedWindow = this->getManagedWindow(window);
+    if (managedWindow != NULL) {
+        subWindowRectangle = managedWindow->getSubWindowRectangle();
+        return window->updateImage(&subWindowRectangle, this->_imageConverter);
+
+    } else {
+        return window->updateImage(NULL, this->_imageConverter);
+    }
 }

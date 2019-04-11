@@ -26,8 +26,6 @@ public:
         this->_displayDirty = true;
     }
 
-    void onWindowDamaged(const WebXWindowDamageProperties & windowDamage);
-
     void run();
     void stop();
     void pause();
@@ -52,7 +50,7 @@ private:
     static void threadMain(void * arg);
     void mainLoop();
     void updateDisplay();
-    void updateImage(unsigned long windowId);
+    void updateImages();
 
 private:
     static unsigned int THREAD_RATE;
@@ -73,9 +71,6 @@ private:
     tthread::mutex _connectionsMutex;
     tthread::mutex _windowsMutex;
     WebXControllerState _state;
-
-    std::vector<WebXWindowDamageProperties> _damages;
-    tthread::mutex _damageMutex;
 
     std::set<WebXConnection *> _connections;
 };

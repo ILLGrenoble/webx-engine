@@ -45,7 +45,7 @@ public:
     WebXWindow * getTopParent() const;
     WebXRectangle getSubWindowRectangle() const;
 
-    void updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
+    std::shared_ptr<WebXImage> updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
 
     std::shared_ptr<WebXImage> getImage() {
         tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);

@@ -8,6 +8,7 @@
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
 #include "WebXWindowProperties.h"
+#include "WebXWindowDamageProperties.h"
 
 class WebXWindow;
 class WebXImageConverter;
@@ -54,9 +55,12 @@ public:
         return NULL;
     }
 
-    void updateImage(WebXWindow * window) const;
+    std::shared_ptr<WebXImage> updateImage(Window x11Window);
 
     std::shared_ptr<WebXImage> getImageForVisibleWindow(Window windowId);
+
+    void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
+    std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
 
 private:
     struct WebXTreeDetails {
@@ -89,6 +93,7 @@ private:
     void createTree(WebXWindow * root);
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
+    std::shared_ptr<WebXImage> updateImage(WebXWindow * window) const;
 
 private:
     Display * _x11Display;
@@ -103,6 +108,10 @@ private:
     tthread::mutex _visibleWindowsMutex;
 
     WebXImageConverter * _imageConverter;
+
+    std::vector<WebXWindowDamageProperties> _damagedWindows;
+    tthread::mutex _damagedWindowsMutex;
+
 };
 
 
