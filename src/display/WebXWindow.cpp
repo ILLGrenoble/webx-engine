@@ -148,6 +148,7 @@ void WebXWindow::updateName() {
 }
 
 uint64_t WebXWindow::calculateImageChecksum(XImage * image) {
+    // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     size_t length = (image->bytes_per_line * image->height) / 8;
     uint64_t checksum = 0;
     size_t position = 0;
@@ -155,7 +156,11 @@ uint64_t WebXWindow::calculateImageChecksum(XImage * image) {
     while (position < length) {
         checksum ^= data[position++];
     }
-    
+
+    // std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double, std::micro> duration = end - start;
+    // printf("Checksum for %d x %d in %fus\n", image->width, image->height, duration.count());
+
     return checksum;
 }
 
