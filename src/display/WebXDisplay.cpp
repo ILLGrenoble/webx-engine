@@ -261,7 +261,7 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
         WebXWindow * window = *itWin;
 
         // Create window damage
-        WebXWindowDamageProperties windowDamage = WebXWindowDamageProperties(window);
+        WebXWindowDamageProperties windowDamage = WebXWindowDamageProperties(window, damagedArea);
 
         // See if window damage already exists
         auto it = std::find_if(this->_damagedWindows.begin(), this->_damagedWindows.end(), 
@@ -301,6 +301,26 @@ std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imag
 
     return windowDamageToRepair;
 }
+
+uint64_t WebXDisplay::getWindowChecksum(Window x11Window) {
+    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
+    
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    // Ignore damage if window is not visible
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+        return window->getWindowChecksum();
+    
+    } else {
+        return 0;
+    }
+}
+
 
 void WebXDisplay::updateManagedWindows() {
     Window root = this->_rootWindow->getX11Window();

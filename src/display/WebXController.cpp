@@ -102,16 +102,23 @@ void WebXController::updateImages() {
 
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
+
+            // Get checksums before and after updating the window image
+            uint64_t oldChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
             std::shared_ptr<WebXImage> image = this->_display->updateImage(windowDamage.windowId);
             if (image) {
-                tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                // printf("Sending image event for window 0x%0lx\n", windowDamage.windowId);
+                uint64_t newChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
 
-                for (WebXConnection * connection : this->_connections) {
-                    connection->onImageChanged(windowDamage.windowId, image);
+                // Send event if checksum has changed
+                if (newChecksum != oldChecksum) {
+                    tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                    printf("Sending image event for window 0x%0lx\n", windowDamage.windowId);
+
+                    for (WebXConnection * connection : this->_connections) {
+                        connection->onImageChanged(windowDamage.windowId, image);
+                    }
                 }
             }
-
         }
 
         WebXManager::instance()->resumeEventListener();

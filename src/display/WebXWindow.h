@@ -89,15 +89,14 @@ public:
 
     void enableDamage();
     void disableDamage();
-    void setDamaged(const WebXRectangle & area);
-    void clearDamaged();
 
-    const WebXRectangle & getDamageRectangle() const {
-        return this->_damageRectangle;
+    const uint64_t getWindowChecksum() const {
+        return this->_windowChecksum;
     }
 
 private:
     void updateName();
+    uint64_t calculateImageChecksum(XImage * image);
 
 private:
     Display * _display;
@@ -116,9 +115,9 @@ private:
     std::shared_ptr<WebXImage> _image;
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 
-    bool _isDamaged;
-    WebXRectangle _damageRectangle;
     tthread::mutex _damageMutex;
+
+    unsigned long _windowChecksum;
 
 };
 

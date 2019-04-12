@@ -133,6 +133,7 @@ void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
+    // printf("Got Configure event for window 0x%08lx\n", event.getX11Window());
     this->updateDisplay();
 }
 

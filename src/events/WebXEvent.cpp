@@ -74,9 +74,9 @@ void WebXEvent::convert() {
             this->_width = damageEvent->area.width;
             this->_height = damageEvent->area.height;
 
-            printf("Damage event on window 0x%0lx area = [%d %d %d %d], geometry = [%d %d %d %d]\n", this->_x11Window, 
-                damageEvent->area.x, damageEvent->area.y, damageEvent->area.width, damageEvent->area.height,
-                damageEvent->geometry.x, damageEvent->geometry.y, damageEvent->geometry.width, damageEvent->geometry.height);
+            // printf("Damage event on window 0x%0lx area = [%d %d %d %d], geometry = [%d %d %d %d]\n", this->_x11Window, 
+            //     damageEvent->area.x, damageEvent->area.y, damageEvent->area.width, damageEvent->area.height,
+            //     damageEvent->geometry.x, damageEvent->geometry.y, damageEvent->geometry.width, damageEvent->geometry.height);
 
         } else {
             this->_type = WebXEventType::Other;

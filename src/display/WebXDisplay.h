@@ -61,6 +61,7 @@ public:
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
+    uint64_t getWindowChecksum(Window x11Window);
 
 private:
     struct WebXTreeDetails {

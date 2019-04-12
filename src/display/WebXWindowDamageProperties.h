@@ -2,15 +2,16 @@
 #define WEBX_WINDOW_DAMAGE_PROPERTIES_H
 
 #include "WebXWindow.h"
+#include <utils/WebXRectangle.h>
 
 class WebXWindowDamageProperties {
 public:
-    WebXWindowDamageProperties(WebXWindow * window) :
+    WebXWindowDamageProperties(WebXWindow * window, const WebXRectangle & damageArea) :
         windowId((unsigned long)window->getX11Window()),
-        x(window->getDamageRectangle().x),
-        y(window->getDamageRectangle().y),
-        width(window->getDamageRectangle().width),
-        height(window->getDamageRectangle().height),
+        x(damageArea.x),
+        y(damageArea.y),
+        width(damageArea.width),
+        height(damageArea.height),
         imageCaptureTime(window->getImageCaptureTime()) {
     }
     WebXWindowDamageProperties(const WebXWindowDamageProperties & windowDamage) :
