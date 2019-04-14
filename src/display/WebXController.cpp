@@ -103,22 +103,41 @@ void WebXController::updateImages() {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
 
-            // Get checksums before and after updating the window image
-            uint64_t oldChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
-            std::shared_ptr<WebXImage> image = this->_display->updateImage(windowDamage.windowId);
-            if (image) {
-                uint64_t newChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
+            // printf("Damaged window 0x%0lx [%d x %d]:\n", windowDamage.windowId, windowDamage.windowSize.width, windowDamage.windowSize.height);
+            for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
+                const WebXRectangle & rectangle = *it;
+                // printf("Rectangle [%d %d %d %d]\n", rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
+            }
 
-                // Send event if checksum has changed
-                if (newChecksum != oldChecksum) {
-                    tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                    printf("Sending image event for window 0x%0lx\n", windowDamage.windowId);
+            if (windowDamage.isFullWindow()) {
+                // Get checksums before and after updating the window image
+                uint64_t oldChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
+                std::shared_ptr<WebXImage> image = this->_display->updateImage(windowDamage.windowId);
+                if (image) {
+                    uint64_t newChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
 
-                    for (WebXConnection * connection : this->_connections) {
-                        connection->onImageChanged(windowDamage.windowId, image);
+                    // Send event if checksum has changed
+                    if (newChecksum != oldChecksum) {
+                        tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                        printf("Sending image event for window 0x%0lx\n", windowDamage.windowId);
+
+                        for (WebXConnection * connection : this->_connections) {
+                            connection->onImageChanged(windowDamage.windowId, image);
+                        }
                     }
                 }
+            
+            } else {
+                // Get sub image changes
+                tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                printf("Sending subimage event for window 0x%0lx\n", windowDamage.windowId);
+
+                // for (WebXConnection * connection : this->_connections) {
+                //     connection->onImageChanged(windowDamage.windowId, image);
+                // }
+
             }
+
         }
 
         WebXManager::instance()->resumeEventListener();

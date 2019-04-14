@@ -19,7 +19,6 @@ public:
             const WebXWindowProperties & window = *it;
             j["windows"].push_back({
             {"id", window.id},
-            {"bpp", window.bpp},
             {"x", window.x},
             {"y", window.y},
             {"width", window.width},

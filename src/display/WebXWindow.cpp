@@ -1,5 +1,6 @@
 #include "WebXWindow.h"
 #include <image/WebXImage.h>
+#include <image/WebXImageAlphaConverter.h>
 #include <algorithm>
 
 WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
@@ -25,9 +26,6 @@ void WebXWindow::enableDamage() {
     if (this->_damage == 0) {
         // Raw damage
         this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportRawRectangles);
-
-        // Cumulative damage
-        // this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportBoundingBox);
     }
 }
 
@@ -54,7 +52,7 @@ void WebXWindow::updateAttributes() {
 }
 
 void WebXWindow::printInfo() const {
-    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d] %s\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.width, this->_rectangle.height, this->_name.c_str());
+    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d] %s\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height, this->_name.c_str());
 }
 
 WebXWindow * WebXWindow::getTopParent() const {
@@ -69,7 +67,7 @@ WebXWindow * WebXWindow::getTopParent() const {
 WebXRectangle WebXWindow::getSubWindowRectangle() const {
     const WebXRectangle & initialRectangle = this->getRectangle();
     const WebXWindow * child = this;
-    WebXRectangle subWindowRectangle(0, 0, initialRectangle.width, initialRectangle.height);
+    WebXRectangle subWindowRectangle(0, 0, initialRectangle.size.width, initialRectangle.size.height);
 
     while (!child->parentIsRoot()) {
         const WebXRectangle & childRectangle = child->getRectangle();
@@ -83,26 +81,27 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
 }
 
 std::shared_ptr<WebXImage> WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
-    tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
     WebXRectangle rectangle = this->getRectangle();
     // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-    XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, rectangle.width, rectangle.height, AllPlanes, ZPixmap);
+    XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
+    std::shared_ptr<WebXImage> webXImage = nullptr;
 
     if (!image) {
-        printf("Failed to get image for window 0x%08lx %d %d\n", this->_x11Window, rectangle.width, rectangle.height);
+        printf("Failed to get image for window 0x%08lx %d %d\n", this->_x11Window, rectangle.size.width, rectangle.size.height);
 
     } else {
+        WebXRectangle imageRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+        bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &imageRectangle);
+        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
+
         uint64_t checksum = this->calculateImageChecksum(image);
-        if (checksum != this->_windowChecksum) {
-            this->_image = std::shared_ptr<WebXImage>(imageConverter->convert(image, subWindowRectangle));
-            this->_windowChecksum = checksum;
-        }
+        this->_windowChecksum = checksum;
 
         XFree(image);
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 
-    return this->_image;
+    return webXImage;
 }
 
 void WebXWindow::addChild(WebXWindow * child) {

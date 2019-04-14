@@ -57,8 +57,6 @@ public:
 
     std::shared_ptr<WebXImage> updateImage(Window x11Window);
 
-    std::shared_ptr<WebXImage> getImageForVisibleWindow(Window windowId);
-
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);

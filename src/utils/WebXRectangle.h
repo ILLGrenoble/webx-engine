@@ -2,14 +2,13 @@
 #define WEBX_RECTANGLE_H
 
 #include <stdio.h>
+#include "WebXSize.h"
 
 class WebXRectangle {
 public:
     WebXRectangle() :
         x(0),
         y(0),
-        width(0),
-        height(0),
         _left(0),
         _right(0),
         _top(0),
@@ -17,8 +16,7 @@ public:
     WebXRectangle(int x, int y, int width, int height) :
         x(x),
         y(y),
-        width(width),
-        height(height),
+        size(WebXSize(width, height)),
         _left(x),
         _right(x + width),
         _top(y + height),
@@ -26,8 +24,7 @@ public:
     WebXRectangle(const WebXRectangle & rectangle) :
         x(rectangle.x),
         y(rectangle.y),
-        width(rectangle.width),
-        height(rectangle.height),
+        size(rectangle.size),
         _left(rectangle._left),
         _right(rectangle._right),
         _top(rectangle._top),
@@ -38,8 +35,7 @@ public:
         if (this != &rectangle) {
             this->x = rectangle.x;
             this->y = rectangle.y;
-            this->width = rectangle.width;
-            this->height = rectangle.height;
+            this->size = rectangle.size;
             this->_left =rectangle._left;
             this->_right =rectangle._right;
             this->_top =rectangle._top;
@@ -48,7 +44,7 @@ public:
         return *this;
     }
 
-    bool isVisible(const WebXRectangle & viewport) const {
+    bool isVisible(const WebXSize & viewport) const {
         return
             this->_left < viewport.width &&
             this->_right > 0 && 
@@ -67,33 +63,36 @@ public:
     void clear() {
         this->x = 0;
         this->y = 0;
-        this->width = 0;
-        this->height = 0;
+        this->size = WebXSize();
+        this->_left = 0;
+        this->_right = 0;
+        this->_top = 0;
+        this->_bottom = 0;
     }
 
     WebXRectangle & operator+=(const WebXRectangle & rectangle) {
-        this->x = rectangle.x < this->x ? rectangle.x : this->x;
-        this->y = rectangle.y < this->y ? rectangle.y : this->y;
 
-        int maxX = (rectangle.x + rectangle.width) > (this->x + this->width) ? (rectangle.x + rectangle.width) : (this->x + this->width);
-        int maxY = (rectangle.y + rectangle.height) > (this->y + this->height) ? (rectangle.y + rectangle.height) : (this->x + this->height);
+        int left = rectangle._left < this->_left ? rectangle._left : this->_left;
+        int right = rectangle._right > this->_right ? rectangle._right : this->_right;
+        int bottom = rectangle._bottom < this->_bottom ? rectangle._bottom : this->_bottom;
+        int top = rectangle._top > this->_top ? rectangle._top : this->_top;
 
-        this->width = maxX - this->x;
-        this->height = maxY - this->y;
+        this->x = left;
+        this->y = bottom;
+        this->size.width = right - left;
+        this->size.height = top - bottom;
 
-        this->_left = x;
-        this->_right = x + width;
-        this->_bottom = y;
-        this->_top = y + height;
+        this->_left = left;
+        this->_right = right;
+        this->_bottom = bottom;
+        this->_top = top;
 
         return *this;
     }
 
-
     int x;
     int y;
-    int width;
-    int height;
+    WebXSize size;
 
 private:
     int _left;

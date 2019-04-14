@@ -9,17 +9,15 @@ public:
         id((unsigned long)window->getX11Window()),
         x(window->getRectangle().x),
         y(window->getRectangle().y),
-        width(window->getRectangle().width),
-        height(window->getRectangle().height),
-        bpp(window->getBitsPerPixel()) {
+        width(window->getRectangle().size.width),
+        height(window->getRectangle().size.height) {
     }
     WebXWindowProperties(const WebXWindowProperties & window) :
         id(window.id),
         x(window.x),
         y(window.y),
         width(window.width),
-        height(window.height),
-        bpp(window.bpp) {
+        height(window.height) {
     }
     virtual ~WebXWindowProperties() {}
 
@@ -30,13 +28,11 @@ public:
             this->y = window.y;
             this->width = window.width;
             this->height = window.height;
-            this->bpp = window.bpp;
         }
         return *this;
     }
 
     unsigned long id;
-    unsigned int bpp;
     int x;
     int y;
     int width;

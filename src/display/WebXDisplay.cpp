@@ -155,12 +155,7 @@ void WebXDisplay::updateVisibleWindows() {
             WebXWindow * child = this->getWindow(childX11Window);
             if (child != NULL) {
                 child->updateAttributes();
-                if (child->isVisible(this->_rootWindow->getRectangle())) {
-
-                    // Initialise window image
-                    // if (!child->getImage()) {
-                    //     this->updateImage(child);
-                    // }
+                if (child->isVisible(this->_rootWindow->getRectangle().size)) {
 
                     child->enableDamage();
                     this->_visibleWindows.push_back(child);
@@ -222,25 +217,6 @@ std::shared_ptr<WebXImage> WebXDisplay::updateImage(Window x11Window) {
 
         return this->updateImage(window);
 
-    } else {
-        return nullptr;
-    }
-}
-
-std::shared_ptr<WebXImage> WebXDisplay::getImageForVisibleWindow(Window x11Window) {
-    tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
-
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    // Ignore damage if window is not visible
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
-        return window->getImage();
-    
     } else {
         return nullptr;
     }

@@ -47,11 +47,6 @@ public:
 
     std::shared_ptr<WebXImage> updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
 
-    std::shared_ptr<WebXImage> getImage() {
-        tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
-        return this->_image;
-    }
-
     std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
         return this->_imageCaptureTime;
     }
@@ -75,16 +70,8 @@ public:
         return this->_children;
     }
 
-    bool isVisible(const WebXRectangle & viewport) const {
+    bool isVisible(const WebXSize & viewport) const {
         return this->_isViewable && this->_rectangle.isVisible(viewport);
-    }
-
-    unsigned int getBitsPerPixel() {
-        tthread::lock_guard<tthread::mutex> lock(this->_imageMutex);
-        if (this->_image) {
-            return this->_image->getDepth();
-        }
-        return 0;
     }
 
     void enableDamage();
@@ -111,8 +98,6 @@ private:
     std::string _name;
     bool _isViewable;
 
-    tthread::mutex _imageMutex;
-    std::shared_ptr<WebXImage> _image;
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 
     tthread::mutex _damageMutex;

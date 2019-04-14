@@ -7,12 +7,11 @@
 class WebXImage;
 
 class WebXPNGImageConverter : public WebXImageConverter{
-
 public:
     WebXPNGImageConverter();
     virtual ~WebXPNGImageConverter();
 
-    virtual WebXImage * convert(XImage * image, WebXRectangle * subWindowRectangle) const;
+    virtual WebXImage * convert(XImage * image, bool hasAlphaChannel) const;
 
 private:
     static void RawDataWriter(png_struct * png, png_byte * data, png_size_t length);

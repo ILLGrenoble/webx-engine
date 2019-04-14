@@ -72,10 +72,10 @@ void WebXKeyboardConnection::printWindows() {
 
         const WebXRectangle & rectangle = window->getTopParent()->getRectangle();
         if (managedWindow != NULL) {
-            ft_printf_ln(table, "0x%08lx|0x%08lx|%.50s|%d|%d|%d|%d", window->getX11Window(), managedWindow->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            ft_printf_ln(table, "0x%08lx|0x%08lx|%.50s|%d|%d|%d|%d", window->getX11Window(), managedWindow->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
 
         } else {
-            ft_printf_ln(table, "0x%08lx| |%.50s|%d|%d|%d|%d", window->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            ft_printf_ln(table, "0x%08lx| |%.50s|%d|%d|%d|%d", window->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
         }
     }
 

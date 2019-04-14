@@ -33,7 +33,7 @@ WebXPNGImageConverter::~WebXPNGImageConverter() {
 
 }
 
-WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWindowRectangle) const {
+WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
 
     png_struct * png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png) {
@@ -52,15 +52,7 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWi
     }
 
     // Determine bit depth and if we need to convert alpha
-    int image_depth = image_depth = image->depth;
-    int convert_alpha = 0;
-    if (subWindowRectangle != NULL && image_depth == 24) {
-        // Check if we are in a decorated managed window
-        if (subWindowRectangle->x != 0 || subWindowRectangle->y != 0 || subWindowRectangle->width != image->width || subWindowRectangle->height != image->height) {
-            image_depth = 32;
-            convert_alpha = 1;
-        }
-    }
+    int image_depth = hasAlphaChannel ? 32 : image->depth;
 
     RawData rawData;
     png_set_write_fn(png, &rawData, WebXPNGImageConverter::RawDataWriter, NULL);
@@ -93,18 +85,6 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, WebXRectangle * subWi
             // directly point each row into XImage data
             row_pointers[i] = image_data_ptr;
             image_data_ptr += image->bytes_per_line; // move to next row
-        }
-
-        if (convert_alpha) {
-            // printf("Modifying alpha channel in rectangle [(%d, %d), %dx%d]\n", subWindowRectangle->x, subWindowRectangle->y, subWindowRectangle->width, subWindowRectangle->height);
-
-            for (int j = subWindowRectangle->y; j < (subWindowRectangle->y + subWindowRectangle->height); j++) {
-                u_int8_t * data = row_pointers[j] + 4 * subWindowRectangle->x + 3;
-                for (int i = 0; i < subWindowRectangle->width; i++) {
-                    *data = 0xff;
-                    data += 4;
-                }
-            }
         }
 
         // printf("Producing PNG with depth of %dbpp\n", image_depth);
