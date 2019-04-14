@@ -260,9 +260,6 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
     if (itWin != this->_visibleWindows.end()) {
         WebXWindow * window = *itWin;
 
-        // Create window damage
-        WebXWindowDamageProperties windowDamage = WebXWindowDamageProperties(window, damagedArea);
-
         // See if window damage already exists
         auto it = std::find_if(this->_damagedWindows.begin(), this->_damagedWindows.end(), 
             [&x11Window](const WebXWindowDamageProperties & obj) {
@@ -271,11 +268,13 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
 
         // Modify or add window damage
         if (it != this->_damagedWindows.end()) {
+            // Add to existing damage
             WebXWindowDamageProperties & existingDamagedWindow = *it;
-            existingDamagedWindow = windowDamage;
+            existingDamagedWindow += damagedArea;
         
         } else {
-            this->_damagedWindows.push_back(windowDamage);
+            // Create new window damage
+            this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea));
         }
     }
 }

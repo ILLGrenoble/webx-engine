@@ -8,39 +8,49 @@ class WebXWindowDamageProperties {
 public:
     WebXWindowDamageProperties(WebXWindow * window, const WebXRectangle & damageArea) :
         windowId((unsigned long)window->getX11Window()),
-        x(damageArea.x),
-        y(damageArea.y),
-        width(damageArea.width),
-        height(damageArea.height),
-        imageCaptureTime(window->getImageCaptureTime()) {
+        imageCaptureTime(window->getImageCaptureTime()){
+        this->damageAreas.push_back(damageArea);
     }
     WebXWindowDamageProperties(const WebXWindowDamageProperties & windowDamage) :
         windowId(windowDamage.windowId),
-        x(windowDamage.x),
-        y(windowDamage.y),
-        width(windowDamage.width),
-        height(windowDamage.height),
+        damageAreas(windowDamage.damageAreas),
         imageCaptureTime(windowDamage.imageCaptureTime) {
     }
-    virtual ~WebXWindowDamageProperties() {}
+    virtual ~WebXWindowDamageProperties() {
+    }
 
     WebXWindowDamageProperties & operator=(const WebXWindowDamageProperties & windowDamage) {
         if (this != &windowDamage) {
             this->windowId = windowDamage.windowId;
-            this->x = windowDamage.x;
-            this->y = windowDamage.y;
-            this->width = windowDamage.width;
-            this->height = windowDamage.height;
+            this->damageAreas = windowDamage.damageAreas;
             this->imageCaptureTime = windowDamage.imageCaptureTime;
         }
         return *this;
     }
 
+    WebXWindowDamageProperties & operator+=(const WebXRectangle & damageArea) {
+
+        WebXRectangle combinedDamageArea = damageArea;
+
+        auto it = this->damageAreas.begin();
+        while (it != this->damageAreas.end()) {
+            WebXRectangle & existingDamageArea = *it;
+            if (existingDamageArea.overlapOrTouhcing(combinedDamageArea)) {
+                combinedDamageArea += existingDamageArea;
+                it = this->damageAreas.erase(it);
+            
+            } else {
+                it++;
+            }
+        }
+
+        this->damageAreas.push_back(combinedDamageArea);
+
+        return *this;
+    }
+
     unsigned long windowId;
-    int x;
-    int y;
-    int width;
-    int height;
+    std::vector<WebXRectangle> damageAreas;
     std::chrono::high_resolution_clock::time_point imageCaptureTime;
 };
 

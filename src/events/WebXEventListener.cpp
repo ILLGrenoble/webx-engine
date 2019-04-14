@@ -4,7 +4,6 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
-#include <X11/extensions/shape.h>
 #include <X11/Xutil.h>
 
 
