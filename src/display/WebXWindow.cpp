@@ -80,7 +80,7 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
     return subWindowRectangle;
 }
 
-std::shared_ptr<WebXImage> WebXWindow::updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
     WebXRectangle rectangle = this->getRectangle();
     // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);

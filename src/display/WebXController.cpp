@@ -112,7 +112,7 @@ void WebXController::updateImages() {
             if (windowDamage.isFullWindow()) {
                 // Get checksums before and after updating the window image
                 uint64_t oldChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
-                std::shared_ptr<WebXImage> image = this->_display->updateImage(windowDamage.windowId);
+                std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId);
                 if (image) {
                     uint64_t newChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
 

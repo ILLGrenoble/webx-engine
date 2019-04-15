@@ -45,7 +45,7 @@ public:
     WebXWindow * getTopParent() const;
     WebXRectangle getSubWindowRectangle() const;
 
-    std::shared_ptr<WebXImage> updateImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
+    std::shared_ptr<WebXImage> getImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter);
 
     std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
         return this->_imageCaptureTime;

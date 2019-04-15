@@ -55,7 +55,7 @@ public:
         return NULL;
     }
 
-    std::shared_ptr<WebXImage> updateImage(Window x11Window);
+    std::shared_ptr<WebXImage> getImage(Window x11Window);
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
@@ -92,7 +92,7 @@ private:
     void createTree(WebXWindow * root);
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
-    std::shared_ptr<WebXImage> updateImage(WebXWindow * window) const;
+    std::shared_ptr<WebXImage> getImage(WebXWindow * window) const;
 
 private:
     Display * _x11Display;

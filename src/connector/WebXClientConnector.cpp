@@ -150,7 +150,7 @@ WebXResponse * WebXClientConnector::handleWindowsRequest() {
 
 WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
     WebXManager::instance()->pauseEventListener();
-    std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->updateImage(windowId);
+    std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(windowId);
     WebXManager::instance()->resumeEventListener();
 
     return new WebXImageResponse(windowId, image);
