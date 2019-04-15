@@ -135,11 +135,19 @@ void WebXController::updateImages() {
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
                     std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId, &area);
-                    subImages.push_back(WebXSubImage(area, image));
+                    // Check image not null
+                    if (image) {
+                        subImages.push_back(WebXSubImage(area, image));
+                    }
                 }
 
                 tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                printf("Sending subimage event for window 0x%0lx\n", windowDamage.windowId);
+                printf("Sending subimage event for window 0x%0lx: [", windowDamage.windowId);
+                for (auto it = subImages.begin(); it != subImages.end(); it++) {
+                    const WebXSubImage & subImage = *it;
+                    printf("[%d x %d @%fKB]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, (1.0 * subImage.image->getRawDataSize()) / 1024);
+                } 
+                printf("]\n");
 
                 for (WebXConnection * connection : this->_connections) {
                     connection->onSubImagesChanged(windowDamage.windowId, subImages);
