@@ -1,6 +1,7 @@
 #include "WebXClientMessagePublisher.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
+#include "message/WebXSubImagesMessage.h"
 #include <zmq.hpp>
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
@@ -48,6 +49,11 @@ void WebXClientMessagePublisher::onDisplayChanged(const std::vector<WebXWindowPr
 
 void WebXClientMessagePublisher::onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image) {
     WebXImageMessage * message = new WebXImageMessage(windowId, image);
+    this->_messageQueue->put(message);
+}
+
+void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages) {
+    WebXSubImagesMessage * message = new WebXSubImagesMessage(windowId, subImages);
     this->_messageQueue->put(message);
 }
 

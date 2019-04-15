@@ -2,6 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXManager.h"
 #include "WebXConnection.h"
+#include <image/WebXSubImage.h>
 #include <algorithm>
 #include <thread>
 
@@ -129,13 +130,20 @@ void WebXController::updateImages() {
             
             } else {
                 // Get sub image changes
+
+                std::vector<WebXSubImage> subImages;
+                for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
+                    WebXRectangle & area = *it;
+                    std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId, &area);
+                    subImages.push_back(WebXSubImage(area, image));
+                }
+
                 tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
                 printf("Sending subimage event for window 0x%0lx\n", windowDamage.windowId);
 
-                // for (WebXConnection * connection : this->_connections) {
-                //     connection->onImageChanged(windowDamage.windowId, image);
-                // }
-
+                for (WebXConnection * connection : this->_connections) {
+                    connection->onSubImagesChanged(windowDamage.windowId, subImages);
+                }
             }
 
         }

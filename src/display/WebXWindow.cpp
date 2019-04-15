@@ -80,24 +80,29 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
     return subWindowRectangle;
 }
 
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXImageConverter * imageConverter) {
-    WebXRectangle rectangle = this->getRectangle();
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter) {
+    
+    WebXRectangle rectangle;
+    if (imageRectangle != NULL) {
+        rectangle = *imageRectangle;
+    } else {
+        rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+    }
     // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-    XImage * image = XGetImage(this->_display, this->_x11Window, 0, 0, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
+    XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
-    if (!image) {
-        printf("Failed to get image for window 0x%08lx %d %d\n", this->_x11Window, rectangle.size.width, rectangle.size.height);
-
-    } else {
-        WebXRectangle imageRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
-        bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &imageRectangle);
+    if (image) {
+        bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
 
         uint64_t checksum = this->calculateImageChecksum(image);
         this->_windowChecksum = checksum;
 
         XFree(image);
+    
+    } else {
+        printf("Failed to get image for window 0x%08lx\n", this->_x11Window);
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 
