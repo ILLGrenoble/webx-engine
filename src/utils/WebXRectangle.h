@@ -60,6 +60,14 @@ public:
             this->_bottom < (rectangle._top + 1));
     }
 
+    bool contains(const WebXRectangle & rectangle) const {
+        return (
+            this->_left <= rectangle._left &&
+            this->_right >= rectangle._right &&
+            this->_top >= rectangle._top &&
+            this->_bottom <= rectangle._bottom);
+    }
+
     void clear() {
         this->x = 0;
         this->y = 0;

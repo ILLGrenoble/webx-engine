@@ -2,12 +2,20 @@
 
 bool WebXImageAlphaConverter::convert(XImage * image, WebXRectangle * mainWindowRectangle, WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle) {
     // Do nothing if image depth is already 32bpp or subwindow rectangle same as main rectangle
-    if (subWindowRectangle == NULL ||
-        (subWindowRectangle->x == 0 && 
+    if (subWindowRectangle == NULL) {
+        return false;
+    
+    } else if (
+        subWindowRectangle->x == 0 && 
         subWindowRectangle->y == 0 && 
         subWindowRectangle->size.width == mainWindowRectangle->size.width && 
-        subWindowRectangle->size.height == mainWindowRectangle->size.height) ||
-        image->depth == 32) {
+        subWindowRectangle->size.height == mainWindowRectangle->size.height){
+        return false;
+    
+    } else if (image->depth == 32) {
+        return false;
+    
+    } else if (imageRectangle != NULL && subWindowRectangle->contains(*imageRectangle)) {
         return false;
     }
 

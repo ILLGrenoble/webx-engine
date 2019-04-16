@@ -96,8 +96,10 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
 
-        uint64_t checksum = this->calculateImageChecksum(image);
-        this->_windowChecksum = checksum;
+        if (imageRectangle == NULL) {
+            uint64_t checksum = this->calculateImageChecksum(image);
+            this->_windowChecksum = checksum;
+        }
 
         XFree(image);
     

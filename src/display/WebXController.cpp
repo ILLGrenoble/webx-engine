@@ -101,6 +101,8 @@ void WebXController::updateImages() {
     if (damagedWindows.size() > 0) {
         WebXManager::instance()->pauseEventListener();
 
+        // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
 
@@ -120,7 +122,12 @@ void WebXController::updateImages() {
                     // Send event if checksum has changed
                     if (newChecksum != oldChecksum) {
                         tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                        printf("Sending image event for window 0x%0lx\n", windowDamage.windowId);
+                        printf("Sending image event for window 0x%0lx", windowDamage.windowId);
+                        if (image->getRawDataSize() > 1024) {
+                            printf(" [%d x % d x %d @ %dKB (%dms)]\n", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                        } else {
+                            printf(" [%d x % d x %d @ %fKB (%dus)]\n", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
+                        }
 
                         for (WebXConnection * connection : this->_connections) {
                             connection->onImageChanged(windowDamage.windowId, image);
@@ -145,9 +152,13 @@ void WebXController::updateImages() {
                 printf("Sending subimage event for window 0x%0lx: [", windowDamage.windowId);
                 for (auto it = subImages.begin(); it != subImages.end(); it++) {
                     const WebXSubImage & subImage = *it;
-                    printf("[%d x %d @%fKB]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, (1.0 * subImage.image->getRawDataSize()) / 1024);
+                    if (subImage.image->getRawDataSize() > 1024) {
+                        printf(" [%d x % d x %d @ %dKB (%dms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                    } else {
+                        printf(" [%d x % d x %d @ %fKB (%dus)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                    }
                 } 
-                printf("]\n");
+                printf(" ]\n");
 
                 for (WebXConnection * connection : this->_connections) {
                     connection->onSubImagesChanged(windowDamage.windowId, subImages);
@@ -156,8 +167,13 @@ void WebXController::updateImages() {
 
         }
 
+        // std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+        // std::chrono::duration<double, std::micro> duration = end - start;
+        // printf("updateImages took %fus\n", duration.count());
+
         WebXManager::instance()->resumeEventListener();
     }
+
 }
 
 

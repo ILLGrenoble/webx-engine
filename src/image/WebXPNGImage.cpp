@@ -1,7 +1,7 @@
 #include "WebXPNGImage.h"
 
-WebXPNGImage::WebXPNGImage(unsigned int width, unsigned int height, unsigned char * rawData, size_t length, unsigned int depth) :
-    WebXImage(WebXImageTypePNG, width, height, depth),
+WebXPNGImage::WebXPNGImage(unsigned int width, unsigned int height, unsigned char * rawData, size_t length, unsigned int depth, double encodingTimeUs) :
+    WebXImage(WebXImageTypePNG, width, height, depth, encodingTimeUs),
     _rawData(rawData),
     _length(length) {
 }
