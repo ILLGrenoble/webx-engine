@@ -47,7 +47,7 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 if (APPLE)
     target_link_libraries(
-        ${PROJECT_NAME}
+        ${PROJECT_NAME} 
         ${LIBPNG_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
         -lzmq
@@ -78,3 +78,13 @@ else()
         ${ZeroMQ_INCLUDE_DIR}
     )
 endif()
+
+file(GLOB_RECURSE TEST_SOURCES test/testImageEncoder.cpp src/image/*.cpp lib/*.cpp)
+add_executable(testImageEncoder ${TEST_SOURCES})
+
+target_link_libraries(
+    testImageEncoder
+    ${LIBPNG_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
+
