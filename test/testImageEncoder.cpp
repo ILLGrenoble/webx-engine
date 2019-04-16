@@ -1,5 +1,6 @@
 #include <image/WebXImage.h>
 #include <image/WebXPNGImageConverter.h>
+#include <image/WebXJPGImageConverter.h>
 #include <png.h>
 #include <stdlib.h>
 #include <cstring>
@@ -110,7 +111,8 @@ int main() {
     xImage.bytes_per_line = bytes_per_line;
     xImage.depth = 24;
 
-    WebXPNGImageConverter converter;
+    // WebXPNGImageConverter converter;
+    WebXJPGImageConverter converter;
     int nIter = 10;
     double cummulativeTimeUs = 0;
     size_t fileSize = 0;
