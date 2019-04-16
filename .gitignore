@@ -22,4 +22,4 @@ _deps
 bin
 images
 node_modules
-*.png
+test/output/*.png

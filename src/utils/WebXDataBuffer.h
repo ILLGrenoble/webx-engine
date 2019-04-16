@@ -1,0 +1,31 @@
+#ifndef WEBX_DATA_BUFFER_H
+#define WEBX_DATA_BUFFER_H
+
+#include <stdlib.h>
+
+class WebXDataBuffer {
+public:
+    WebXDataBuffer();
+    WebXDataBuffer(size_t initialCapacity);
+    virtual ~WebXDataBuffer();
+
+    bool appendData(unsigned char * data, size_t length);
+
+    unsigned char * getBuffer() const {
+        return this->_buffer;
+    }
+
+    size_t getBufferSize() const {
+        return this->_size;
+    }
+
+private:
+    unsigned long upperPowerOfTwo(unsigned long v);
+
+private:
+    unsigned char * _buffer;
+    size_t _capacity;
+    size_t _size;
+};
+
+#endif /* WEBX_DATA_BUFFER_H */

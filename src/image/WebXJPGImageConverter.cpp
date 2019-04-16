@@ -1,5 +1,5 @@
 #include "WebXJPGImageConverter.h"
-#include "WebXJPGImage.h"
+#include "WebXImage.h"
 #include <toojpeg/toojpeg.h>
 #include <cstring>
 #include <chrono>
@@ -15,7 +15,7 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-    RawData rawData(1024);
+    WebXDataBuffer * rawData = new WebXDataBuffer(1024);
     TooJpeg::WRITE_ONE_BYTE lambda = [](unsigned char oneByte) mutable {
         // size_t newSize = this->_rawData.size + 1;
         // size_t capacity = this->_rawData.capacity;
@@ -45,6 +45,6 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    WebXImage * webXImage = new WebXJPGImage(image->width, image->height, rawData.buffer, rawData.size, image->depth, duration.count());
+    WebXImage * webXImage = new WebXImage(WebXImageTypeJPG, image->width, image->height, rawData, image->depth, duration.count());
     return webXImage;
 }

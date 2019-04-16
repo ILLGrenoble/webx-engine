@@ -1,60 +1,18 @@
 #include "WebXPNGImageConverter.h"
-#include "WebXPNGImage.h"
-#include <cstring>
+#include "WebXImage.h"
 #include <chrono>
-
-unsigned long WebXPNGImageConverter::upperPowerOfTwo(unsigned long v) {
-    v--;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v++;
-    return v;
-}
 
 void WebXPNGImageConverter::RawDataWriter(png_struct * png, png_byte * data, size_t length) {
     // https://stackoverflow.com/questions/1821806/how-to-encode-png-to-buffer-using-libpng
     /* with libpng15 next line causes pointer deference error; use libpng12 */
-    WebXPNGImageConverter::RawData * rawData = (WebXPNGImageConverter::RawData *)png_get_io_ptr(png); /* was png_ptr->io_ptr */
-    size_t newSize = rawData->size + length;
-    size_t capacity = rawData->capacity;
-
-    /* allocate or grow buffer */
-    while (newSize > capacity) {
-        if (capacity == 0) {
-            capacity = WebXPNGImageConverter::upperPowerOfTwo(newSize);
-
-        } else {
-            capacity = capacity * 2;
-        }
-    }
-
-    if (capacity > rawData->capacity) {
-        if (rawData->capacity == 0) {
-            rawData->buffer = (unsigned char *)malloc(capacity);
-
-        } else {
-            rawData->buffer = (unsigned char *)realloc(rawData->buffer, capacity);
-        }
-        rawData->capacity = capacity;
-    }
-
-    if (!rawData->buffer) {
-        png_error(png, "Write Error");
-    }
-
-    /* copy new bytes to end of buffer */
-    memcpy(rawData->buffer + rawData->size, data, length);
-    rawData->size = newSize;
+    WebXDataBuffer * rawData = (WebXDataBuffer *)png_get_io_ptr(png);
+    rawData->appendData(data, length);
 }
 
 WebXPNGImageConverter::WebXPNGImageConverter() {
 }
 
 WebXPNGImageConverter::~WebXPNGImageConverter() {
-
 }
 
 WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
@@ -83,8 +41,8 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     // png_set_filter(png, 0, PNG_FILTER_SUB);
     // png_set_compression_level(png, 0);
 
-    RawData rawData(1024);
-    png_set_write_fn(png, &rawData, WebXPNGImageConverter::RawDataWriter, NULL);
+    WebXDataBuffer * rawData = new WebXDataBuffer(1024);
+    png_set_write_fn(png, rawData, WebXPNGImageConverter::RawDataWriter, NULL);
 
     // Output is 8bit/channel depth, RGBA format.
     png_set_IHDR(png, pngInfo,
@@ -135,6 +93,6 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    WebXImage * webXImage = new WebXPNGImage(image->width, image->height, rawData.buffer, rawData.size, image_depth, duration.count());
+    WebXImage * webXImage = new WebXImage(WebXImageTypePNG, image->width, image->height, rawData, image_depth, duration.count());
     return webXImage;
 }

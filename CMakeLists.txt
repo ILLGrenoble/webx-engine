@@ -79,7 +79,7 @@ else()
     )
 endif()
 
-file(GLOB_RECURSE TEST_SOURCES test/testImageEncoder.cpp src/image/*.cpp lib/*.cpp)
+file(GLOB_RECURSE TEST_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
 add_executable(testImageEncoder ${TEST_SOURCES})
 
 target_link_libraries(

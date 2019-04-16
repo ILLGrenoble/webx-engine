@@ -122,7 +122,7 @@ int main() {
 
         if (i == 0) {
             fileSize = image->getRawDataSize();
-            if (image->save("test/resources/screenshotOut.png")) {
+            if (image->save("test/output/screenshotOut.png")) {
                 printf("Image saved\n");
             } else {
                 printf("Failed to save image\n");
