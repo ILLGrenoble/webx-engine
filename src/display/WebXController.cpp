@@ -153,9 +153,9 @@ void WebXController::updateImages() {
                 for (auto it = subImages.begin(); it != subImages.end(); it++) {
                     const WebXSubImage & subImage = *it;
                     if (subImage.image->getRawDataSize() > 1024) {
-                        printf(" [%d x % d x %d @ %dKB (%dms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                        printf(" [%d x %d x %d @ %dKB (%dms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     } else {
-                        printf(" [%d x % d x %d @ %fKB (%dus)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                        printf(" [%d x %d x %d @ %fKB (%dus)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
                     }
                 } 
                 printf(" ]\n");

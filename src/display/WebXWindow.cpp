@@ -2,6 +2,7 @@
 #include <image/WebXImage.h>
 #include <image/WebXImageAlphaConverter.h>
 #include <algorithm>
+#include <X11/Xutil.h>
 
 WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
@@ -101,7 +102,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
             this->_windowChecksum = checksum;
         }
 
-        XFree(image);
+        XDestroyImage(image);
     
     } else {
         printf("Failed to get image for window 0x%08lx\n", this->_x11Window);
