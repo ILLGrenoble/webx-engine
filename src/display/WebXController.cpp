@@ -8,7 +8,7 @@
 
 unsigned int WebXController::THREAD_RATE = 120;
 unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
-unsigned int WebXController::IMAGE_REFRESH_RATE = 20;
+unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),

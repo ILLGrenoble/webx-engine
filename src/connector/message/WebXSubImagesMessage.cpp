@@ -17,7 +17,7 @@ void WebXSubImagesMessage::toJson(nlohmann::json & j) const {
             {"width", subImage.imageRectangle.size.width},
             {"height", subImage.imageRectangle.size.height},
             {"depth", subImage.image->getDepth()},
-            {"data", base64_encode(subImage.image->getRawData(), subImage.image->getRawDataSize())}
+            {"data", "data:image/" + subImage.image->getFileExtension() + ";base64," + base64_encode(subImage.image->getRawData(), subImage.image->getRawDataSize())}
         });
     }
 }

@@ -7,6 +7,6 @@ void WebXImageMessage::toJson(nlohmann::json & j) const {
         {"type", "image"},
         {"windowId", this->_windowId},
         {"depth", this->_image->getDepth()},
-        {"data", base64_encode(this->_image->getRawData(), this->_image->getRawDataSize())}
+        {"data", "data:image/" + this->_image->getFileExtension() + ";base64," + base64_encode(this->_image->getRawData(), this->_image->getRawDataSize())}
     };
 }
