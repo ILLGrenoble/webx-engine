@@ -12,13 +12,15 @@ class WebXWindow;
 
 class WebXEventListener {
 public:
-    WebXEventListener(Display * display);
+    WebXEventListener(Display * display, WebXWindow * rootWindow);
     virtual ~WebXEventListener();
 
-    void run(WebXWindow * rootWindow);
+    void run();
     void stop();
     void pause();
     void resume();
+
+    void flushQueuedEvents();
 
     void addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler);
     void removeEventHandler(WebXEventType eventType);

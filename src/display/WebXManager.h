@@ -26,16 +26,13 @@ public:
         return this->_display;
     }
 
-    WebXEventListener * getEventListener() const {
-        return this->_eventListener;
-    }
-
     WebXController * getController() const {
         return this->_controller;
     }
 
     void pauseEventListener();
     void resumeEventListener();
+    void flushEventListener();
 
 private:
     void handleWindowCreateEvent(const WebXEvent & event);
