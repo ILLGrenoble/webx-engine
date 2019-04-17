@@ -18,7 +18,6 @@ file(GLOB_RECURSE SOURCES src/*.cpp lib/*.c lib/*.cpp)
 
 find_package(PkgConfig)
 find_package(Threads REQUIRED)
-find_package(PkgConfig)
 
 pkg_check_modules(LIBPNG libpng)
 
@@ -65,6 +64,7 @@ else()
     target_link_libraries(
         ${PROJECT_NAME}
         ${LIBPNG_LIBRARIES}
+        -ljpeg
         ${X11_LIBRARIES}
         -lXdamage
         ${CMAKE_THREAD_LIBS_INIT}
@@ -86,5 +86,6 @@ target_link_libraries(
     testImageEncoder
     ${LIBPNG_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
+    -ljpeg
 )
 

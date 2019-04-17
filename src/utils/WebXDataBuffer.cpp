@@ -16,6 +16,13 @@ WebXDataBuffer::WebXDataBuffer(size_t initialCapacity) :
     _buffer = (unsigned char *)malloc(_capacity);
 }
 
+WebXDataBuffer::WebXDataBuffer(unsigned char * buffer, size_t bufferSize) :
+    _buffer(buffer),
+    _capacity(bufferSize),
+    _size(bufferSize) {
+
+}
+
 WebXDataBuffer::~WebXDataBuffer() {
     if (_buffer != 0) {
         free (this->_buffer);

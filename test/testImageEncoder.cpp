@@ -86,7 +86,7 @@ int main() {
     const char * filename = "test/resources/screenshot.png";
     read_png_file(filename);
 
-    printf("Converting png to rawdata %d x %d x %d...\n", width, height, bit_depth);
+    printf("Converting png to rawdata %d x %d...\n", width, height);
     unsigned char * imageData = (unsigned char *)malloc(width * height * 4);
     unsigned int bytes_per_line = width * 4;
     unsigned int offset = 0;
@@ -122,8 +122,9 @@ int main() {
 
         if (i == 0) {
             fileSize = image->getRawDataSize();
-            if (image->save("test/output/screenshotOut.png")) {
-                printf("Image saved\n");
+            std::string outputFilename = "test/output/screenshotOut." + image->getFileExtension();
+            if (image->save(outputFilename)) {
+                printf("Output image saved to %s\n", outputFilename.c_str());
             } else {
                 printf("Failed to save image\n");
             }

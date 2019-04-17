@@ -47,6 +47,16 @@ public:
 
     bool save(const std::string & fileName);
 
+    std::string getFileExtension() const {
+        if (this->_type == WebXImageTypePNG) {
+            return "png";
+        } else if (this->_type == WebXImageTypeJPG) {
+            return "jpg";
+        } else {
+            return "img";
+        }
+    }
+
 private:
     WebXImageType _type;
     unsigned int _width;

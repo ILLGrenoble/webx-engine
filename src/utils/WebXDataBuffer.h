@@ -7,6 +7,7 @@ class WebXDataBuffer {
 public:
     WebXDataBuffer();
     WebXDataBuffer(size_t initialCapacity);
+    WebXDataBuffer(unsigned char * buffer, size_t bufferSize);
     virtual ~WebXDataBuffer();
 
     bool appendData(unsigned char * data, size_t length);
