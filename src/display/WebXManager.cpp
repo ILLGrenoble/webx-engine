@@ -73,7 +73,7 @@ void WebXManager::init() {
     this->_controller = new WebXController(this->_display);
     this->_controller->run();
 
-    this->_eventListener = new WebXEventListener(this->_x11Display);
+    this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow());
     this->_eventListener->addEventHandler(WebXEventType::Create, std::bind(&WebXManager::handleWindowCreateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Destroy, std::bind(&WebXManager::handleWindowDestroyEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Map, std::bind(&WebXManager::handleWindowMapEvent, this, _1));
@@ -83,7 +83,7 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Gravity, std::bind(&WebXManager::handleWindowGravityEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
-    this->_eventListener->run(this->_display->getRootWindow());
+    // this->_eventListener->run();
 }
 
 void WebXManager::shutdown() {
@@ -99,6 +99,10 @@ void WebXManager::pauseEventListener() {
 
 void WebXManager::resumeEventListener() {
     this->_eventListener->resume();
+}
+
+void WebXManager::flushEventListener() {
+    this->_eventListener->flushQueuedEvents();
 }
 
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {

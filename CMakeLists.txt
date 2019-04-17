@@ -18,29 +18,17 @@ file(GLOB_RECURSE SOURCES src/*.cpp lib/*.c lib/*.cpp)
 
 find_package(PkgConfig)
 find_package(Threads REQUIRED)
+
 pkg_check_modules(LIBPNG libpng)
+pkg_check_modules(WEBP REQUIRED libwebp )
 
 if (APPLE)
     include_directories("/usr/local/include" "/usr/X11/include" src lib)
     link_directories("/usr/local/lib" "/usr/X11/lib")
 
 else()
-    
     pkg_check_modules(X11 REQUIRED x11)
-    pkg_check_modules(PC_ZeroMQ zmq)
-    pkg_check_modules(WEBP REQUIRED libwebp )
-
     include_directories(src lib)
-
-    find_path(ZeroMQ_INCLUDE_DIR
-            NAMES zmq.hpp
-            PATHS ${PC_ZeroMQ_INCLUDE_DIRS}
-            )
-
-    find_library(ZeroMQ_LIBRARY
-            NAMES zmq
-            PATHS ${PC_ZeroMQ_LIBRARY_DIRS}
-            )
 endif()
 
 
@@ -50,6 +38,8 @@ if (APPLE)
     target_link_libraries(
         ${PROJECT_NAME} 
         ${LIBPNG_LIBRARIES}
+        -ljpeg
+        -lwebp
         ${CMAKE_THREAD_LIBS_INIT}
         -lzmq
         -lX11
@@ -71,7 +61,7 @@ else()
         ${X11_LIBRARIES}
         -lXdamage
         ${CMAKE_THREAD_LIBS_INIT}
-        ${ZeroMQ_LIBRARY}
+        -lzmq
     )
 
     target_include_directories(
@@ -93,4 +83,3 @@ target_link_libraries(
     -lwebp
 
 )
-

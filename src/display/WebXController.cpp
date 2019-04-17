@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <thread>
 
-unsigned int WebXController::THREAD_RATE = 120;
+unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
 
@@ -69,6 +69,8 @@ void WebXController::mainLoop() {
     while (this->_state != WebXControllerState::Stopped) {
         std::this_thread::sleep_for(std::chrono::microseconds(this->_threadSleepUs));
 
+        WebXManager::instance()->flushEventListener();
+
         if (this->_state != WebXControllerState::Paused) {
             
             std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -99,7 +101,7 @@ void WebXController::updateDisplay() {
 void WebXController::updateImages() {
     std::vector<WebXWindowDamageProperties> damagedWindows = this->_display->getDamagedWindows(this->_imageRefreshUs);
     if (damagedWindows.size() > 0) {
-        WebXManager::instance()->pauseEventListener();
+        // WebXManager::instance()->pauseEventListener();
 
         // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -171,7 +173,7 @@ void WebXController::updateImages() {
         // std::chrono::duration<double, std::micro> duration = end - start;
         // printf("updateImages took %fus\n", duration.count());
 
-        WebXManager::instance()->resumeEventListener();
+        // WebXManager::instance()->resumeEventListener();
     }
 
 }

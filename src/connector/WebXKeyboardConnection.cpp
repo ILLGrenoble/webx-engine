@@ -85,7 +85,7 @@ void WebXKeyboardConnection::printWindows() {
 
 void WebXKeyboardConnection::exportWindowImages() {
 
-    WebXManager::instance()->getEventListener()->pause();
+    // WebXManager::instance()->pauseEventListener();
 
     const std::vector<WebXWindow *> windows = WebXManager::instance()->getDisplay()->getVisibleWindows();
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
@@ -102,6 +102,6 @@ void WebXKeyboardConnection::exportWindowImages() {
         }
     }
 
-    WebXManager::instance()->getEventListener()->resume();
+    // WebXManager::instance()->resumeEventListener();
 }
 

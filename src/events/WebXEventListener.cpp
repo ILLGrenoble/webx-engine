@@ -7,14 +7,17 @@
 #include <X11/Xutil.h>
 
 
-WebXEventListener::WebXEventListener(Display * display) :
+WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow) :
     _x11Display(display),
+    _rootWindow(rootWindow),
     _thread(NULL),
     _stopped(false),
     _paused(false),
     _damageEventBase(0),
     _damageErrorBase(0),
     _damageAvailable(false) {
+
+    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
 
     if (XDamageQueryExtension(this->_x11Display, &this->_damageEventBase, &this->_damageErrorBase)) {
         this->_damageAvailable = true;
@@ -29,9 +32,7 @@ WebXEventListener::~WebXEventListener() {
     this->stop();
 }
 
-void WebXEventListener::run(WebXWindow * rootWindow) {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
-    this->_rootWindow = rootWindow;
+void WebXEventListener::run() {
 
     // Init dummy event
     this->_dummyEvent.type = ClientMessage;
@@ -85,6 +86,19 @@ void WebXEventListener::resume() {
     }
 }
 
+void WebXEventListener::flushQueuedEvents() {
+    XEvent x11Event;
+
+    XFlush(this->_x11Display);
+    int qLength = QLength(this->_x11Display);
+
+    for (int i = 0; i < qLength; i++) {
+        XNextEvent(this->_x11Display, &x11Event);
+        WebXEvent event(x11Event, this->_damageEventBase);
+        this->handleEvent(event);
+    }
+}
+
 void WebXEventListener::threadMain(void * arg) {
     WebXEventListener * self = (WebXEventListener *)arg;
     self->mainLoop();
@@ -92,8 +106,6 @@ void WebXEventListener::threadMain(void * arg) {
 
 void WebXEventListener::mainLoop() {
     XEvent x11Event;
-
-    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
 
     while (!this->_stopped) {
         do {
