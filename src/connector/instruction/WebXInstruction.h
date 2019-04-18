@@ -7,17 +7,16 @@ class WebXInstruction {
 public:
     enum Type {
         Connect = 1,
-        Image,
-        Images,
-        Window,
         Windows,
-        Mouse
+        Image
     };
 
-    WebXInstruction() {}
+    WebXInstruction() :
+     id(-1) {}
     virtual ~WebXInstruction() {}
 
     Type type;
+    long id;
     std::string stringPayload;
     long numericPayload;
 };

@@ -28,6 +28,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 
         j = nlohmann::json{
             {"type", windowsMessage->type},
+            {"commandId", windowsMessage->commandId},
             {"windows", {}}
         };
         for (std::vector<WebXWindowProperties>::const_iterator it = windowsMessage->windows.begin(); it != windowsMessage->windows.end(); it++) {
@@ -46,6 +47,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 
         j = nlohmann::json{
             {"type", connectionMessage->type},
+            {"commandId", connectionMessage->commandId},
             {"publisherPort", connectionMessage->publisherPort}, 
             {"collectorPort", connectionMessage->collectorPort}, 
             {"serializer", connectionMessage->serializer}, 
@@ -60,6 +62,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 
         j = nlohmann::json{
             {"type", imageMessage->type},
+            {"commandId", imageMessage->commandId},
             {"windowId", imageMessage->windowId},
             {"depth", imageMessage->image->getDepth()},
             {"data", "data:image/" + imageMessage->image->getFileExtension() + ";base64," + base64_encode(imageMessage->image->getRawData(), imageMessage->image->getRawDataSize())}
@@ -70,6 +73,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 
         j = nlohmann::json{
             {"type", subImagesMessage->type},
+            {"commandId", subImagesMessage->commandId},
             {"windowId", subImagesMessage->windowId},
             {"subImages", {}}
         };
@@ -98,6 +102,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 
 void from_json(const nlohmann::json& j, WebXInstruction & instruction) {
     try {j.at("type").get_to(instruction.type); } catch (...) {}
+    try {j.at("id").get_to(instruction.id); } catch (...) {}
     try {j.at("stringPayload").get_to(instruction.stringPayload); } catch (...) {}
     try {j.at("numericPayload").get_to(instruction.numericPayload); } catch (...) {}
 }

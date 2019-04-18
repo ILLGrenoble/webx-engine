@@ -80,6 +80,7 @@ void WebXClientConnector::run() {
 
             // Send message
             if (message != NULL) {
+                message->commandId = instruction.id;
                 zmq::message_t * replyMessage = this->_serializer->serialize(message);
                 socket.send(*replyMessage);
 
