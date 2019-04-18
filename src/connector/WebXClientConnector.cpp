@@ -132,7 +132,7 @@ WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & ins
 }
 
 WebXMessage * WebXClientConnector::handleConnectionInstruction() {
-    return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, WebXManager::instance()->getDisplay()->getScreenSize());
+    return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, this->_serializer->getType(), WebXManager::instance()->getDisplay()->getScreenSize());
 }
 
 WebXMessage * WebXClientConnector::handleWindowsInstruction() {

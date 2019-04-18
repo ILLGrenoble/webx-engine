@@ -3,19 +3,22 @@
 
 #include "WebXMessage.h"
 #include <utils/WebXSize.h>
+#include <string>
 
 class WebXConnectionMessage : public WebXMessage {
 public:
-    WebXConnectionMessage(int publisherPort, int collectorPort, WebXSize screenSize) :
+    WebXConnectionMessage(int publisherPort, int collectorPort, std::string serializer, WebXSize screenSize) :
         WebXMessage("connection"),
         publisherPort(publisherPort),
         collectorPort(collectorPort),
+        serializer(serializer),
         screenSize(screenSize) {}
     
     virtual ~WebXConnectionMessage() {}
 
     int publisherPort;
     int collectorPort;
+    std::string serializer;
     WebXSize screenSize;
 };
 

@@ -6,7 +6,8 @@
 
 class WebXJsonSerializer : public WebXSerializer {
 public:
-    WebXJsonSerializer() {}
+    WebXJsonSerializer() :
+        WebXSerializer("json") {}
     virtual ~WebXJsonSerializer() {}
 
     virtual WebXInstruction deserialize(void * instructionData, size_t instructionDataSize);

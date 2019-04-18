@@ -48,6 +48,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"type", connectionMessage->type},
             {"publisherPort", connectionMessage->publisherPort}, 
             {"collectorPort", connectionMessage->collectorPort}, 
+            {"serializer", connectionMessage->serializer}, 
             {"screenSize", {
                 {"width", connectionMessage->screenSize.width},
                 {"height", connectionMessage->screenSize.height}
