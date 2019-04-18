@@ -2,7 +2,6 @@
 #define WEBX_INSTRUCTION_H
 
 #include <string>
-#include <nlohmann/json.hpp>
 
 class WebXInstruction {
 public:
@@ -22,9 +21,6 @@ public:
     std::string stringPayload;
     long numericPayload;
 };
-
-void to_json(nlohmann::json& j, const WebXInstruction & request);
-void from_json(const nlohmann::json& j, WebXInstruction & request);
 
 
 #endif /* WEBX_INSTRUCTION_H */

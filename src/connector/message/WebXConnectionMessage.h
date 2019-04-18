@@ -7,28 +7,16 @@
 class WebXConnectionMessage : public WebXMessage {
 public:
     WebXConnectionMessage(int publisherPort, int collectorPort, WebXSize screenSize) :
-        _publisherPort(publisherPort),
-        _collectorPort(collectorPort),
-        _screenSize(screenSize) {}
+        WebXMessage("connection"),
+        publisherPort(publisherPort),
+        collectorPort(collectorPort),
+        screenSize(screenSize) {}
     
     virtual ~WebXConnectionMessage() {}
 
-    virtual void toJson(nlohmann::json & j) const {
-        j = nlohmann::json{
-            {"type", "connection"},
-            {"publisherPort", this->_publisherPort}, 
-            {"collectorPort", this->_collectorPort}, 
-            {"screenSize", {
-                {"width", this->_screenSize.width},
-                {"height", this->_screenSize.height}
-            }}
-        };
-    }
-
-private:
-    int _publisherPort;
-    int _collectorPort;
-    WebXSize _screenSize;
+    int publisherPort;
+    int collectorPort;
+    WebXSize screenSize;
 };
 
 

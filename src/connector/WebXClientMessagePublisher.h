@@ -6,6 +6,7 @@
 #include <tinythread/tinythread.h>
 
 class WebXMessage;
+class WebXSerializer;
 namespace zmq {
 class context_t;
 }
@@ -15,7 +16,7 @@ public:
     WebXClientMessagePublisher();
     virtual ~WebXClientMessagePublisher();
 
-    void run(zmq::context_t * context, int port);
+    void run(WebXSerializer * serializer, zmq::context_t * context, int port);
     void stop();
 
 public:
@@ -33,6 +34,7 @@ private:
     bool _running;
     WebXQueue<WebXMessage> * _messageQueue;
 
+    WebXSerializer * _serializer;
     zmq::context_t * _context;
     int _port;
 };

@@ -8,6 +8,7 @@ class WebXManager;
 class WebXClientMessagePublisher;
 class WebXClientCommandCollector;
 class WebXMessage;
+class WebXSerializer;
 
 class WebXClientConnector {
 private:
@@ -47,6 +48,7 @@ private:
     WebXClientMessagePublisher * _publisher;
     WebXClientCommandCollector * _collector;
 
+    WebXSerializer * _serializer;
     bool _running;
 };
 

@@ -8,15 +8,13 @@
 class WebXSubImagesMessage : public WebXMessage {
 public:
     WebXSubImagesMessage(unsigned long windowId, std::vector<WebXSubImage> images) :
-        _windowId(windowId),
-        _images(images) {}
+        WebXMessage("subimages"),
+        windowId(windowId),
+        images(images) {}
     virtual ~WebXSubImagesMessage() {}
 
-    virtual void toJson(nlohmann::json & j) const;
-
-private:
-    unsigned long _windowId;
-    std::vector<WebXSubImage> _images;
+    unsigned long windowId;
+    std::vector<WebXSubImage> images;
 };
 
 

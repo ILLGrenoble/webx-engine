@@ -1,14 +1,15 @@
 #ifndef WEBX_MESSAGE_H
 #define WEBX_MESSAGE_H
 
-#include <nlohmann/json.hpp>
+#include <string>
 
 class WebXMessage {
 public:
-    WebXMessage() {}
+    WebXMessage(const std::string & type) :
+        type(type) {}
     virtual ~WebXMessage() {}
 
-    virtual void toJson(nlohmann::json & j) const = 0;
+    std::string type;
 };
 
 

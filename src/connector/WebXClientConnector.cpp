@@ -2,6 +2,7 @@
 #include "message/WebXConnectionMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
+#include "serializer/WebXJsonSerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
@@ -19,6 +20,7 @@ int WebXClientConnector::PUBLISHER_PORT = 5557;
 WebXClientConnector::WebXClientConnector() :
     _publisher(NULL),
     _collector(NULL),
+    _serializer(new WebXJsonSerializer()),
     _running(false) {
     std::signal(SIGINT, WebXClientConnector::signalHandler);
 }
@@ -58,7 +60,7 @@ void WebXClientConnector::run() {
     snprintf(address, sizeof(address) - 1, "tcp://*:%4d", WebXClientConnector::CONNECTOR_PORT);
     socket.bind(address);
 
-    this->_publisher->run(&context, WebXClientConnector::PUBLISHER_PORT);
+    this->_publisher->run(this->_serializer, &context, WebXClientConnector::PUBLISHER_PORT);
     this->_collector->run(&context, WebXClientConnector::COLLECTOR_PORT);
 
     this->_running = true;
@@ -69,15 +71,8 @@ void WebXClientConnector::run() {
         try {
             socket.recv(&instructionMessage);
 
-            // Handle message
-            std::string instructionData = std::string(static_cast<char*>(instructionMessage.data()), instructionMessage.size());
-            printf("instruction: %s\n", instructionData.c_str());
-
-            // Convert to json
-            nlohmann::json jinstruction = nlohmann::json::parse(instructionData);
-
-            // Convert to instruction
-            WebXInstruction instruction = jinstruction.get<WebXInstruction>();
+            // Deserialize instruction
+            WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
             // printf("Got instruction %d \"%s\" %d\n", instruction.type, instruction.stringPayload.c_str(), instruction.integerPayload);
 
             // Handle message and get message
@@ -85,16 +80,11 @@ void WebXClientConnector::run() {
 
             // Send message
             if (message != NULL) {
-                nlohmann::json jMessage;
-                message->toJson(jMessage);
-                std::string messageData = jMessage.dump();
-                // printf("message: %s\n", messageData.c_str());
-
-                zmq::message_t replyMessage(messageData.size());
-                memcpy(replyMessage.data(), messageData.c_str(), messageData.size());
-                socket.send(replyMessage);
+                zmq::message_t * replyMessage = this->_serializer->serialize(message);
+                socket.send(*replyMessage);
 
                 delete message;
+                delete replyMessage;
 
             } else {
                 zmq::message_t replyMessage(0);

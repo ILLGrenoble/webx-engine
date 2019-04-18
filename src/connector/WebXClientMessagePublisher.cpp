@@ -2,6 +2,7 @@
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
 #include "message/WebXSubImagesMessage.h"
+#include "serializer/WebXJsonSerializer.h"
 #include <zmq.hpp>
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
@@ -16,8 +17,9 @@ WebXClientMessagePublisher::~WebXClientMessagePublisher() {
     this->stop();
 }
 
-void WebXClientMessagePublisher::run(zmq::context_t * context, int port) {
+void WebXClientMessagePublisher::run(WebXSerializer * serializer, zmq::context_t * context, int port) {
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    this->_serializer = serializer;
     this->_context = context;
     this->_port = port;
     this->_running = true;
@@ -76,17 +78,12 @@ void WebXClientMessagePublisher::mainLoop() {
     while (this->_running) {
         WebXMessage * message = this->_messageQueue->get();
         if (message != NULL && this->_running) {
-            // ZeroMQ publish data
-            nlohmann::json jMessage;
-            message->toJson(jMessage);
-            std::string messageData = jMessage.dump();
-            // printf("message: %s\n", messageData.c_str());
 
-            zmq::message_t replyMessage(messageData.size());
-            memcpy(replyMessage.data(), messageData.c_str(), messageData.size());
-            socket.send(replyMessage);
+            zmq::message_t * replyMessage = this->_serializer->serialize(message);
+            socket.send(*replyMessage);
 
             delete message;
+            delete replyMessage;
         }
     }
 }
