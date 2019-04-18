@@ -1,20 +1,21 @@
-#ifndef WEBX_CONNECTION_RESPONSE_H
-#define WEBX_CONNECTION_RESPONSE_H
+#ifndef WEBX_CONNECTION_MESSAGE_H
+#define WEBX_CONNECTION_MESSAGE_H
 
-#include "WebXResponse.h"
+#include "WebXMessage.h"
 #include <utils/WebXSize.h>
 
-class WebXConnectionResponse : public WebXResponse {
+class WebXConnectionMessage : public WebXMessage {
 public:
-    WebXConnectionResponse(int publisherPort, int collectorPort, WebXSize screenSize) :
+    WebXConnectionMessage(int publisherPort, int collectorPort, WebXSize screenSize) :
         _publisherPort(publisherPort),
         _collectorPort(collectorPort),
         _screenSize(screenSize) {}
     
-    virtual ~WebXConnectionResponse() {}
+    virtual ~WebXConnectionMessage() {}
 
     virtual void toJson(nlohmann::json & j) const {
         j = nlohmann::json{
+            {"type", "connection"},
             {"publisherPort", this->_publisherPort}, 
             {"collectorPort", this->_collectorPort}, 
             {"screenSize", {
@@ -31,4 +32,4 @@ private:
 };
 
 
-#endif /* WEBX_CONNECTION_RESPONSE_H */
+#endif /* WEBX_CONNECTION_MESSAGE_H */

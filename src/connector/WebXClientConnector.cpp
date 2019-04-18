@@ -1,7 +1,7 @@
 #include "WebXClientConnector.h"
-#include "response/WebXConnectionResponse.h"
-#include "response/WebXWindowsResponse.h"
-#include "response/WebXImageResponse.h"
+#include "message/WebXConnectionMessage.h"
+#include "message/WebXWindowsMessage.h"
+#include "message/WebXImageMessage.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
@@ -63,38 +63,38 @@ void WebXClientConnector::run() {
 
     this->_running = true;
     while (this->_running) {
-        zmq::message_t requestMessage;
+        zmq::message_t instructionMessage;
 
         //  Wait for next message from client
         try {
-            socket.recv(&requestMessage);
+            socket.recv(&instructionMessage);
 
             // Handle message
-            std::string requestData = std::string(static_cast<char*>(requestMessage.data()), requestMessage.size());
-            printf("request: %s\n", requestData.c_str());
+            std::string instructionData = std::string(static_cast<char*>(instructionMessage.data()), instructionMessage.size());
+            printf("instruction: %s\n", instructionData.c_str());
 
             // Convert to json
-            nlohmann::json jRequest = nlohmann::json::parse(requestData);
+            nlohmann::json jinstruction = nlohmann::json::parse(instructionData);
 
-            // Convert to request
-            WebXClientRequest request = jRequest.get<WebXClientRequest>();
-            // printf("Got request %d \"%s\" %d\n", request.type, request.stringPayload.c_str(), request.integerPayload);
+            // Convert to instruction
+            WebXInstruction instruction = jinstruction.get<WebXInstruction>();
+            // printf("Got instruction %d \"%s\" %d\n", instruction.type, instruction.stringPayload.c_str(), instruction.integerPayload);
 
-            // Handle message and get response
-            WebXResponse * response = this->handleRequest(request);
+            // Handle message and get message
+            WebXMessage * message = this->handleInstruction(instruction);
 
-            // Send response
-            if (response != NULL) {
-                nlohmann::json jResponse;
-                response->toJson(jResponse);
-                std::string responseData = jResponse.dump();
-                // printf("response: %s\n", responseData.c_str());
+            // Send message
+            if (message != NULL) {
+                nlohmann::json jMessage;
+                message->toJson(jMessage);
+                std::string messageData = jMessage.dump();
+                // printf("message: %s\n", messageData.c_str());
 
-                zmq::message_t replyMessage(responseData.size());
-                memcpy(replyMessage.data(), responseData.c_str(), responseData.size());
+                zmq::message_t replyMessage(messageData.size());
+                memcpy(replyMessage.data(), messageData.c_str(), messageData.size());
                 socket.send(replyMessage);
 
-                delete response;
+                delete message;
 
             } else {
                 zmq::message_t replyMessage(0);
@@ -127,31 +127,31 @@ void WebXClientConnector::shutdown() {
     printf("... client connector stopped\n");
 }
 
-WebXResponse * WebXClientConnector::handleRequest(const WebXClientRequest & request) {
-    if (request.type == WebXClientRequest::Type::Connect) {
-        return this->handleConnectionRequest();
+WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & instruction) {
+    if (instruction.type == WebXInstruction::Type::Connect) {
+        return this->handleConnectionInstruction();
     
-    } else if (request.type == WebXClientRequest::Type::Windows) {
-        return this->handleWindowsRequest();
+    } else if (instruction.type == WebXInstruction::Type::Windows) {
+        return this->handleWindowsInstruction();
     
-    } else if (request.type == WebXClientRequest::Type::Image) {
-        return this->handleImageRequest(request.numericPayload);
+    } else if (instruction.type == WebXInstruction::Type::Image) {
+        return this->handleImageInstruction(instruction.numericPayload);
     }
 
     return NULL;
 }
 
-WebXResponse * WebXClientConnector::handleConnectionRequest() {
-    return new WebXConnectionResponse(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, WebXManager::instance()->getDisplay()->getScreenSize());
+WebXMessage * WebXClientConnector::handleConnectionInstruction() {
+    return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, WebXManager::instance()->getDisplay()->getScreenSize());
 }
 
-WebXResponse * WebXClientConnector::handleWindowsRequest() {
-    return new WebXWindowsResponse(WebXManager::instance()->getController()->getWindows());
+WebXMessage * WebXClientConnector::handleWindowsInstruction() {
+    return new WebXWindowsMessage(WebXManager::instance()->getController()->getWindows());
 }
 
-WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
+WebXMessage * WebXClientConnector::handleImageInstruction(long windowId) {
     std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(windowId);
 
-    return new WebXImageResponse(windowId, image);
+    return new WebXImageMessage(windowId, image);
 }
 

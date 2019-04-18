@@ -2,12 +2,12 @@
 #define WEBX_ENTRY_H
 
 #include <csignal>
-#include "request/WebXClientRequest.h"
+#include "instruction/WebXInstruction.h"
 
 class WebXManager;
 class WebXClientMessagePublisher;
 class WebXClientCommandCollector;
-class WebXResponse;
+class WebXMessage;
 
 class WebXClientConnector {
 private:
@@ -32,10 +32,10 @@ public:
     }
 
 private:
-    WebXResponse * handleRequest(const WebXClientRequest & request);
-    WebXResponse * handleConnectionRequest();
-    WebXResponse * handleWindowsRequest();
-    WebXResponse * handleImageRequest(long windowId);
+    WebXMessage * handleInstruction(const WebXInstruction & instruction);
+    WebXMessage * handleConnectionInstruction();
+    WebXMessage * handleWindowsInstruction();
+    WebXMessage * handleImageInstruction(long windowId);
 
 
 private:

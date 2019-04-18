@@ -4,7 +4,7 @@
 #include <utils/WebXQueue.h>
 #include <tinythread/tinythread.h>
 
-class WebXCommand;
+class WebXInstruction;
 namespace zmq {
 class context_t;
 }
@@ -25,7 +25,7 @@ private:
     tthread::thread * _thread;
     tthread::mutex _mutex;
     bool _running;
-    WebXQueue<WebXCommand> * _commandQueue;
+    WebXQueue<WebXInstruction> * _commandQueue;
 
     zmq::context_t * _context;
     int _port;

@@ -1,10 +1,10 @@
 #include "WebXClientCommandCollector.h"
-#include "command/WebXCommand.h"
+#include "instruction/WebXInstruction.h"
 
 WebXClientCommandCollector::WebXClientCommandCollector() : 
     _thread(NULL),
     _running(false),
-    _commandQueue(new WebXQueue<WebXCommand>(1024)),
+    _commandQueue(new WebXQueue<WebXInstruction>(1024)),
     _context(NULL),
     _port(0) {
 }
@@ -46,7 +46,7 @@ void WebXClientCommandCollector::threadMain(void * arg) {
 
 void WebXClientCommandCollector::mainLoop() {
     while (this->_running) {
-        WebXCommand * message = this->_commandQueue->get();
+        WebXInstruction * message = this->_commandQueue->get();
         if (this->_running) {
 
         }
