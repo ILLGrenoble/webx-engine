@@ -51,19 +51,17 @@ private:
     void mainLoop();
     void updateDisplay();
     void updateImages();
+    void updateFps(double fps);
 
 private:
     static unsigned int THREAD_RATE;
-    static unsigned int DISPLAY_REFRESH_RATE;
     static unsigned int IMAGE_REFRESH_RATE;
 
     WebXDisplay * _display;
     std::vector<WebXWindowProperties> _windows;
 
     bool _displayDirty;
-    long _displayRefreshUs;
     long _imageRefreshUs;
-    std::chrono::high_resolution_clock::time_point _lastDisplayRefreshTime;
 
     tthread::thread * _thread;
     long _threadSleepUs;
@@ -73,6 +71,9 @@ private:
     WebXControllerState _state;
 
     std::set<WebXConnection *> _connections;
+    std::vector<double> _fpsStore;
+    const static size_t FPS_STORE_SIZE = 30;
+    int _fpsStoreIndex;
 };
 
 

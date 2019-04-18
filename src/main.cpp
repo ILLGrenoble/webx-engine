@@ -4,12 +4,12 @@
 #include <connector/WebXKeyboardConnection.h>
 
 int main() {
-    WebXKeyboardConnection * keyboardConnection = new WebXKeyboardConnection();
-    keyboardConnection->run();
+    // WebXKeyboardConnection * keyboardConnection = new WebXKeyboardConnection();
+    // keyboardConnection->run();
 
     // blocking
     WebXClientConnector::initInstance()->run();
 
-    delete keyboardConnection;
+    // delete keyboardConnection;
     printf("WebX terminated\n");
 }

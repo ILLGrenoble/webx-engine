@@ -7,18 +7,20 @@
 #include <thread>
 
 unsigned int WebXController::THREAD_RATE = 60;
-unsigned int WebXController::DISPLAY_REFRESH_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
     _displayDirty(true),
-    _displayRefreshUs(1000000.0 / WebXController::DISPLAY_REFRESH_RATE),
     _imageRefreshUs(1000000.0 / WebXController::IMAGE_REFRESH_RATE),
-    _lastDisplayRefreshTime(std::chrono::high_resolution_clock::now()),
     _thread(NULL),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
-    _state(WebXControllerState::Stopped) {
+    _state(WebXControllerState::Stopped),
+    _fpsStoreIndex(0) {
+
+    for (int i = 0; i < WebXController::FPS_STORE_SIZE; i++) {
+        this->_fpsStore.push_back(0.0);
+    }
 }
 
 WebXController::~WebXController() {
@@ -66,23 +68,38 @@ void WebXController::threadMain(void * arg) {
 }
 
 void WebXController::mainLoop() {
+    long calculateThreadSleepUs = this->_threadSleepUs;
+    std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
     while (this->_state != WebXControllerState::Stopped) {
-        std::this_thread::sleep_for(std::chrono::microseconds(this->_threadSleepUs));
+        if (calculateThreadSleepUs > 0) {
+            std::this_thread::sleep_for(std::chrono::microseconds(calculateThreadSleepUs));
+        }
 
-        WebXManager::instance()->flushEventListener();
+        if (this->_state != WebXControllerState::Stopped) {
+            std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::micro> delayUs = start - lastTime;
+            lastTime = start;
+            double fps = 1000000 / delayUs.count();
+            this->updateFps(fps);
 
-        if (this->_state != WebXControllerState::Paused) {
-            
-            std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::micro> timeSinceDisplayUpdateUs = now - this->_lastDisplayRefreshTime;
-            if (timeSinceDisplayUpdateUs.count() >= this->_displayRefreshUs && this->_displayDirty) {
-                // Dispatch display event to connectors
-                this->updateDisplay();
-                this->_lastDisplayRefreshTime = now;
+            // Flush all X11 events
+            WebXManager::instance()->flushEventListener();
+
+            if (this->_state != WebXControllerState::Paused) {
+                
+                if (this->_displayDirty) {
+                    // Dispatch display event to connectors
+                    this->updateDisplay();
+                }
+
+                // Update necessary images
+                this->updateImages();
             }
 
-            // Update necessary images
-            this->updateImages();
+            std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::micro> durationUs = end - start;
+            long duration = durationUs.count();
+            calculateThreadSleepUs = duration > this->_threadSleepUs ? 0 : this->_threadSleepUs - duration;
         }
     }
 }
@@ -101,18 +118,8 @@ void WebXController::updateDisplay() {
 void WebXController::updateImages() {
     std::vector<WebXWindowDamageProperties> damagedWindows = this->_display->getDamagedWindows(this->_imageRefreshUs);
     if (damagedWindows.size() > 0) {
-        // WebXManager::instance()->pauseEventListener();
-
-        // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
-
-            // printf("Damaged window 0x%0lx [%d x %d]:\n", windowDamage.windowId, windowDamage.windowSize.width, windowDamage.windowSize.height);
-            for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
-                const WebXRectangle & rectangle = *it;
-                // printf("Rectangle [%d %d %d %d]\n", rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
-            }
 
             if (windowDamage.isFullWindow()) {
                 // Get checksums before and after updating the window image
@@ -166,16 +173,24 @@ void WebXController::updateImages() {
                     connection->onSubImagesChanged(windowDamage.windowId, subImages);
                 }
             }
-
         }
-
-        // std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-        // std::chrono::duration<double, std::micro> duration = end - start;
-        // printf("updateImages took %fus\n", duration.count());
-
-        // WebXManager::instance()->resumeEventListener();
     }
-
 }
+
+void WebXController::updateFps(double fps) {
+    this->_fpsStore[this->_fpsStoreIndex++] = fps;
+    if (this->_fpsStoreIndex == WebXController::FPS_STORE_SIZE) {
+        this->_fpsStoreIndex = 0;
+
+        double averageFps = 0;
+        for (auto it = this->_fpsStore.begin(); it != this->_fpsStore.end(); it++) {
+            averageFps += *it;
+        }
+        averageFps /= WebXController::FPS_STORE_SIZE;
+
+        printf("Average FPS = %f\n", averageFps);
+    }
+}
+
 
 

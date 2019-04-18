@@ -6,13 +6,13 @@ public:
     WebXSize() :
         width(0),
         height(0) {}
-    WebXSize(unsigned int width, unsigned int height) :
+    WebXSize(int width, int height) :
         width(width),
         height(height) {}
     virtual ~WebXSize() {}
 
-    unsigned int width;
-    unsigned int height;
+    int width;
+    int height;
 };
 
 

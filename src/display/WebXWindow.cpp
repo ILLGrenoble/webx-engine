@@ -14,8 +14,6 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _isViewable(isViewable),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
-
-    this->updateName();
 }
 
 WebXWindow::~WebXWindow() {
@@ -48,12 +46,10 @@ void WebXWindow::updateAttributes() {
         this->_rectangle = WebXRectangle(0, 0, -1, -1);
         this->_isViewable = false;
     }
-
-    this->updateName();
 }
 
 void WebXWindow::printInfo() const {
-    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d] %s\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height, this->_name.c_str());
+    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height);
 }
 
 WebXWindow * WebXWindow::getTopParent() const {
@@ -126,31 +122,6 @@ void WebXWindow::removeChild(WebXWindow * child) {
         this->_children.erase(it);
 
         child->setParent(NULL);
-    }
-}
-
-void WebXWindow::updateName() {
-    Atom atom = XInternAtom(this->_display, "_NET_WM_NAME", False);
-    Atom type;
-    int form;
-    unsigned long remain, len;
-    unsigned char *list;
-
-    if (Success != XGetWindowProperty(this->_display, this->_x11Window, atom, 0, 1024, False, AnyPropertyType, &type, &form, &len, &remain, &list)) {
-        printf("Couldn't access window list\n");
-    }
-    XFree(list);
-
-    char * charName = NULL;
-    XFetchName(this->_display, this->_x11Window, &charName);
-
-    if (charName != NULL) {
-        std::string name = std::string(charName);
-        XFree(charName);
-        this->_name = name;
-    
-    } else {
-        this->_name = "NULL";
     }
 }
 

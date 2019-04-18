@@ -93,14 +93,6 @@ void WebXManager::shutdown() {
     }
 }
 
-void WebXManager::pauseEventListener() {
-    this->_eventListener->pause();
-}
-
-void WebXManager::resumeEventListener() {
-    this->_eventListener->resume();
-}
-
 void WebXManager::flushEventListener() {
     this->_eventListener->flushQueuedEvents();
 }

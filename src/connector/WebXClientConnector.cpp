@@ -114,7 +114,6 @@ void WebXClientConnector::stop() {
 
 void WebXClientConnector::shutdown() {
     printf("Shutdown\n");
-    WebXManager::instance()->shutdown();
 
     printf("Stopping client connector...\n");
     _instance->stop();
@@ -123,6 +122,8 @@ void WebXClientConnector::shutdown() {
         delete _instance;
         _instance = NULL;
     }
+
+    WebXManager::instance()->shutdown();
     printf("... client connector stopped\n");
 }
 
@@ -149,9 +150,7 @@ WebXResponse * WebXClientConnector::handleWindowsRequest() {
 }
 
 WebXResponse * WebXClientConnector::handleImageRequest(long windowId) {
-    WebXManager::instance()->pauseEventListener();
     std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(windowId);
-    WebXManager::instance()->resumeEventListener();
 
     return new WebXImageResponse(windowId, image);
 }

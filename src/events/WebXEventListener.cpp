@@ -10,9 +10,6 @@
 WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow) :
     _x11Display(display),
     _rootWindow(rootWindow),
-    _thread(NULL),
-    _stopped(false),
-    _paused(false),
     _damageEventBase(0),
     _damageErrorBase(0),
     _damageAvailable(false) {
@@ -29,61 +26,6 @@ WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow)
 }
 
 WebXEventListener::~WebXEventListener() {
-    this->stop();
-}
-
-void WebXEventListener::run() {
-
-    // Init dummy event
-    this->_dummyEvent.type = ClientMessage;
-    this->_dummyEvent.window = this->_rootWindow->getX11Window();
-    this->_dummyEvent.format = 32;
-
-    if (!this->_stopped && this->_thread == NULL) {
-        this->_thread = new tthread::thread(WebXEventListener::threadMain, (void *)this);
-    }
-}
-
-void WebXEventListener::stop() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
-    if (_thread != NULL && !this->_stopped) {
-        this->_stopped = true;
-
-        // Send dummy event to unblock XNextEvent
-        XSendEvent(this->_x11Display, this->_rootWindow->getX11Window(), 0, SubstructureNotifyMask, (XEvent*)&this->_dummyEvent);
-        XFlush(this->_x11Display);
-
-        // Join thread and cleanup
-        printf("Stopping event listener...\n");
-        this->_thread->join();
-        printf("... stopped event listener\n");
-        delete this->_thread;
-        this->_thread = NULL;
-        this->_rootWindow = NULL;
-    }
-}
-
-void WebXEventListener::pause() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
-    if (_thread != NULL && !this->_paused) {
-        this->_paused = true;
-
-        // Send dummy event to unblock XNextEvent
-        XSendEvent(this->_x11Display, this->_rootWindow->getX11Window(), 0, SubstructureNotifyMask, (XEvent*)&this->_dummyEvent);
-        XFlush(this->_x11Display);
-
-        // Wait for pause acknowledge
-        bool * value = this->_pauseAckQueue.get();
-        delete value;
-    }
-}
-
-void WebXEventListener::resume() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
-    if (_thread != NULL && this->_paused) {
-        this->_paused = false;
-        this->_pauseQueue.put(new bool(true));
-    }
 }
 
 void WebXEventListener::flushQueuedEvents() {
@@ -96,34 +38,6 @@ void WebXEventListener::flushQueuedEvents() {
         XNextEvent(this->_x11Display, &x11Event);
         WebXEvent event(x11Event, this->_damageEventBase);
         this->handleEvent(event);
-    }
-}
-
-void WebXEventListener::threadMain(void * arg) {
-    WebXEventListener * self = (WebXEventListener *)arg;
-    self->mainLoop();
-}
-
-void WebXEventListener::mainLoop() {
-    XEvent x11Event;
-
-    while (!this->_stopped) {
-        do {
-            XNextEvent(this->_x11Display, &x11Event);
-
-            if (this->_paused) {
-                // Acknowledge pause
-                this->_pauseAckQueue.put(new bool(true));
-
-                // Wait until resumed
-                bool * value = this->_pauseQueue.get();
-                delete value;
-
-            } else if (!this->_stopped) {
-                WebXEvent event(x11Event, this->_damageEventBase);
-                this->handleEvent(event);
-            }
-        } while (!this->_stopped && QLength(this->_x11Display));
     }
 }
 

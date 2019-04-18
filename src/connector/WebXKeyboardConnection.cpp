@@ -64,18 +64,14 @@ void WebXKeyboardConnection::printWindows() {
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = *it;
 
-        std::string name = window->getName();
         WebXWindow * managedWindow = WebXManager::instance()->getDisplay()->getManagedWindow(window);
-        if (managedWindow != NULL) {
-            name = managedWindow->getName();
-        }
 
         const WebXRectangle & rectangle = window->getTopParent()->getRectangle();
         if (managedWindow != NULL) {
-            ft_printf_ln(table, "0x%08lx|0x%08lx|%.50s|%d|%d|%d|%d", window->getX11Window(), managedWindow->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
+            ft_printf_ln(table, "0x%08lx|0x%08lx|%d|%d|%d|%d", window->getX11Window(), managedWindow->getX11Window(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
 
         } else {
-            ft_printf_ln(table, "0x%08lx| |%.50s|%d|%d|%d|%d", window->getX11Window(), name.c_str(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
+            ft_printf_ln(table, "0x%08lx| |%d|%d|%d|%d", window->getX11Window(), rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
         }
     }
 

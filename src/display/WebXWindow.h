@@ -26,10 +26,6 @@ public:
         return this->_isRoot;
     }
 
-    const std::string & getName() const {
-        return this->_name;
-    }
-
     const WebXRectangle & getRectangle() const {
         return this->_rectangle;
     }
@@ -82,7 +78,6 @@ public:
     }
 
 private:
-    void updateName();
     uint64_t calculateImageChecksum(XImage * image);
 
 private:
@@ -95,7 +90,6 @@ private:
     std::vector<WebXWindow *> _children;
 
     WebXRectangle _rectangle;
-    std::string _name;
     bool _isViewable;
 
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;

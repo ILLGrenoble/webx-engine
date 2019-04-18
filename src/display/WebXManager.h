@@ -30,8 +30,6 @@ public:
         return this->_controller;
     }
 
-    void pauseEventListener();
-    void resumeEventListener();
     void flushEventListener();
 
 private:

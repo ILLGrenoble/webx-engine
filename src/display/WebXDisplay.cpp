@@ -103,8 +103,6 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
             this->_visibleWindowsProperties.erase(it2);
         }
 
-
-
         // Remove from parent
         WebXWindow * parent = window->getParent();
         parent->removeChild(window);
