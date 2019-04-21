@@ -7,10 +7,11 @@
 #include <string>
 #include <zmq.hpp>
 #include <base64/base64.h>
+#include "spdlog/spdlog.h"
 
 WebXInstruction WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    printf("instruction: %s\n", instructionString.c_str());
+    spdlog::debug("instruction: {}", instructionString.c_str());
 
     // Convert to json
     nlohmann::json jinstruction = nlohmann::json::parse(instructionString);

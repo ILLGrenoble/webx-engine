@@ -17,15 +17,19 @@ file(GLOB_RECURSE SOURCES src/*.cpp lib/*.c lib/*.cpp)
 
 
 find_package(PkgConfig)
+if (NOT PKG_CONFIG_FOUND)
+    message(FATAL_ERROR "pkg-config needed, install it please!")
+endif ()
+
 find_package(Threads REQUIRED)
 
 pkg_check_modules(LIBPNG libpng)
+pkg_check_modules(SPDLOG REQUIRED spdlog)
 pkg_check_modules(WEBP REQUIRED libwebp )
 
 if (APPLE)
     include_directories("/usr/local/include" "/usr/X11/include" src lib)
     link_directories("/usr/local/lib" "/usr/X11/lib")
-
 else()
     pkg_check_modules(X11 REQUIRED x11)
     include_directories(src lib)
@@ -56,6 +60,8 @@ else()
     target_link_libraries(
         ${PROJECT_NAME}
         ${LIBPNG_LIBRARIES}
+        ${SPDLOG_LDFLAGS}
+        ${SPDLOG_LIBRARY_DIRS}
         -ljpeg
         -lwebp
         ${X11_LIBRARIES}
@@ -69,17 +75,31 @@ else()
         PUBLIC
         ${LIBPNG_INCLUDEDIR}
         ${ZeroMQ_INCLUDE_DIR}
+        ${SPDLOG_INCLUDE_DIRS}
     )
 endif()
 
-file(GLOB_RECURSE TEST_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
-add_executable(testImageEncoder ${TEST_SOURCES})
+file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
+add_executable(testImageEncoder ${TEST_IMAGE_SOURCES})
 
 target_link_libraries(
     testImageEncoder
     ${LIBPNG_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
+    -lpng
     -lwebp
+    -lXtst
+    -lX11
+)
 
+
+file(GLOB_RECURSE TEST_MOUSE_SOURCES test/testMouse.cpp)
+
+add_executable(testMouse ${TEST_MOUSE_SOURCES})
+
+target_link_libraries(
+    testMouse
+    -lXtst
+    -lX11
 )

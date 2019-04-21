@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string>
 #include <zmq.hpp>
+#include "spdlog/spdlog.h"
 
 WebXClientConnector * WebXClientConnector::_instance = NULL;
 int WebXClientConnector::CONNECTOR_PORT = 5555;
@@ -93,7 +94,7 @@ void WebXClientConnector::run() {
             }
         
         } catch(zmq::error_t& e) {
-            printf("ZeroMQ interrupted from message recv.\n");
+            spdlog::error("ZeroMQ interrupted from message recv");
         }
     }
 }
@@ -104,9 +105,9 @@ void WebXClientConnector::stop() {
 }
 
 void WebXClientConnector::shutdown() {
-    printf("Shutdown\n");
+    spdlog::info("Shutdown");
 
-    printf("Stopping client connector...\n");
+    spdlog::info("Stopping client connector...");
     _instance->stop();
 
     if (_instance) {
@@ -115,7 +116,7 @@ void WebXClientConnector::shutdown() {
     }
 
     WebXManager::instance()->shutdown();
-    printf("... client connector stopped\n");
+    spdlog::info("Client connector stopped");
 }
 
 WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & instruction) {

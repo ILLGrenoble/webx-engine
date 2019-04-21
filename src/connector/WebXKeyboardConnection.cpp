@@ -7,6 +7,7 @@
 #include <fort/fort.h>
 #include <stdlib.h>
 #include <iostream>
+#include "spdlog/spdlog.h"
 
 WebXKeyboardConnection::WebXKeyboardConnection() : 
     _thread(NULL),
@@ -30,9 +31,9 @@ void WebXKeyboardConnection::stop() {
     this->_running = false;
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        printf("Stopping keyboard connector...\n");
+        spdlog::info("Stopping keyboard connector...\n");
         // this->_thread->join();
-        printf("... stopped keyboard connector\n");
+        spdlog::info("Stopped keyboard connector\n");
         // delete this->_thread;
         // this->_thread = NULL;
     }

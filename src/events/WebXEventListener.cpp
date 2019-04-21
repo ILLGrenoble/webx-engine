@@ -5,6 +5,7 @@
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/Xutil.h>
+#include "spdlog/spdlog.h"
 
 
 WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow) :
@@ -18,9 +19,8 @@ WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow)
 
     if (XDamageQueryExtension(this->_x11Display, &this->_damageEventBase, &this->_damageErrorBase)) {
         this->_damageAvailable = true;
-    
     } else {
-        fprintf(stderr, "No damage extension\n");
+        spdlog::error("No damage extension");
         exit(1);
     }
 }

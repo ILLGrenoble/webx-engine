@@ -3,6 +3,7 @@
 #include <image/WebXCombinedImageConverter.h>
 #include <algorithm>
 #include <X11/Xatom.h>
+#include "spdlog/spdlog.h"
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
@@ -61,11 +62,11 @@ WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
 
         // Create ascendants if they aren't already in the main tree
         if (parent != NULL) {
-            // printf("Added child 0x%08lx to parent 0x%08lx\n", x11Window, parent->getX11Window());
+            spdlog::info("Added child 0x{:01x} to parent 0x{:01x}", x11Window, parent->getX11Window());
             parent->addChild(window);
 
         } else {
-            printf("Couldn't find parent of window 0x%08lx\n", x11Window);
+            spdlog::error("Couldn't find parent of window 0x{:01x}", x11Window);
         }
     } 
 

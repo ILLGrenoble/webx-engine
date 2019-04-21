@@ -6,6 +6,7 @@
 #include <events/WebXEventListener.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
+#include "spdlog/spdlog.h"
 
 WebXManager * WebXManager::_instance = NULL;
 
@@ -22,7 +23,7 @@ WebXManager::WebXManager() :
 }
 
 WebXManager::~WebXManager() {
-    printf("Stopping manager...\n");
+    spdlog::info("Stopping manager...");
     if (this->_eventListener) {
         delete this->_eventListener;
         this->_eventListener = NULL;
@@ -42,7 +43,7 @@ WebXManager::~WebXManager() {
         XCloseDisplay(_instance->_x11Display);
     }
 
-    printf("... manager terminated\n");
+    spdlog::info("Manager terminated");
 }
 
 WebXManager * WebXManager::instance() {
@@ -60,7 +61,7 @@ void WebXManager::init() {
     XInitThreads();
     this->_x11Display = XOpenDisplay(NULL);
     if (this->_x11Display == NULL) {
-        printf("Could not attach to the XServer. Please verify the DISPLAY environment variable.\n");
+        spdlog::error("Could not attach to the XServer. Please verify the DISPLAY environment variable.");
         exit(EXIT_FAILURE);
     }
 
@@ -98,47 +99,47 @@ void WebXManager::flushEventListener() {
 }
 
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
-    // printf("Got Create Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Create Event for window 0x{}", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowDestroyEvent(const WebXEvent & event) {
-    // printf("Got Destroy Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Destroy Event for window 0x{}", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowMapEvent(const WebXEvent & event) {
-    // printf("Got Map Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Map Event for window 0x{}", event.getX11Window());
 
     this->_display->createWindowInTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowUnmapEvent(const WebXEvent & event) {
-    // printf("Got Unmap Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Unmap Event for window 0x{}", event.getX11Window());
 
     this->_display->removeWindowFromTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
-    // printf("Got Reparent Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Reparent Event for window 0x{}", event.getX11Window());
 
     this->_display->reparentWindow(event.getX11Window(), event.getParent());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
-    // printf("Got Configure event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Configure Event for window 0x{}", event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
-    printf("Got Gravity Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Gravity Event for window 0x{}", event.getX11Window());
 }
 
 void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
-    printf("Got Circulate Event for window 0x%08lx\n", event.getX11Window());
+    spdlog::debug("Got Window Circulate Event for window 0x{}", event.getX11Window());
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {

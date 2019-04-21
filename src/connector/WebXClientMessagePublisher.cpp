@@ -4,6 +4,7 @@
 #include "message/WebXSubImagesMessage.h"
 #include "serializer/WebXJsonSerializer.h"
 #include <zmq.hpp>
+#include "spdlog/spdlog.h"
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
     _thread(NULL),
@@ -35,10 +36,10 @@ void WebXClientMessagePublisher::stop() {
     this->_port = 0;
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        printf("Stopping client message publisher...\n");
+        spdlog::info("Stopping client message publisher...");
         this->_messageQueue->stop();
         this->_thread->join();
-        printf("... stopped client message publisher\n");
+        spdlog::info("Stopped client message publisher");
         delete this->_thread;
         this->_thread = NULL;
     }

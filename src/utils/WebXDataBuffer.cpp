@@ -1,6 +1,7 @@
 #include "WebXDataBuffer.h"
 #include <stdio.h>
 #include <cstring>
+#include "spdlog/spdlog.h"
 
 WebXDataBuffer::WebXDataBuffer() :
     _buffer(0),
@@ -53,7 +54,7 @@ bool WebXDataBuffer::appendData(unsigned char * data, size_t length) {
         }
 
         if (this->_buffer == 0) {
-            printf("Failed to allocate %zu bytes for data buffer\n", capacity);
+            spdlog::error("Failed to allocate {:zu} bytes for data buffer", capacity);
             return false;
         }
         this->_capacity = capacity;

@@ -1,5 +1,6 @@
 #include "WebXClientCommandCollector.h"
 #include "instruction/WebXInstruction.h"
+#include "spdlog/spdlog.h"
 
 WebXClientCommandCollector::WebXClientCommandCollector() : 
     _thread(NULL),
@@ -30,10 +31,10 @@ void WebXClientCommandCollector::stop() {
     this->_port = 0;
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        printf("Stopping client command collector...\n");
+        spdlog::info("Stopping client command collector...");
         this->_commandQueue->stop();
         this->_thread->join();
-        printf("... stopped client command collector\n");
+        spdlog::info("Stopped client command collector");
         delete this->_thread;
         this->_thread = NULL;
     }

@@ -73,12 +73,12 @@ public:
     void enableDamage();
     void disableDamage();
 
-    const uint64_t getWindowChecksum() const {
+    const uint32_t getWindowChecksum() const {
         return this->_windowChecksum;
     }
 
 private:
-    uint64_t calculateImageChecksum(XImage * image);
+    uint32_t calculateImageChecksum(XImage * image);
 
 private:
     Display * _display;

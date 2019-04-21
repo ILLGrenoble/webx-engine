@@ -5,6 +5,7 @@
 #include <image/WebXSubImage.h>
 #include <algorithm>
 #include <thread>
+#include "spdlog/spdlog.h"
 
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
@@ -40,9 +41,9 @@ void WebXController::stop() {
     this->_state = WebXControllerState::Stopped;
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        printf("Stopping controller...\n");
+        spdlog::info("Stopping controller...");
         this->_thread->join();
-        printf("... stopped controller\n");
+        spdlog::info("Stopped controller");
         delete this->_thread;
         this->_thread = NULL;
     }
@@ -131,11 +132,12 @@ void WebXController::updateImages() {
                     // Send event if checksum has changed
                     if (newChecksum != oldChecksum) {
                         tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                        printf("Sending image event for window 0x%0lx", windowDamage.windowId);
+                        spdlog::info("Sending image event for window 0x{:01x}", windowDamage.windowId);
+
                         if (image->getRawDataSize() > 1024) {
-                            printf(" [%d x % d x %d @ %dKB (%dms)]\n", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                            spdlog::debug("[{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
                         } else {
-                            printf(" [%d x % d x %d @ %fKB (%dus)]\n", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
+                            spdlog::debug("[{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
                         }
 
                         for (WebXConnection * connection : this->_connections) {
@@ -158,17 +160,15 @@ void WebXController::updateImages() {
                 }
 
                 tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                printf("Sending subimage event for window 0x%0lx: [", windowDamage.windowId);
+                spdlog::info("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
                 for (auto it = subImages.begin(); it != subImages.end(); it++) {
                     const WebXSubImage & subImage = *it;
                     if (subImage.image->getRawDataSize() > 1024) {
-                        printf(" [%d x %d x %d @ %dKB (%dms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                        spdlog::debug("[{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     } else {
-                        printf(" [%d x %d x %d @ %fKB (%dus)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                        spdlog::debug("[{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
                     }
-                } 
-                printf(" ]\n");
-
+                }
                 for (WebXConnection * connection : this->_connections) {
                     connection->onSubImagesChanged(windowDamage.windowId, subImages);
                 }
@@ -188,7 +188,7 @@ void WebXController::updateFps(double fps) {
         }
         averageFps /= WebXController::FPS_STORE_SIZE;
 
-        printf("Average FPS = %f\n", averageFps);
+        spdlog::info("Average FPS = {:f}", averageFps);
     }
 }
 

@@ -3,6 +3,10 @@
 #include <image/WebXImageAlphaConverter.h>
 #include <algorithm>
 #include <X11/Xutil.h>
+#include "spdlog/spdlog.h"
+
+/* CRC-32C (iSCSI) polynomial in reversed bit order. */
+#define POLY 0x82f63b78
 
 WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
@@ -85,7 +89,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     } else {
         rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
     }
-    // printf("Grabbing WebXWindow = 0x%08lx [(%d, %d), %dx%d]:\n", this->_x11Window, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d}x{:d})", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
     XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
@@ -94,14 +98,14 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
 
         if (imageRectangle == NULL) {
-            uint64_t checksum = this->calculateImageChecksum(image);
+            uint32_t checksum = this->calculateImageChecksum(image);
             this->_windowChecksum = checksum;
         }
 
         XDestroyImage(image);
     
     } else {
-        printf("Failed to get image for window 0x%08lx\n", this->_x11Window);
+        spdlog::error("Failed to get image for window 0x{:x}", this->_x11Window);
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 
@@ -125,20 +129,24 @@ void WebXWindow::removeChild(WebXWindow * child) {
     }
 }
 
-uint64_t WebXWindow::calculateImageChecksum(XImage * image) {
-    // std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+uint32_t WebXWindow::calculateImageChecksum(XImage * image) {
+    spdlog::debug("Calculating checksum");
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
     size_t length = (image->bytes_per_line * image->height) / 8;
-    uint64_t checksum = 0;
-    size_t position = 0;
-    uint64_t * data = (uint64_t *)image->data;
-    while (position < length) {
-        checksum ^= data[position++];
+    char *data = image->data;
+    uint32_t crc = 0;
+    crc = ~crc;
+    while (length--) {
+        crc ^= *data++;
+        for (int k = 0; k < 8; k++) {
+            crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
+        }
     }
 
-    // std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double, std::micro> duration = end - start;
-    // printf("Checksum for %d x %d in %fus\n", image->width, image->height, duration.count());
-
-    return checksum;
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> duration = end - start;
+    spdlog::debug("Checksum for {:d} x {:d} in {:f}us", image->width, image->height, duration.count());
+    return ~crc;
 }
+
 
