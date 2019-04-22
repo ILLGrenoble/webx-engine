@@ -71,26 +71,34 @@ void WebXClientConnector::run() {
         //  Wait for next message from client
         try {
             socket.recv(&instructionMessage);
-
-            // Deserialize instruction
-            WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
-            // printf("Got instruction %d \"%s\" %d\n", instruction.type, instruction.stringPayload.c_str(), instruction.integerPayload);
-
-            // Handle message and get message
-            WebXMessage * message = this->handleInstruction(instruction);
-
-            // Send message
-            if (message != NULL) {
-                message->commandId = instruction.id;
-                zmq::message_t * replyMessage = this->_serializer->serialize(message);
-                socket.send(*replyMessage);
-
-                delete message;
-                delete replyMessage;
+            const char * instructionData = (const char *)instructionMessage.data();
+            if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
+                const std::string & serializerType = this->_serializer->getType();
+                zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
+                socket.send(replyMessage);
 
             } else {
-                zmq::message_t replyMessage(0);
-                socket.send(replyMessage);
+                // Deserialize instruction
+                WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                // printf("Got instruction %d \"%s\" %d\n", instruction.type, instruction.stringPayload.c_str(), instruction.integerPayload);
+
+                // Handle message and get message
+                WebXMessage * message = this->handleInstruction(instruction);
+
+                // Send message
+                if (message != NULL) {
+                    message->commandId = instruction.id;
+                    zmq::message_t * replyMessage = this->_serializer->serialize(message);
+                    socket.send(*replyMessage);
+
+                    delete message;
+                    delete replyMessage;
+
+                } else {
+                    zmq::message_t replyMessage(0);
+                    socket.send(replyMessage);
+                }
+
             }
         
         } catch(zmq::error_t& e) {
