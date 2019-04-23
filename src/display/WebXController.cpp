@@ -5,7 +5,7 @@
 #include <image/WebXSubImage.h>
 #include <algorithm>
 #include <thread>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
@@ -132,7 +132,7 @@ void WebXController::updateImages() {
                     // Send event if checksum has changed
                     if (newChecksum != oldChecksum) {
                         tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                        spdlog::info("Sending image event for window 0x{:01x}", windowDamage.windowId);
+                        spdlog::debug("Sending image event for window 0x{:01x}", windowDamage.windowId);
 
                         if (image->getRawDataSize() > 1024) {
                             spdlog::debug("[{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
@@ -160,7 +160,7 @@ void WebXController::updateImages() {
                 }
 
                 tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                spdlog::info("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
+                spdlog::debug("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
                 for (auto it = subImages.begin(); it != subImages.end(); it++) {
                     const WebXSubImage & subImage = *it;
                     if (subImage.image->getRawDataSize() > 1024) {
@@ -188,7 +188,7 @@ void WebXController::updateFps(double fps) {
         }
         averageFps /= WebXController::FPS_STORE_SIZE;
 
-        spdlog::info("Average FPS = {:f}", averageFps);
+        spdlog::debug("Average FPS = {:f}", averageFps);
     }
 }
 

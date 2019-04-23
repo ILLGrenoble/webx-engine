@@ -1,7 +1,7 @@
 #include "WebXDataBuffer.h"
 #include <stdio.h>
 #include <cstring>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXDataBuffer::WebXDataBuffer() :
     _buffer(0),

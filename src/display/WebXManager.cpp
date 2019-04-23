@@ -6,7 +6,7 @@
 #include <events/WebXEventListener.h>
 #include <X11/Xatom.h>
 #include <stdio.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXManager * WebXManager::_instance = NULL;
 

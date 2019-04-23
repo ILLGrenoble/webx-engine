@@ -3,7 +3,7 @@
 #include <image/WebXImageAlphaConverter.h>
 #include <algorithm>
 #include <X11/Xutil.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 /* CRC-32C (iSCSI) polynomial in reversed bit order. */
 #define POLY 0x82f63b78

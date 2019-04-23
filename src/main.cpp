@@ -2,7 +2,7 @@
 #include <display/WebXController.h>
 #include <connector/WebXClientConnector.h>
 #include <connector/WebXKeyboardConnection.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 int main(int argc, char *argv[]) {  

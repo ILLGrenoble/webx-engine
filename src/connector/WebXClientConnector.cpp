@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string>
 #include <zmq.hpp>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXClientConnector * WebXClientConnector::_instance = NULL;
 int WebXClientConnector::CONNECTOR_PORT = 5555;
@@ -80,7 +80,7 @@ void WebXClientConnector::run() {
             } else {
                 // Deserialize instruction
                 WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
-                // printf("Got instruction %d \"%s\" %d\n", instruction.type, instruction.stringPayload.c_str(), instruction.integerPayload);
+                spdlog::info("Got instruction {:d} \"{:s}\" {:d}", instruction.type, instruction.stringPayload.c_str(), instruction.numericPayload);
 
                 // Handle message and get message
                 WebXMessage * message = this->handleInstruction(instruction);
@@ -102,7 +102,7 @@ void WebXClientConnector::run() {
             }
         
         } catch(zmq::error_t& e) {
-            spdlog::error("ZeroMQ interrupted from message recv");
+            spdlog::error("ZeroMQ interrupted from message recv: {:s}", e.what());
         }
     }
 }

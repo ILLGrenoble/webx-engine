@@ -24,7 +24,6 @@ endif ()
 find_package(Threads REQUIRED)
 
 pkg_check_modules(LIBPNG libpng)
-pkg_check_modules(SPDLOG REQUIRED spdlog)
 pkg_check_modules(WEBP REQUIRED libwebp )
 
 if (APPLE)
@@ -60,8 +59,6 @@ else()
     target_link_libraries(
         ${PROJECT_NAME}
         ${LIBPNG_LIBRARIES}
-        ${SPDLOG_LDFLAGS}
-        ${SPDLOG_LIBRARY_DIRS}
         -ljpeg
         -lwebp
         ${X11_LIBRARIES}
@@ -75,7 +72,6 @@ else()
         PUBLIC
         ${LIBPNG_INCLUDEDIR}
         ${ZeroMQ_INCLUDE_DIR}
-        ${SPDLOG_INCLUDE_DIRS}
     )
 endif()
 

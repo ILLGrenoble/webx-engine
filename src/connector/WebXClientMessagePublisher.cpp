@@ -4,7 +4,7 @@
 #include "message/WebXSubImagesMessage.h"
 #include "serializer/WebXJsonSerializer.h"
 #include <zmq.hpp>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
     _thread(NULL),

@@ -1,6 +1,6 @@
 #include "WebXClientCommandCollector.h"
 #include "instruction/WebXInstruction.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXClientCommandCollector::WebXClientCommandCollector() : 
     _thread(NULL),

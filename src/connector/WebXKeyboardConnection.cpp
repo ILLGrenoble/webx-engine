@@ -7,7 +7,7 @@
 #include <fort/fort.h>
 #include <stdlib.h>
 #include <iostream>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXKeyboardConnection::WebXKeyboardConnection() : 
     _thread(NULL),

@@ -5,7 +5,7 @@
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/Xutil.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 
 WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow) :

@@ -7,7 +7,7 @@
 #include <string>
 #include <zmq.hpp>
 #include <base64/base64.h>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 WebXInstruction WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
