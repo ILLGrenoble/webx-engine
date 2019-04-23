@@ -89,7 +89,7 @@ void WebXClientMessagePublisher::mainLoop() {
             }
         
         } catch(zmq::error_t& e) {
-            spdlog::error("WebXClientMessagePublisher interrupted from message send: {:s}", e.what());
+            spdlog::warn("WebXClientMessagePublisher interrupted from message send: {:s}", e.what());
         } catch (const std::exception& e) {
             spdlog::error("WebXClientMessagePublisher caught std::exception: {:s}", e.what());
         } catch (const std::string& e) {

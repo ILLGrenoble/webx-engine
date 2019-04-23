@@ -102,7 +102,7 @@ void WebXClientConnector::run() {
             }
         
         } catch(zmq::error_t& e) {
-            spdlog::error("WebXClientConnector interrupted from message recv: {:s}", e.what());
+            spdlog::warn("WebXClientConnector interrupted from message recv: {:s}", e.what());
         } catch (const std::exception& e) {
             spdlog::error("WebXClientConnector caught std::exception: {:s}", e.what());
         } catch (const std::string& e) {
