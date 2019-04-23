@@ -4,23 +4,36 @@
 #include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXSubImagesMessage.h>
+#include <connector/instruction/WebXConnectInstruction.h>
+#include <connector/instruction/WebXImageInstruction.h>
+#include <connector/instruction/WebXScreenInstruction.h>
+#include <connector/instruction/WebXWindowsInstruction.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>
 #include <base64/base64.h>
 #include <spdlog/spdlog.h>
 
-WebXInstruction WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
+WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
+
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    spdlog::info("instruction: {}", instructionString.c_str());
+    spdlog::debug("Instruction: {}", instructionString.c_str());
 
     // Convert to json
-    nlohmann::json jinstruction = nlohmann::json::parse(instructionString);
+    nlohmann::json jInstruction = nlohmann::json::parse(instructionString);
+    unsigned long type = jInstruction.at("type");
+    unsigned long id = jInstruction.at("id");
+    switch(type) {
+        case 1: return new WebXConnectInstruction(id);
+        case 2: return new WebXWindowsInstruction(id);
+        case 3: {
+            unsigned long windowId = jInstruction.at("windowId");
+            return new WebXImageInstruction(id, windowId);
+        }
+        case 4: return new WebXScreenInstruction(id);
+        default: return NULL;
+    }
 
-    // Convert to instruction
-    WebXInstruction instruction = jinstruction.get<WebXInstruction>();
-
-    return instruction;
 }
 
 zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
@@ -109,9 +122,3 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
 }
 
 
-void from_json(const nlohmann::json& j, WebXInstruction & instruction) {
-    try {j.at("type").get_to(instruction.type); } catch (...) {}
-    try {j.at("id").get_to(instruction.id); } catch (...) {}
-    try {j.at("stringPayload").get_to(instruction.stringPayload); } catch (...) {}
-    try {j.at("numericPayload").get_to(instruction.numericPayload); } catch (...) {}
-}

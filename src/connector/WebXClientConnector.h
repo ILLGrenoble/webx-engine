@@ -33,7 +33,7 @@ public:
     }
 
 private:
-    WebXMessage * handleInstruction(const WebXInstruction & instruction);
+    WebXMessage * handleInstruction(WebXInstruction * instruction);
     WebXMessage * handleConnectionInstruction();
     WebXMessage * handleScreenInstruction();
     WebXMessage * handleWindowsInstruction();

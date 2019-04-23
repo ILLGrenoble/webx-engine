@@ -3,6 +3,7 @@
 #include "message/WebXScreenMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
+#include "connector/instruction/WebXImageInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
@@ -80,23 +81,24 @@ void WebXClientConnector::run() {
 
             } else {
                 // Deserialize instruction
-                WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                WebXInstruction * instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                if(instruction != NULL) {
+                    // Handle message and get message
+                    WebXMessage *message = this->handleInstruction(instruction);
+                    delete instruction;
+                    // Send message
+                    if (message != NULL) {
+                        message->commandId = instruction->id;
+                        zmq::message_t *replyMessage = this->_serializer->serialize(message);
+                        socket.send(*replyMessage);
 
-                // Handle message and get message
-                WebXMessage * message = this->handleInstruction(instruction);
+                        delete message;
+                        delete replyMessage;
 
-                // Send message
-                if (message != NULL) {
-                    message->commandId = instruction.id;
-                    zmq::message_t * replyMessage = this->_serializer->serialize(message);
-                    socket.send(*replyMessage);
-
-                    delete message;
-                    delete replyMessage;
-
-                } else {
-                    zmq::message_t replyMessage(0);
-                    socket.send(replyMessage);
+                    } else {
+                        zmq::message_t replyMessage(0);
+                        socket.send(replyMessage);
+                    }
                 }
 
             }
@@ -133,22 +135,25 @@ void WebXClientConnector::shutdown() {
     spdlog::info("Client connector stopped");
 }
 
-WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & instruction) {
-    if (instruction.type == WebXInstruction::Type::Connect) {
+WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instruction) {
+    if (instruction->type == WebXInstruction::Type::Connect) {
         return this->handleConnectionInstruction();
     
-    } else if (instruction.type == WebXInstruction::Type::Screen) {
+    } else if (instruction->type == WebXInstruction::Type::Screen) {
         return this->handleScreenInstruction();
     
-    } else if (instruction.type == WebXInstruction::Type::Windows) {
+    } else if (instruction->type == WebXInstruction::Type::Windows) {
         return this->handleWindowsInstruction();
     
-    } else if (instruction.type == WebXInstruction::Type::Image) {
-        return this->handleImageInstruction(instruction.numericPayload);
+    } else if (instruction->type == WebXInstruction::Type::Image) {
+        WebXImageInstruction * imageInstruction = (WebXImageInstruction *)instruction;
+        return this->handleImageInstruction(imageInstruction->windowId);
     }
 
     return NULL;
 }
+
+
 
 WebXMessage * WebXClientConnector::handleConnectionInstruction() {
     return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);

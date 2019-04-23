@@ -12,14 +12,16 @@ public:
         Screen
     };
 
-    WebXInstruction() :
-     id(-1) {}
+    WebXInstruction(Type type, unsigned long id) :
+        type(type),
+        id(id) {}
+
     virtual ~WebXInstruction() {}
 
     Type type;
+
     long id;
-    std::string stringPayload;
-    long numericPayload;
+
 };
 
 

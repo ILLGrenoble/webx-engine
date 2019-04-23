@@ -64,3 +64,13 @@ Launch an Xephyr instance listening on display 20:
 Xephyr -br -ac -noreset -screen 1024x768 :20
 ```
 
+#### Docs
+
+**Instructions**
+
+| ID | Name    | Description                                |
+|----|---------|--------------------------------------------|
+| 1  | Connect | Connect instruction                        |
+| 2  | Windows | Get the X11 windows                        |
+| 3  | Image   | Get an image for a given window identifier |
+| 4  | Screen  | Get the screen dimensions                  |
