@@ -73,8 +73,8 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"type", imageMessage->type},
             {"commandId", imageMessage->commandId},
             {"windowId", imageMessage->windowId},
-            {"depth", imageMessage->image->getDepth()},
-            {"data", "data:image/" + imageMessage->image->getFileExtension() + ";base64," + base64_encode(imageMessage->image->getRawData(), imageMessage->image->getRawDataSize())}
+            {"depth", (imageMessage->image == NULL) ? 0 : imageMessage->image->getDepth()},
+            {"data", (imageMessage->image == NULL) ? "" : "data:image/" + imageMessage->image->getFileExtension() + ";base64," + base64_encode(imageMessage->image->getRawData(), imageMessage->image->getRawDataSize())}
         };
 
     } else if (message->type == "subimages") {
