@@ -102,7 +102,13 @@ void WebXClientConnector::run() {
             }
         
         } catch(zmq::error_t& e) {
-            spdlog::error("ZeroMQ interrupted from message recv: {:s}", e.what());
+            spdlog::error("WebXClientConnector interrupted from message recv: {:s}", e.what());
+        } catch (const std::exception& e) {
+            spdlog::error("WebXClientConnector caught std::exception: {:s}", e.what());
+        } catch (const std::string& e) {
+            spdlog::error("WebXClientConnector caught std::string: {:s}", e.c_str());
+        } catch (...) {
+            spdlog::error("WebXClientConnector caught unknown exception");
         }
     }
 }

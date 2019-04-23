@@ -77,14 +77,25 @@ void WebXClientMessagePublisher::mainLoop() {
     socket.bind(address);
 
     while (this->_running) {
-        WebXMessage * message = this->_messageQueue->get();
-        if (message != NULL && this->_running) {
+        try {
+            WebXMessage * message = this->_messageQueue->get();
+            if (message != NULL && this->_running) {
 
-            zmq::message_t * replyMessage = this->_serializer->serialize(message);
-            socket.send(*replyMessage);
+                zmq::message_t * replyMessage = this->_serializer->serialize(message);
+                socket.send(*replyMessage);
 
-            delete message;
-            delete replyMessage;
+                delete message;
+                delete replyMessage;
+            }
+        
+        } catch(zmq::error_t& e) {
+            spdlog::error("WebXClientMessagePublisher interrupted from message send: {:s}", e.what());
+        } catch (const std::exception& e) {
+            spdlog::error("WebXClientMessagePublisher caught std::exception: {:s}", e.what());
+        } catch (const std::string& e) {
+            spdlog::error("WebXClientMessagePublisher caught std::string: {:s}", e.c_str());
+        } catch (...) {
+            spdlog::error("WebXClientMessagePublisher caught unknown exception");
         }
     }
 }
