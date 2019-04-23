@@ -4,6 +4,7 @@
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
 #include "connector/instruction/WebXImageInstruction.h"
+#include "connector/instruction/WebXMouseInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
@@ -14,6 +15,7 @@
 #include <string>
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
+#include <X11/Xlib.h>
 
 WebXClientConnector * WebXClientConnector::_instance = NULL;
 int WebXClientConnector::CONNECTOR_PORT = 5555;
@@ -148,6 +150,12 @@ WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instructi
     } else if (instruction->type == WebXInstruction::Type::Image) {
         WebXImageInstruction * imageInstruction = (WebXImageInstruction *)instruction;
         return this->handleImageInstruction(imageInstruction->windowId);
+    } else if(instruction->type == WebXInstruction::Type::Mouse) {
+        WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
+        spdlog::info("Mouse event: {}", mouseInstruction->x);
+        WebXDisplay * display = WebXManager::instance()->getDisplay();
+
+        display->sendMouse(mouseInstruction->x, mouseInstruction->y);
     }
 
     return NULL;

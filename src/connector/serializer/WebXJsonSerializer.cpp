@@ -8,6 +8,7 @@
 #include <connector/instruction/WebXImageInstruction.h>
 #include <connector/instruction/WebXScreenInstruction.h>
 #include <connector/instruction/WebXWindowsInstruction.h>
+#include <connector/instruction/WebXMouseInstruction.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>
@@ -31,6 +32,12 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
             return new WebXImageInstruction(id, windowId);
         }
         case 4: return new WebXScreenInstruction(id);
+        case 5: {
+            int x = jInstruction.at("x");
+            int y = jInstruction.at("y");
+            int buttonMask = jInstruction.at("buttonMask");
+            return new WebXMouseInstruction(id, x, y, buttonMask);
+        }
         default: return NULL;
     }
 

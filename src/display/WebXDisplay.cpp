@@ -328,6 +328,11 @@ void WebXDisplay::updateManagedWindows() {
     XFree(windowIds);
 }
 
+void WebXDisplay::sendMouse(int x, int y) {
+    Window root = this->_rootWindow->getX11Window();
+    XWarpPointer(this->_x11Display, 0L, root, 0, 0, 0, 0, x, y);
+}
+
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);

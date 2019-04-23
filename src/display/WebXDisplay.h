@@ -61,6 +61,7 @@ public:
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
 
+    void sendMouse(int x, int y);
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :

@@ -9,7 +9,8 @@ public:
         Connect = 1,
         Windows,
         Image,
-        Screen
+        Screen,
+        Mouse
     };
 
     WebXInstruction(Type type, unsigned long id) :
