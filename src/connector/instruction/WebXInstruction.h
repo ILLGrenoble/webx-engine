@@ -8,7 +8,8 @@ public:
     enum Type {
         Connect = 1,
         Windows,
-        Image
+        Image,
+        Screen
     };
 
     WebXInstruction() :

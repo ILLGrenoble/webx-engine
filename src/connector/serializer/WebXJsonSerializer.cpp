@@ -1,6 +1,7 @@
 #include "WebXJsonSerializer.h"
 #include <connector/message/WebXWindowsMessage.h>
 #include <connector/message/WebXConnectionMessage.h>
+#include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXSubImagesMessage.h>
 #include <utils/WebXSize.h>
@@ -11,7 +12,7 @@
 
 WebXInstruction WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    spdlog::debug("instruction: {}", instructionString.c_str());
+    spdlog::info("instruction: {}", instructionString.c_str());
 
     // Convert to json
     nlohmann::json jinstruction = nlohmann::json::parse(instructionString);
@@ -50,11 +51,18 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"type", connectionMessage->type},
             {"commandId", connectionMessage->commandId},
             {"publisherPort", connectionMessage->publisherPort}, 
-            {"collectorPort", connectionMessage->collectorPort}, 
-            {"serializer", connectionMessage->serializer}, 
+            {"collectorPort", connectionMessage->collectorPort}
+        };
+
+    } else if (message->type == "screen") {
+        WebXScreenMessage * screenMessage = (WebXScreenMessage *)message;
+
+        j = nlohmann::json{
+            {"type", screenMessage->type},
+            {"commandId", screenMessage->commandId},
             {"screenSize", {
-                {"width", connectionMessage->screenSize.width},
-                {"height", connectionMessage->screenSize.height}
+                {"width", screenMessage->screenSize.width},
+                {"height", screenMessage->screenSize.height}
             }}
         };
 

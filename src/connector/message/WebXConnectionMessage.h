@@ -7,19 +7,15 @@
 
 class WebXConnectionMessage : public WebXMessage {
 public:
-    WebXConnectionMessage(int publisherPort, int collectorPort, std::string serializer, WebXSize screenSize) :
+    WebXConnectionMessage(int publisherPort, int collectorPort) :
         WebXMessage("connection"),
         publisherPort(publisherPort),
-        collectorPort(collectorPort),
-        serializer(serializer),
-        screenSize(screenSize) {}
+        collectorPort(collectorPort) {}
     
     virtual ~WebXConnectionMessage() {}
 
     int publisherPort;
     int collectorPort;
-    std::string serializer;
-    WebXSize screenSize;
 };
 
 

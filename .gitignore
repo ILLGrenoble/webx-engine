@@ -25,3 +25,4 @@ node_modules
 test/output/*.jpg
 test/output/*.png
 gmon.out
+gprof.out

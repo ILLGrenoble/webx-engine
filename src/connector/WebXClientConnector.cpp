@@ -1,5 +1,6 @@
 #include "WebXClientConnector.h"
 #include "message/WebXConnectionMessage.h"
+#include "message/WebXScreenMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
 #include "serializer/WebXJsonSerializer.h"
@@ -80,7 +81,6 @@ void WebXClientConnector::run() {
             } else {
                 // Deserialize instruction
                 WebXInstruction instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
-                spdlog::info("Got instruction {:d} \"{:s}\" {:d}", instruction.type, instruction.stringPayload.c_str(), instruction.numericPayload);
 
                 // Handle message and get message
                 WebXMessage * message = this->handleInstruction(instruction);
@@ -131,6 +131,9 @@ WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & ins
     if (instruction.type == WebXInstruction::Type::Connect) {
         return this->handleConnectionInstruction();
     
+    } else if (instruction.type == WebXInstruction::Type::Screen) {
+        return this->handleScreenInstruction();
+    
     } else if (instruction.type == WebXInstruction::Type::Windows) {
         return this->handleWindowsInstruction();
     
@@ -142,7 +145,11 @@ WebXMessage * WebXClientConnector::handleInstruction(const WebXInstruction & ins
 }
 
 WebXMessage * WebXClientConnector::handleConnectionInstruction() {
-    return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT, this->_serializer->getType(), WebXManager::instance()->getDisplay()->getScreenSize());
+    return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);
+}
+
+WebXMessage * WebXClientConnector::handleScreenInstruction() {
+    return new WebXScreenMessage(WebXManager::instance()->getDisplay()->getScreenSize());
 }
 
 WebXMessage * WebXClientConnector::handleWindowsInstruction() {
