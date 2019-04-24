@@ -45,11 +45,11 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
 
 zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
     nlohmann::json j;
-    if (message->type == "windows") {
+    if (message->type == WebXMessage::Type::Windows) {
         WebXWindowsMessage * windowsMessage = (WebXWindowsMessage *)message;
 
         j = nlohmann::json{
-            {"type", windowsMessage->type},
+            {"type", "windows"},
             {"commandId", windowsMessage->commandId},
             {"windows", {}}
         };
@@ -64,21 +64,21 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             });
         }
 
-    } else if (message->type == "connection") {
+    } else if (message->type == WebXMessage::Type::Connection) {
         WebXConnectionMessage * connectionMessage = (WebXConnectionMessage *)message;
 
         j = nlohmann::json{
-            {"type", connectionMessage->type},
+            {"type", "connection"},
             {"commandId", connectionMessage->commandId},
             {"publisherPort", connectionMessage->publisherPort}, 
             {"collectorPort", connectionMessage->collectorPort}
         };
 
-    } else if (message->type == "screen") {
+    } else if (message->type == WebXMessage::Type::Screen) {
         WebXScreenMessage * screenMessage = (WebXScreenMessage *)message;
 
         j = nlohmann::json{
-            {"type", screenMessage->type},
+            {"type", "screen"},
             {"commandId", screenMessage->commandId},
             {"screenSize", {
                 {"width", screenMessage->screenSize.width},
@@ -86,22 +86,22 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             }}
         };
 
-    } else if (message->type == "image") {
+    } else if (message->type == WebXMessage::Type::Image) {
         WebXImageMessage * imageMessage = (WebXImageMessage *)message;
 
         j = nlohmann::json{
-            {"type", imageMessage->type},
+            {"type", "image"},
             {"commandId", imageMessage->commandId},
             {"windowId", imageMessage->windowId},
             {"depth", (imageMessage->image == NULL) ? 0 : imageMessage->image->getDepth()},
             {"data", (imageMessage->image == NULL) ? "" : "data:image/" + imageMessage->image->getFileExtension() + ";base64," + base64_encode(imageMessage->image->getRawData(), imageMessage->image->getRawDataSize())}
         };
 
-    } else if (message->type == "subimages") {
+    } else if (message->type == WebXMessage::Type::Subimages) {
         WebXSubImagesMessage * subImagesMessage = (WebXSubImagesMessage *)message;
 
         j = nlohmann::json{
-            {"type", subImagesMessage->type},
+            {"type", "subimages"},
             {"commandId", subImagesMessage->commandId},
             {"windowId", subImagesMessage->windowId},
             {"subImages", {}}

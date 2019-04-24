@@ -5,12 +5,20 @@
 
 class WebXMessage {
 public:
-    WebXMessage(const std::string & type) :
+    enum Type {
+        Connection = 1,
+        Windows,
+        Image,
+        Screen,
+        Subimages
+    };
+
+    WebXMessage(Type type) :
         type(type),
         commandId(-1) {}
     virtual ~WebXMessage() {}
 
-    std::string type;
+    Type type;
     long commandId;
 };
 

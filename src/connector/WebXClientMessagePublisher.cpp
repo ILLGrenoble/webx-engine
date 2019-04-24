@@ -3,6 +3,7 @@
 #include "message/WebXImageMessage.h"
 #include "message/WebXSubImagesMessage.h"
 #include "serializer/WebXJsonSerializer.h"
+#include <utils/WebXBinaryBuffer.h>
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
 
@@ -94,8 +95,8 @@ void WebXClientMessagePublisher::mainLoop() {
             spdlog::error("WebXClientMessagePublisher caught std::exception: {:s}", e.what());
         } catch (const std::string& e) {
             spdlog::error("WebXClientMessagePublisher caught std::string: {:s}", e.c_str());
-        } catch (...) {
-            spdlog::error("WebXClientMessagePublisher caught unknown exception");
+        // } catch (const WebXBinaryBuffer::OverflowException & e) {
+        //     spdlog::error("WebXClientMessagePublisher caught WebXBinaryBuffer::OverflowException: offset: {:d}, dataLength: {:d}, bufferLength: {:d}", e.offset, e.dataSize, e.bufferLength);
         }
     }
 }

@@ -8,7 +8,7 @@
 class WebXWindowsMessage : public WebXMessage {
 public:
     WebXWindowsMessage(const std::vector<WebXWindowProperties> & windows) :
-        WebXMessage("windows"),
+        WebXMessage(Type::Windows),
         windows(windows) {}
     virtual ~WebXWindowsMessage() {}
 

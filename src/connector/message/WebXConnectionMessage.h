@@ -8,7 +8,7 @@
 class WebXConnectionMessage : public WebXMessage {
 public:
     WebXConnectionMessage(int publisherPort, int collectorPort) :
-        WebXMessage("connection"),
+        WebXMessage(Type::Connection),
         publisherPort(publisherPort),
         collectorPort(collectorPort) {}
     

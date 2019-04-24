@@ -8,7 +8,7 @@
 class WebXScreenMessage : public WebXMessage {
 public:
     WebXScreenMessage(WebXSize screenSize) :
-        WebXMessage("screen"),
+        WebXMessage(Type::Screen),
         screenSize(screenSize) {}
     
     virtual ~WebXScreenMessage() {}

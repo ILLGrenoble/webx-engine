@@ -6,11 +6,13 @@
 #include "connector/instruction/WebXImageInstruction.h"
 #include "connector/instruction/WebXMouseInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
+#include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXController.h>
+#include <utils/WebXBinaryBuffer.h>
 #include <unistd.h>
 #include <string>
 #include <zmq.hpp>
@@ -25,6 +27,7 @@ int WebXClientConnector::PUBLISHER_PORT = 5557;
 WebXClientConnector::WebXClientConnector() :
     _publisher(NULL),
     _collector(NULL),
+    // _serializer(new WebXBinarySerializer()),
     _serializer(new WebXJsonSerializer()),
     _running(false) {
     std::signal(SIGINT, WebXClientConnector::signalHandler);
@@ -111,8 +114,8 @@ void WebXClientConnector::run() {
             spdlog::error("WebXClientConnector caught std::exception: {:s}", e.what());
         } catch (const std::string& e) {
             spdlog::error("WebXClientConnector caught std::string: {:s}", e.c_str());
-        } catch (...) {
-            spdlog::error("WebXClientConnector caught unknown exception");
+        // } catch (const WebXBinaryBuffer::OverflowException & e) {
+        //     spdlog::error("WebXClientConnector caught WebXBinaryBuffer::OverflowException: offset: {:d}, dataLength: {:d}, bufferLength: {:d}", e.offset, e.dataSize, e.bufferLength);
         }
     }
 }
