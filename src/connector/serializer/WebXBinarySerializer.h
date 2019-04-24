@@ -10,7 +10,7 @@ public:
         WebXSerializer("json") {}
     virtual ~WebXBinarySerializer() {}
 
-    virtual WebXInstruction deserialize(void * instructionData, size_t instructionDataSize);
+    virtual WebXInstruction * deserialize(void * instructionData, size_t instructionDataSize);
     virtual zmq::message_t * serialize(WebXMessage * message);
 
 };

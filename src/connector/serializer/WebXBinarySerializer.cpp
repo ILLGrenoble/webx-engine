@@ -4,24 +4,42 @@
 #include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXSubImagesMessage.h>
+#include <connector/instruction/WebXConnectInstruction.h>
+#include <connector/instruction/WebXImageInstruction.h>
+#include <connector/instruction/WebXScreenInstruction.h>
+#include <connector/instruction/WebXWindowsInstruction.h>
+#include <connector/instruction/WebXMouseInstruction.h>
 #include <utils/WebXSize.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <string>
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
 
-WebXInstruction WebXBinarySerializer::deserialize(void * instructionData, size_t instructionDataSize) {
+WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
     spdlog::info("instruction: {}", instructionString.c_str());
 
     // Convert to json
-    nlohmann::json jinstruction = nlohmann::json::parse(instructionString);
-
-    // Convert to instruction
-    WebXInstruction instruction = jinstruction.get<WebXInstruction>();
-
-    return instruction;
+    nlohmann::json jInstruction = nlohmann::json::parse(instructionString);
+    unsigned long type = jInstruction.at("type");
+    unsigned long id = jInstruction.at("id");
+    switch(type) {
+        case 1: return new WebXConnectInstruction(id);
+        case 2: return new WebXWindowsInstruction(id);
+        case 3: {
+            unsigned long windowId = jInstruction.at("windowId");
+            return new WebXImageInstruction(id, windowId);
+        }
+        case 4: return new WebXScreenInstruction(id);
+        case 5: {
+            int x = jInstruction.at("x");
+            int y = jInstruction.at("y");
+            int buttonMask = jInstruction.at("buttonMask");
+            return new WebXMouseInstruction(id, x, y, buttonMask);
+        }
+        default: return NULL;
+    }
 }
 
 zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
