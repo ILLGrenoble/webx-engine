@@ -24,12 +24,16 @@ int WebXClientConnector::CONNECTOR_PORT = 5555;
 int WebXClientConnector::COLLECTOR_PORT = 5556;
 int WebXClientConnector::PUBLISHER_PORT = 5557;
 
-WebXClientConnector::WebXClientConnector() :
+WebXClientConnector::WebXClientConnector(std::string &transport) :
     _publisher(NULL),
     _collector(NULL),
-    _serializer(new WebXBinarySerializer()),
-    // _serializer(new WebXJsonSerializer()),
     _running(false) {
+    spdlog::info("Using {} for the transport", transport);
+    if(transport == "json") {
+        _serializer = new WebXJsonSerializer();
+    } else {
+        _serializer = new WebXBinarySerializer();
+    }
     std::signal(SIGINT, WebXClientConnector::signalHandler);
 }
 
@@ -42,9 +46,9 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-WebXClientConnector * WebXClientConnector::initInstance() {
+WebXClientConnector * WebXClientConnector::initInstance(std::string &transport) {
     if (_instance == NULL) {
-        _instance = new WebXClientConnector();
+        _instance = new WebXClientConnector(transport);
         _instance->init();
     }
     return _instance;
