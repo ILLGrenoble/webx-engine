@@ -27,8 +27,8 @@ int WebXClientConnector::PUBLISHER_PORT = 5557;
 WebXClientConnector::WebXClientConnector() :
     _publisher(NULL),
     _collector(NULL),
-    // _serializer(new WebXBinarySerializer()),
-    _serializer(new WebXJsonSerializer()),
+    _serializer(new WebXBinarySerializer()),
+    // _serializer(new WebXJsonSerializer()),
     _running(false) {
     std::signal(SIGINT, WebXClientConnector::signalHandler);
 }

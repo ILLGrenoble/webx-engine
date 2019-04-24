@@ -7,13 +7,13 @@
 
 class WebXSubImagesMessage : public WebXMessage {
 public:
-    WebXSubImagesMessage(unsigned long windowId, std::vector<WebXSubImage> images) :
+    WebXSubImagesMessage(uint32_t windowId, std::vector<WebXSubImage> images) :
         WebXMessage(Type::Subimages),
         windowId(windowId),
         images(images) {}
     virtual ~WebXSubImagesMessage() {}
 
-    unsigned long windowId;
+    uint32_t windowId;
     std::vector<WebXSubImage> images;
 };
 

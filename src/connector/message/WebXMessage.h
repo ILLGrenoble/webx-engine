@@ -19,7 +19,7 @@ public:
     virtual ~WebXMessage() {}
 
     Type type;
-    long commandId;
+    uint32_t commandId;
 };
 
 

@@ -6,7 +6,7 @@
 class WebXImageInstruction : public WebXInstruction {
 
 public:
-    WebXImageInstruction(unsigned long id, unsigned long windowId) :
+    WebXImageInstruction(uint32_t id, unsigned long windowId) :
         WebXInstruction(Type::Image, id),
         windowId(windowId) {
     }
@@ -14,7 +14,7 @@ public:
     virtual ~WebXImageInstruction() {
     }
 
-    unsigned long windowId;
+    uint32_t windowId;
 };
 
 

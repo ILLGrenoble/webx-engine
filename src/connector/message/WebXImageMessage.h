@@ -9,13 +9,13 @@ class WebXImage;
 
 class WebXImageMessage : public WebXMessage {
 public:
-    WebXImageMessage(unsigned long windowId, std::shared_ptr<WebXImage> image) :
+    WebXImageMessage(uint32_t windowId, std::shared_ptr<WebXImage> image) :
         WebXMessage(Type::Image),
         windowId(windowId),
         image(image) {}
     virtual ~WebXImageMessage() {}
 
-    unsigned long windowId;
+    uint32_t windowId;
     std::shared_ptr<WebXImage> image;
 };
 

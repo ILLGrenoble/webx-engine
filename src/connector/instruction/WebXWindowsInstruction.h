@@ -6,7 +6,7 @@
 class WebXWindowsInstruction : public WebXInstruction {
 
 public:
-    WebXWindowsInstruction(unsigned long id) :
+    WebXWindowsInstruction(uint32_t id) :
         WebXInstruction(Type::Windows, id) {
     }
 

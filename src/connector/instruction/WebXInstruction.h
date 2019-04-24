@@ -13,15 +13,14 @@ public:
         Mouse
     };
 
-    WebXInstruction(Type type, unsigned long id) :
+    WebXInstruction(Type type, uint32_t id) :
         type(type),
         id(id) {}
 
     virtual ~WebXInstruction() {}
 
     Type type;
-
-    long id;
+    uint32_t id;
 
 };
 

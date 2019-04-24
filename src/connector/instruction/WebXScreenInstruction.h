@@ -7,7 +7,7 @@ class WebXScreenInstruction : public WebXInstruction {
 
 public:
 
-    WebXScreenInstruction(unsigned long id) :
+    WebXScreenInstruction(uint32_t id) :
         WebXInstruction(Type::Screen, id) {
     }
 

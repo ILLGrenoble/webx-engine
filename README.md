@@ -61,7 +61,7 @@ Xephyr is a nested X server that runs as an X application.
 Launch an Xephyr instance listening on display 20:
 
 ```
-Xephyr -sw-cursor -screen 1024x768 :20
+Xephyr -sw-cursor -no-host-grab -nolock -screen 1024x768 :20
 ```
 
 #### Docs

@@ -6,7 +6,7 @@
 class WebXConnectInstruction : public WebXInstruction {
 
 public:
-    WebXConnectInstruction(unsigned long id) :
+    WebXConnectInstruction(uint32_t id) :
         WebXInstruction(Type::Connect, id) {
     }
 

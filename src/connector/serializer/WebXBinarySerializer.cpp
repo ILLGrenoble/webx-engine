@@ -56,30 +56,28 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //   length: 4 bytes
         //   padding: 4 bytes
         // Content:
-        //   commandId: 8 bytes
+        //   commandId: 4 bytes
         //   # windows: 4 bytes
-        //   padding: 4 bytes
         //   Window: 24 bytes
-        //      id: 8 bytes
+        //      id: 4 bytes
         //      x: 4 bytes
         //      y: 4 bytes
         //      width: 4 bytes
         //      height: 4 bytes
 
-        size_t dataSize = 16 + 16 + windowsMessage->windows.size() * 24;
+        size_t dataSize = 16 + 8 + windowsMessage->windows.size() * 20;
         messageData = new zmq::message_t(dataSize);
         
         WebXBinaryBuffer buffer((unsigned char *)messageData->data(), dataSize, (uint32_t)message->type);
-        buffer.write<uint64_t>(windowsMessage->commandId);
+        buffer.write<uint32_t>(windowsMessage->commandId);
         buffer.write<uint32_t>(windowsMessage->windows.size());
-        buffer.write<uint32_t>(0);
         for (std::vector<WebXWindowProperties>::const_iterator it = windowsMessage->windows.begin(); it != windowsMessage->windows.end(); it++) {
             const WebXWindowProperties & window = *it;
-            buffer.write<uint64_t>(window.id);
-            buffer.write<uint32_t>(window.x);
-            buffer.write<uint32_t>(window.y);
-            buffer.write<uint32_t>(window.width);
-            buffer.write<uint32_t>(window.height);
+            buffer.write<uint32_t>(window.id);
+            buffer.write<int32_t>(window.x);
+            buffer.write<int32_t>(window.y);
+            buffer.write<int32_t>(window.width);
+            buffer.write<int32_t>(window.height);
         }
 
     } else if (message->type == WebXMessage::Type::Connection) {
@@ -92,17 +90,17 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //   length: 4 bytes
         //   padding: 4 bytes
         // Content:
-        //   commandId: 8 bytes
+        //   commandId: 4 bytes
         //   publisherPort: 4 bytes
         //   collectorPort: 4 bytes
 
-        size_t dataSize = 16 + 16;
+        size_t dataSize = 16 + 12;
         messageData = new zmq::message_t(dataSize);
 
         WebXBinaryBuffer buffer((unsigned char *)messageData->data(), dataSize, (uint32_t)message->type);
-        buffer.write<uint64_t>(connectionMessage->commandId);
-        buffer.write<uint32_t>(connectionMessage->publisherPort);
-        buffer.write<uint32_t>(connectionMessage->collectorPort);
+        buffer.write<uint32_t>(connectionMessage->commandId);
+        buffer.write<int32_t>(connectionMessage->publisherPort);
+        buffer.write<int32_t>(connectionMessage->collectorPort);
 
     } else if (message->type == WebXMessage::Type::Screen) {
         WebXScreenMessage * screenMessage = (WebXScreenMessage *)message;
@@ -114,17 +112,17 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //   length: 4 bytes
         //   padding: 4 bytes
         // Content:
-        //   commandId: 8 bytes
+        //   commandId: 4 bytes
         //   screenWidth: 4 bytes
         //   screenHeight: 4 bytes
 
-        size_t dataSize = 16 + 16;
+        size_t dataSize = 16 + 12;
         messageData = new zmq::message_t(dataSize);
 
         WebXBinaryBuffer buffer((unsigned char *)messageData->data(), dataSize, (uint32_t)message->type);
-        buffer.write<uint64_t>(screenMessage->commandId);
-        buffer.write<uint32_t>(screenMessage->screenSize.width);
-        buffer.write<uint32_t>(screenMessage->screenSize.height);
+        buffer.write<uint32_t>(screenMessage->commandId);
+        buffer.write<int32_t>(screenMessage->screenSize.width);
+        buffer.write<int32_t>(screenMessage->screenSize.height);
 
     } else if (message->type == WebXMessage::Type::Image) {
         WebXImageMessage * imageMessage = (WebXImageMessage *)message;
@@ -144,20 +142,19 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //   length: 4 bytes
         //   padding: 4 bytes
         // Content:
-        //   commandId: 8 bytes
-        //   windowId: 8 bytes
+        //   commandId: 4 bytes
+        //   windowId: 4 bytes
         //   depth: 4 bytes
         //   imageType: 4 bytes (chars)
         //   imageDataLength: 4 bytes
         //   imageData: n bytes
 
-        size_t dataSize = 16 + 28 + imageDataSize;
+        size_t dataSize = 16 + 20 + imageDataSize;
         messageData = new zmq::message_t(dataSize);
 
-
         WebXBinaryBuffer buffer((unsigned char *)messageData->data(), dataSize, (uint32_t)message->type);
-        buffer.write<uint64_t>(imageMessage->commandId);
-        buffer.write<uint64_t>(imageMessage->windowId);
+        buffer.write<uint32_t>(imageMessage->commandId);
+        buffer.write<uint32_t>(imageMessage->windowId);
         buffer.write<uint32_t>(depth);
 
         char imageType[4] = "";
@@ -179,8 +176,9 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //   length: 4 bytes
         //   padding: 4 bytes
         // Content:
-        //   commandId: 8 bytes
-        //   windowId: 8 bytes
+        //   commandId: 4 bytes
+        //   windowId: 4 bytes
+        //   # subimages: 4 bytes
         //   Subimages:
         //     x: 4 bytes
         //     y: 4 bytes
@@ -191,7 +189,7 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         //     imageDataLength: 4 bytes
         //     imageData: n bytes
 
-        int nImages = subImagesMessage->images.size();
+        unsigned int nImages = subImagesMessage->images.size();
         size_t imageDataSize = 0;
         for (auto it = subImagesMessage->images.begin(); it != subImagesMessage->images.end(); it++) {
             const WebXSubImage & subImage = *it;
@@ -202,12 +200,13 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
                 imageDataSize += padding;
             }
         }
-        size_t dataSize = 16 + 16 + nImages * 28 + imageDataSize;
+        size_t dataSize = 16 + 12 + nImages * 28 + imageDataSize;
         messageData = new zmq::message_t(dataSize);
 
         WebXBinaryBuffer buffer((unsigned char *)messageData->data(), dataSize, (uint32_t)message->type);
-        buffer.write<uint64_t>(subImagesMessage->commandId);
-        buffer.write<uint64_t>(subImagesMessage->windowId);
+        buffer.write<uint32_t>(subImagesMessage->commandId);
+        buffer.write<uint32_t>(subImagesMessage->windowId);
+        buffer.write<uint32_t>(nImages);
 
         for (auto it = subImagesMessage->images.begin(); it != subImagesMessage->images.end(); it++) {
             const WebXSubImage & subImage = *it;

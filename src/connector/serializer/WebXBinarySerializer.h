@@ -7,7 +7,7 @@
 class WebXBinarySerializer : public WebXSerializer {
 public:
     WebXBinarySerializer() :
-        WebXSerializer("json") {}
+        WebXSerializer("binary") {}
     virtual ~WebXBinarySerializer() {}
 
     virtual WebXInstruction * deserialize(void * instructionData, size_t instructionDataSize);
