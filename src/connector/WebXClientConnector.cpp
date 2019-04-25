@@ -3,8 +3,8 @@
 #include "message/WebXScreenMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
-#include "connector/instruction/WebXImageInstruction.h"
-#include "connector/instruction/WebXMouseInstruction.h"
+#include "instruction/WebXImageInstruction.h"
+#include "instruction/WebXMouseInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
 #include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
@@ -27,6 +27,7 @@ int WebXClientConnector::PUBLISHER_PORT = 5557;
 WebXClientConnector::WebXClientConnector(std::string &transport) :
     _publisher(NULL),
     _collector(NULL),
+    _serializer(NULL),
     _running(false) {
     spdlog::info("Using {} for the transport", transport);
     if(transport == "json") {
@@ -40,9 +41,14 @@ WebXClientConnector::WebXClientConnector(std::string &transport) :
 WebXClientConnector::~WebXClientConnector() {
     if (this->_publisher) {
         delete _publisher;
+        _publisher = NULL;
     }
     if (this->_collector) {
-        delete _collector;
+        _collector = NULL;
+    }
+    if (this->_serializer) {
+        delete _serializer;
+        _serializer = NULL;
     }
 }
 
@@ -73,7 +79,7 @@ void WebXClientConnector::run() {
     socket.bind(address);
 
     this->_publisher->run(this->_serializer, &context, WebXClientConnector::PUBLISHER_PORT);
-    this->_collector->run(&context, WebXClientConnector::COLLECTOR_PORT);
+    this->_collector->run(this->_serializer, &context, WebXClientConnector::COLLECTOR_PORT);
 
     this->_running = true;
     while (this->_running) {
@@ -113,7 +119,9 @@ void WebXClientConnector::run() {
             }
         
         } catch(zmq::error_t& e) {
-            spdlog::warn("WebXClientConnector interrupted from message recv: {:s}", e.what());
+            if (this->_running) {
+                spdlog::warn("WebXClientConnector interrupted from message recv: {:s}", e.what());
+            }
         } catch (const std::exception& e) {
             spdlog::error("WebXClientConnector caught std::exception: {:s}", e.what());
         } catch (const std::string& e) {
@@ -122,26 +130,33 @@ void WebXClientConnector::run() {
         //     spdlog::error("WebXClientConnector caught WebXBinaryBuffer::OverflowException: offset: {:d}, dataLength: {:d}, bufferLength: {:d}", e.offset, e.dataSize, e.bufferLength);
         }
     }
+
+    // Suicide
+    delete this;
+
+    spdlog::info("Stopped client connector");
 }
 
 void WebXClientConnector::stop() {
+    spdlog::info("Stopping client connector...");
     WebXManager::instance()->getController()->removeConnection(this->_publisher);
+
     this->_running = false;
+
+    if (this->_collector) {
+        this->_collector->stop();
+    }
 }
 
 void WebXClientConnector::shutdown() {
     spdlog::info("Shutdown");
 
-    spdlog::info("Stopping client connector...");
-    _instance->stop();
-
     if (_instance) {
-        delete _instance;
+        _instance->stop();
         _instance = NULL;
     }
 
     WebXManager::instance()->shutdown();
-    spdlog::info("Client connector stopped");
 }
 
 WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instruction) {
@@ -157,12 +172,6 @@ WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instructi
     } else if (instruction->type == WebXInstruction::Type::Image) {
         WebXImageInstruction * imageInstruction = (WebXImageInstruction *)instruction;
         return this->handleImageInstruction(imageInstruction->windowId);
-    } else if(instruction->type == WebXInstruction::Type::Mouse) {
-        WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
-        spdlog::info("Mouse event: {}", mouseInstruction->x);
-        WebXDisplay * display = WebXManager::instance()->getDisplay();
-
-        display->sendMouse(mouseInstruction->x, mouseInstruction->y);
     }
 
     return NULL;

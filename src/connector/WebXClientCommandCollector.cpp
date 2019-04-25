@@ -1,21 +1,31 @@
 #include "WebXClientCommandCollector.h"
 #include "instruction/WebXInstruction.h"
+#include "serializer/WebXSerializer.h"
+#include "serializer/WebXSerializer.h"
+#include <display/WebXManager.h>
+#include <display/WebXController.h>
+#include <zmq.hpp>
 #include <spdlog/spdlog.h>
 
 WebXClientCommandCollector::WebXClientCommandCollector() : 
     _thread(NULL),
     _running(false),
-    _commandQueue(new WebXQueue<WebXInstruction>(1024)),
     _context(NULL),
     _port(0) {
 }
 
 WebXClientCommandCollector::~WebXClientCommandCollector() {
-    this->stop();
+    this->_context = NULL;
+    this->_port = 0;
+    if (this->_thread != NULL) {
+        delete this->_thread;
+        this->_thread = NULL;
+    }
 }
 
-void WebXClientCommandCollector::run(zmq::context_t * context, int port) {
+void WebXClientCommandCollector::run(WebXSerializer * serializer, zmq::context_t * context, int port) {
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    this->_serializer = serializer;
     this->_context = context;
     this->_port = port;
     this->_running = true;
@@ -25,19 +35,9 @@ void WebXClientCommandCollector::run(zmq::context_t * context, int port) {
 }
 
 void WebXClientCommandCollector::stop() {
+    spdlog::info("Stopping client command collector...");
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
     this->_running = false;
-    this->_context = NULL;
-    this->_port = 0;
-    if (this->_thread != NULL) {
-        // Join thread and cleanup
-        spdlog::info("Stopping client command collector...");
-        this->_commandQueue->stop();
-        this->_thread->join();
-        spdlog::info("Stopped client command collector");
-        delete this->_thread;
-        this->_thread = NULL;
-    }
 }
 
 void WebXClientCommandCollector::threadMain(void * arg) {
@@ -46,14 +46,42 @@ void WebXClientCommandCollector::threadMain(void * arg) {
 }
 
 void WebXClientCommandCollector::mainLoop() {
+
+    // Start zeroMQ publisher
+    zmq::socket_t socket(*this->_context, ZMQ_PULL);
+    int linger = 0;
+    socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+
+    char address[16];
+    snprintf(address, sizeof(address) - 1, "tcp://*:%4d", this->_port);
+    socket.bind(address);
+
     while (this->_running) {
-        WebXInstruction * message = this->_commandQueue->get();
-        if (this->_running) {
+        zmq::message_t instructionMessage;
 
-        }
-
-        if (message != NULL) {
-            delete message;
+        try {
+            socket.recv(&instructionMessage);
+            // Deserialize instruction
+            WebXInstruction * instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+            if (instruction != NULL) {
+                // Handle message
+                WebXManager::instance()->getController()->onClientInstruction(instruction);
+            }
+        
+        } catch(zmq::error_t& e) {
+            if (this->_running) {
+                spdlog::warn("WebXClientCommandCollector interrupted from message recv: {:s}", e.what());
+            }
+        } catch (const std::exception& e) {
+            spdlog::error("WebXClientCommandCollector caught std::exception: {:s}", e.what());
+        } catch (const std::string& e) {
+            spdlog::error("WebXClientCommandCollector caught std::string: {:s}", e.c_str());
         }
     }
+
+    // Suicide
+    // delete this;
+
+    spdlog::info("Stopped client command collector");
 }
+

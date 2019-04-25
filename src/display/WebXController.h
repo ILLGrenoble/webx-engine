@@ -10,9 +10,9 @@
 
 class WebXDisplay;
 class WebXConnection;
+class WebXInstruction;
 
 class WebXController {
-
 public:
     enum WebXControllerState {
         Stopped = 0,
@@ -46,9 +46,15 @@ public:
         return this->_windows;
     }
 
+    void onClientInstruction(WebXInstruction * instruction) {
+        tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
+        this->_instructions.push_back(instruction);
+    }
+
 private:
     static void threadMain(void * arg);
     void mainLoop();
+    void handleClientInstructions();
     void updateDisplay();
     void updateImages();
     void updateFps(double fps);
@@ -59,6 +65,7 @@ private:
 
     WebXDisplay * _display;
     std::vector<WebXWindowProperties> _windows;
+    std::vector<WebXInstruction *> _instructions;
 
     bool _displayDirty;
     long _imageRefreshUs;
@@ -68,6 +75,7 @@ private:
     tthread::mutex _stateMutex;
     tthread::mutex _connectionsMutex;
     tthread::mutex _windowsMutex;
+    tthread::mutex _instructionsMutex;
     WebXControllerState _state;
 
     std::set<WebXConnection *> _connections;

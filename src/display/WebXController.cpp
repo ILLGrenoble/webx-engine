@@ -2,6 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXManager.h"
 #include "WebXConnection.h"
+#include <connector/instruction/WebXMouseInstruction.h>
 #include <image/WebXSubImage.h>
 #include <algorithm>
 #include <thread>
@@ -83,6 +84,9 @@ void WebXController::mainLoop() {
             double fps = 1000000 / delayUs.count();
             this->updateFps(fps);
 
+            // Handle all client instructions
+            this->handleClientInstructions();
+
             // Flush all X11 events
             WebXManager::instance()->flushEventListener();
 
@@ -103,6 +107,23 @@ void WebXController::mainLoop() {
             calculateThreadSleepUs = duration > this->_threadSleepUs ? 0 : this->_threadSleepUs - duration;
         }
     }
+}
+
+void WebXController::handleClientInstructions() {
+    tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
+    for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
+        WebXInstruction * instruction = *it;
+
+        if(instruction->type == WebXInstruction::Type::Mouse) {
+            WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
+            spdlog::info("Mouse event: {}", mouseInstruction->x);
+            WebXDisplay * display = WebXManager::instance()->getDisplay();
+
+            display->sendMouse(mouseInstruction->x, mouseInstruction->y);
+        }
+    }
+
+    this->_instructions.clear();
 }
 
 void WebXController::updateDisplay() {
