@@ -67,6 +67,7 @@ else()
         ${CMAKE_THREAD_LIBS_INIT}
         -lzmq
         -lXtst
+        -lXfixes
     )
 
     target_include_directories(

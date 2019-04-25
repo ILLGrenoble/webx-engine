@@ -15,7 +15,7 @@ To be defined
 Install the following dependencies:
 
 ```bash
-apt install cmake build-essential libzmq3-dev libpng-dev libxdamage-dev libxrender-dev libxext-dev
+apt install cmake build-essential libzmq3-dev libpng-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev
 ```
 
 Compiling:

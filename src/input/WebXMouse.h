@@ -19,23 +19,26 @@
 class WebXMouse {
 
 public:
-    WebXMouse(Display * x11Display, const Window &rootWindow) {
+    WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage) : _currentMouseState(NULL) {
         _x11Display = x11Display;
         _rootWindow = rootWindow;
+        _currentMouseState = createDefaultMouseState(cursorImage);
     }
 
     ~WebXMouse() {
+        delete _currentMouseState;
     }
 
     void updateMouse(int x, int y, unsigned int buttonMask);
-
+    WebXMouseState  * createDefaultMouseState(XFixesCursorImage * cursorImage);
 private:
-    WebXMouseState _currentMouseState = WebXMouseState();
     Display * _x11Display;
+    WebXMouseState  * _currentMouseState;
     Window  _rootWindow;
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
+    void sendCursor();
     void updateMouseState(int newX, int newY, int newButtonMask);
 };
 
