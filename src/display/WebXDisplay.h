@@ -7,6 +7,8 @@
 #include <memory>
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
+#include <connector/instruction/WebXMouseInstruction.h>
+#include "input/WebXMouse.h"
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 
@@ -60,8 +62,8 @@ public:
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
-
-    void sendMouse(int x, int y);
+    WebXMouse * createMouse();
+    void sendMouse(int x, int y, unsigned int buttonMask);
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :
@@ -111,7 +113,7 @@ private:
 
     std::vector<WebXWindowDamageProperties> _damagedWindows;
     tthread::mutex _damagedWindowsMutex;
-
+    WebXMouse * _mouse;
 };
 
 

@@ -4,11 +4,14 @@
 #include <algorithm>
 #include <X11/Xatom.h>
 #include <spdlog/spdlog.h>
+#include <X11/extensions/XTest.h>
+#include <input/WebXMouse.h>
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
     _rootWindow(NULL),
-    _imageConverter(NULL) {
+    _imageConverter(NULL),
+    _mouse(NULL){
 
 }
 
@@ -23,6 +26,10 @@ WebXDisplay::~WebXDisplay() {
     if (this->_imageConverter) {
         delete this->_imageConverter;
         this->_imageConverter = NULL;
+    }
+    if(this->_mouse) {
+        delete this->_mouse;
+        this->_mouse = NULL;
     }
 }
 
@@ -39,6 +46,7 @@ void WebXDisplay::init() {
 
     Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
     this->_screenSize = WebXSize(screen->width, screen->height);
+    this->_mouse = createMouse();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -328,9 +336,14 @@ void WebXDisplay::updateManagedWindows() {
     XFree(windowIds);
 }
 
-void WebXDisplay::sendMouse(int x, int y) {
-    Window root = this->_rootWindow->getX11Window();
-    XWarpPointer(this->_x11Display, 0L, root, 0, 0, 0, 0, x, y);
+WebXMouse * WebXDisplay::createMouse() {
+    Window rootWindow = _rootWindow->getX11Window();
+    return new WebXMouse(_x11Display, rootWindow);
+}
+
+void WebXDisplay::sendMouse(int x, int y, unsigned int buttonMask) {
+    spdlog::debug("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
+    this->_mouse->updateMouse(x, y, buttonMask);
 }
 
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {

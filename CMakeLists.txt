@@ -47,6 +47,7 @@ if (APPLE)
         -lzmq
         -lX11
         -lXdamage
+        -lXtst
     )
 
     target_include_directories(
@@ -65,6 +66,7 @@ else()
         -lXdamage
         ${CMAKE_THREAD_LIBS_INIT}
         -lzmq
+        -lXtst
     )
 
     target_include_directories(

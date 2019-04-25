@@ -116,10 +116,8 @@ void WebXController::handleClientInstructions() {
 
         if(instruction->type == WebXInstruction::Type::Mouse) {
             WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
-            spdlog::info("Mouse event: {}", mouseInstruction->x);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
-
-            display->sendMouse(mouseInstruction->x, mouseInstruction->y);
+            display->sendMouse(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
     }
 

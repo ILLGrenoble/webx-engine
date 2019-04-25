@@ -35,7 +35,7 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
         case 5: {
             int x = jInstruction.at("x");
             int y = jInstruction.at("y");
-            int buttonMask = jInstruction.at("buttonMask");
+            unsigned int buttonMask = jInstruction.at("buttonMask");
             return new WebXMouseInstruction(id, x, y, buttonMask);
         }
         default: return NULL;

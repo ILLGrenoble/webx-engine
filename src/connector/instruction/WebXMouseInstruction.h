@@ -7,7 +7,7 @@ class WebXMouseInstruction : public WebXInstruction {
 
 public:
 
-    WebXMouseInstruction(uint32_t id, int x, int y, int buttonMask) :
+    WebXMouseInstruction(uint32_t id, int x, int y, unsigned int buttonMask) :
             WebXInstruction(Type::Mouse, id),
             x(x),
             y(y),
@@ -19,7 +19,7 @@ public:
 
     int x;
     int y;
-    int buttonMask;
+    unsigned int buttonMask;
 
 };
 
