@@ -4,9 +4,21 @@
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
+#include <crc32/Crc32.h>
 
 /* CRC-32C (iSCSI) polynomial in reversed bit order. */
 #define POLY 0x82f63b78
+
+#undef get16bits
+#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
+  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
+#define get16bits(d) (*((const uint16_t *) (d)))
+#endif
+
+#if !defined (get16bits)
+#define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
+                       +(uint32_t)(((const uint8_t *)(d))[0]) )
+#endif
 
 WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
@@ -132,21 +144,13 @@ void WebXWindow::removeChild(WebXWindow * child) {
 uint32_t WebXWindow::calculateImageChecksum(XImage * image) {
     spdlog::debug("Calculating checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    size_t length = (image->bytes_per_line * image->height) / 8;
-    char *data = image->data;
-    uint32_t crc = 0;
-    crc = ~crc;
-    while (length--) {
-        crc ^= *data++;
-        for (int k = 0; k < 8; k++) {
-            crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
-        }
-    }
+
+    uint32_t checksum = crc32_16bytes(image->data, (image->bytes_per_line * image->height));
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
     spdlog::debug("Checksum for {:d} x {:d} in {:f}us", image->width, image->height, duration.count());
-    return ~crc;
+    return checksum;
 }
 
 

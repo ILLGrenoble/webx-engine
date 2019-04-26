@@ -119,6 +119,8 @@ void WebXController::handleClientInstructions() {
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendMouse(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
+
+        delete instruction;
     }
 
     this->_instructions.clear();

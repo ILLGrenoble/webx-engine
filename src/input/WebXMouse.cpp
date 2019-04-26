@@ -1,8 +1,18 @@
 #include "WebXMouse.h"
+#include "WebXMouseState.h"
 #include <X11/X.h>
 #include <X11/extensions/XTest.h>
-#include "connector/instruction/WebXMouseInstruction.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+
+WebXMouse::WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage) : 
+    _x11Display(x11Display),
+    _rootWindow(rootWindow),
+    _currentMouseState(createDefaultMouseState(cursorImage)) {
+}
+
+WebXMouse::~WebXMouse() {
+    delete _currentMouseState;
+}
 
 void WebXMouse::updateMouse(int x, int y, unsigned int buttonMask) {
     sendMouseMovement(x, y);

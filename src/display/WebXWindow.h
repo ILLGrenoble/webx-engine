@@ -79,6 +79,7 @@ public:
 
 private:
     uint32_t calculateImageChecksum(XImage * image);
+    uint32_t getHashValue(const char * data, int len);
 
 private:
     Display * _display;

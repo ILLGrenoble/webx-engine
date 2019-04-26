@@ -1,7 +1,3 @@
-#include <connector/instruction/WebXMouseInstruction.h>
-#include "WebXMouseState.h"
-#include "display/WebXWindow.h"
-
 #ifndef WEBX_MOUSE_H
 #define WEBX_MOUSE_H
 
@@ -16,30 +12,29 @@
 #define ScrollUpButton Button4
 #define ScrollDownButton Button5
 
+#include <X11/extensions/Xfixes.h>
+
+class WebXMouseState;
+
 class WebXMouse {
-
 public:
-    WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage) : _currentMouseState(NULL) {
-        _x11Display = x11Display;
-        _rootWindow = rootWindow;
-        _currentMouseState = createDefaultMouseState(cursorImage);
-    }
-
-    ~WebXMouse() {
-        delete _currentMouseState;
-    }
+    WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage);
+    ~WebXMouse();
 
     void updateMouse(int x, int y, unsigned int buttonMask);
     WebXMouseState  * createDefaultMouseState(XFixesCursorImage * cursorImage);
+
 private:
-    Display * _x11Display;
-    WebXMouseState  * _currentMouseState;
-    Window  _rootWindow;
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
     void sendCursor();
     void updateMouseState(int newX, int newY, int newButtonMask);
+
+private:
+    Display * _x11Display;
+    Window  _rootWindow;
+    WebXMouseState  * _currentMouseState;
 };
 
 #endif //WEBX_MOUSE_H
