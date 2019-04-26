@@ -84,6 +84,7 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     if (pngInfo) {
         png_free_data(png, pngInfo, PNG_FREE_ALL, -1);
+        // png_destroy_info_struct(png, &pngInfo);
     }
 
     if (png) {
