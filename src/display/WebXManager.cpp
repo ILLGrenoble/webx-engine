@@ -154,7 +154,7 @@ void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
-    spdlog::info("Got damage Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got damage Event for window 0x{}", event.getX11Window());
     this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 
