@@ -59,7 +59,7 @@ public:
 
     std::shared_ptr<WebXImage> getImage(Window x11Window, WebXRectangle * imageRectangle = NULL);
 
-    void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea);
+    void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool isFullWindow = false);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
     WebXMouse * createMouse();

@@ -130,7 +130,18 @@ void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
-    spdlog::debug("Got Configure Event for window 0x{}", event.getX11Window());
+    spdlog::info("Got Configure Event for window 0x{}", event.getX11Window());
+
+    WebXWindow * window = this->_display->getWindow(event.getX11Window());
+    if (window != NULL) {
+        const WebXSize & windowSize = window->getRectangle().size;
+        bool sizeHasChanged = windowSize.width != event.getWidth() || windowSize.height != event.getHeight();
+
+        if (sizeHasChanged) {
+            this->_display->addDamagedWindow(event.getX11Window(), window->getRectangle(), true);
+        }
+    }
+
     this->updateDisplay();
 }
 
@@ -143,6 +154,7 @@ void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
+    spdlog::info("Got damage Event for window 0x{}", event.getX11Window());
     this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 
