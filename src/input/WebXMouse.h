@@ -13,22 +13,24 @@
 #define ScrollDownButton Button5
 
 #include <X11/extensions/Xfixes.h>
+#include "input/cursor/WebXMouseCursor.h"
 
 class WebXMouseState;
 
 class WebXMouse {
 public:
-    WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage);
+    WebXMouse(Display * x11Display, const Window &rootWindow);
     ~WebXMouse();
 
     void updateMouse(int x, int y, unsigned int buttonMask);
-    WebXMouseState  * createDefaultMouseState(XFixesCursorImage * cursorImage);
+    WebXMouseState  * createDefaultMouseState();
 
 private:
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
     void sendCursor();
+    WebXMouseCursor * getCursor();
     void updateMouseState(int newX, int newY, int newButtonMask);
 
 private:

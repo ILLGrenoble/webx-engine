@@ -338,8 +338,7 @@ void WebXDisplay::updateManagedWindows() {
 
 WebXMouse * WebXDisplay::createMouse() {
     Window rootWindow = _rootWindow->getX11Window();
-    XFixesCursorImage * cursorImage = getCursorImage();
-    return new WebXMouse(_x11Display, rootWindow, cursorImage);
+    return new WebXMouse(_x11Display, rootWindow);
 }
 
 void WebXDisplay::sendMouse(int x, int y, unsigned int buttonMask) {
@@ -446,7 +445,4 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(WebXWindow * window, WebXRectan
     }
 }
 
-XFixesCursorImage * WebXDisplay::getCursorImage() const {
-    XFixesCursorImage *cursorImage = XFixesGetCursorImage(_x11Display);
-    return cursorImage;
-}
+

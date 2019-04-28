@@ -3,11 +3,12 @@
 #include <X11/X.h>
 #include <X11/extensions/XTest.h>
 #include <spdlog/spdlog.h>
+#include <input/cursor/WebXMouseCursorImageConverter.h>
 
-WebXMouse::WebXMouse(Display * x11Display, const Window &rootWindow, XFixesCursorImage * cursorImage) : 
+WebXMouse::WebXMouse(Display * x11Display, const Window &rootWindow) :
     _x11Display(x11Display),
     _rootWindow(rootWindow),
-    _currentMouseState(createDefaultMouseState(cursorImage)) {
+    _currentMouseState(createDefaultMouseState()) {
 }
 
 WebXMouse::~WebXMouse() {
@@ -53,19 +54,29 @@ void WebXMouse::updateMouseState(int newX, int newY, int newButtonMask) {
 }
 
 void WebXMouse::sendCursor() {
-    XFixesCursorImage *currentCursorImage = _currentMouseState->getCursorImage();
-    XFixesCursorImage *cursorImage = XFixesGetCursorImage(_x11Display);
-    if (strcmp(cursorImage->name, currentCursorImage->name) == 0) {
+    WebXMouseCursor * currentCursor = _currentMouseState->getCursor();
+    WebXMouseCursor * newCursor = getCursor();
+    XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
+    if (strcmp(newCursor->getInfo()->name, currentCursor->getInfo()->name) == 0) {
         spdlog::debug("Same cursor image: {}", cursorImage->name);
     } else {
-        spdlog::debug("Difference cursor image: {}", cursorImage->name);
-        _currentMouseState->setCursorImage(cursorImage);
+        spdlog::debug("Different cursor image: {}", cursorImage->name);
+        _currentMouseState->setCursor(newCursor);
     }
 }
 
-WebXMouseState *WebXMouse::createDefaultMouseState(XFixesCursorImage *cursorImage) {
-    return new WebXMouseState(cursorImage);
+WebXMouseState * WebXMouse::createDefaultMouseState() {
+    WebXMouseCursor * cursor = getCursor();
+    return new WebXMouseState(cursor);
 }
+
+WebXMouseCursor * WebXMouse::getCursor() {
+    XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
+    return new WebXMouseCursor(cursorImage);
+}
+
+
+
 
 
 

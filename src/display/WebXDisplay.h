@@ -96,7 +96,6 @@ private:
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
     std::shared_ptr<WebXImage> getImage(WebXWindow * window, WebXRectangle * imageRectangle = NULL) const;
-    XFixesCursorImage * getCursorImage() const;
 
 private:
     Display * _x11Display;

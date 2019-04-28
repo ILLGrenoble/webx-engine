@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 11)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-file(GLOB_RECURSE SOURCES src/*.cpp lib/*.c lib/*.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp  src/*/*.cpp lib/*.c lib/*.cpp)
 
 
 find_package(PkgConfig)
@@ -93,6 +93,7 @@ target_link_libraries(
 )
 
 
+
 file(GLOB_RECURSE TEST_MOUSE_SOURCES test/testMouse.cpp)
 
 add_executable(testMouse ${TEST_MOUSE_SOURCES})
@@ -102,3 +103,17 @@ target_link_libraries(
     -lXtst
     -lX11
 )
+
+file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/*)
+
+add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
+
+target_link_libraries(
+        testCursorImageEncoder
+        -lXtst
+        -lX11
+        -lXfixes
+        -lwebp
+        -lpng
+)
+

@@ -3,21 +3,19 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>
+#include "input/cursor/WebXMouseCursor.h"
 
 /**
  * Represents the current mouse state
  */
 class WebXMouseState {
 public:
-    WebXMouseState(XFixesCursorImage * cursorImage) :
-        _x(0), _y(0), _buttonMask(0), _cursorImage(NULL) {
-        _cursorImage = cursorImage;
+    WebXMouseState(WebXMouseCursor * cursor) :
+        _x(0), _y(0), _buttonMask(0), _cursor(cursor) {
     }
 
     ~WebXMouseState() {
-        if(_cursorImage != NULL) {
-            delete _cursorImage;
-        }
+        delete _cursor;
     }
 
     /**
@@ -56,23 +54,19 @@ public:
         return _buttonMask;
     }
 
-    /**
-     * Gets the current cursor image
-     * @return the cursor image
-     */
-    XFixesCursorImage * getCursorImage() const {
-        return _cursorImage;
+    WebXMouseCursor * getCursor() const {
+        return _cursor;
     }
 
-    void setCursorImage(XFixesCursorImage *cursorImage) {
-        WebXMouseState::_cursorImage = cursorImage;
+    void setCursor(WebXMouseCursor * cursor) {
+        _cursor = cursor;
     }
 
 private:
     int _x;
     int _y;
     int _buttonMask;
-    XFixesCursorImage * _cursorImage;
+    WebXMouseCursor * _cursor;
 };
 
 #endif //WEBX_MOUSE_STATE_H
