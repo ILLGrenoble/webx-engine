@@ -7,9 +7,10 @@
 
 class WebXWindowDamageProperties {
 public:
-    WebXWindowDamageProperties(WebXWindow * window, const WebXRectangle & damageArea) :
+    WebXWindowDamageProperties(WebXWindow * window, const WebXRectangle & damageArea, bool fullWindow = false) :
         windowId((unsigned long)window->getX11Window()),
         windowSize(window->getRectangle().size),
+        fullWindow(fullWindow),
         imageCaptureTime(window->getImageCaptureTime()) {
         this->damageAreas.push_back(damageArea);
     }
@@ -17,6 +18,7 @@ public:
         windowId(windowDamage.windowId),
         windowSize(windowDamage.windowSize),
         damageAreas(windowDamage.damageAreas),
+        fullWindow(windowDamage.fullWindow),
         imageCaptureTime(windowDamage.imageCaptureTime) {
     }
     virtual ~WebXWindowDamageProperties() {
@@ -27,6 +29,7 @@ public:
             this->windowId = windowDamage.windowId;
             this->windowSize = windowDamage.windowSize;
             this->damageAreas = windowDamage.damageAreas;
+            this->fullWindow = windowDamage.fullWindow;
             this->imageCaptureTime = windowDamage.imageCaptureTime;
         }
         return *this;
@@ -54,6 +57,9 @@ public:
     }
 
     bool isFullWindow() const {
+        if (this->fullWindow) {
+            return true;
+        }
         if (this->damageAreas.size() != 1) {
             return false;
         }
@@ -64,6 +70,7 @@ public:
     unsigned long windowId;
     WebXSize windowSize;
     std::vector<WebXRectangle> damageAreas;
+    bool fullWindow;
     std::chrono::high_resolution_clock::time_point imageCaptureTime;
 };
 
