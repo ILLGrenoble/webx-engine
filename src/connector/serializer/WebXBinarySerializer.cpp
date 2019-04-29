@@ -130,9 +130,11 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         std::shared_ptr<WebXImage> image = imageMessage->image;
         size_t imageDataSize = 0;
         unsigned int depth = 0;
+        char imageType[4] = "";
         if (image) {
             imageDataSize = image->getRawDataSize();
             depth = image->getDepth();
+            strncpy(imageType, image->getFileExtension().c_str(), 4);
         }
 
         // Structure:
@@ -157,8 +159,6 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
         buffer.write<uint32_t>(imageMessage->windowId);
         buffer.write<uint32_t>(depth);
 
-        char imageType[4] = "";
-        strncpy(imageType, image->getFileExtension().c_str(), 4);
         buffer.append((unsigned char *)imageType, 4);
 
         buffer.write<uint32_t>(imageDataSize);
