@@ -130,7 +130,7 @@ void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
-    spdlog::info("Got Configure Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Configure Event for window 0x{}", event.getX11Window());
 
     WebXWindow * window = this->_display->getWindow(event.getX11Window());
     if (window != NULL) {
