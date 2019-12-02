@@ -3,6 +3,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>
+#include <cstring>
+#include <spdlog/spdlog.h>
 #include "input/cursor/WebXMouseCursor.h"
 
 /**
@@ -11,7 +13,7 @@
 class WebXMouseState {
 public:
     WebXMouseState(WebXMouseCursor * cursor) :
-        _x(0), _y(0), _buttonMask(0), _cursor(cursor) {
+        _x(0), _y(0), _buttonMask(0), _cursor(cursor), _previousCursor(cursor) {
     }
 
     ~WebXMouseState() {
@@ -58,15 +60,27 @@ public:
         return _cursor;
     }
 
+    /**
+     * Check if the current cursor is different from the previous cursor
+     * @return true if different, false if not
+     */
+    bool isCursorDifferent() const {
+        return strcmp(_cursor->getInfo()->name, _previousCursor->getInfo()->name) != 0;
+    }
+
     void setCursor(WebXMouseCursor * cursor) {
+        _previousCursor = _cursor;
         _cursor = cursor;
     }
+
+    // check the cursor has changed
 
 private:
     int _x;
     int _y;
     int _buttonMask;
     WebXMouseCursor * _cursor;
+    WebXMouseCursor * _previousCursor;
 };
 
 #endif //WEBX_MOUSE_STATE_H

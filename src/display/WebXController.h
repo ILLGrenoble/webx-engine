@@ -58,6 +58,7 @@ private:
     void updateDisplay();
     void updateImages();
     void updateFps(double fps);
+    void updateMouseCursor();
 
 private:
     static unsigned int THREAD_RATE;
@@ -82,6 +83,7 @@ private:
     std::vector<double> _fpsStore;
     const static size_t FPS_STORE_SIZE = 30;
     int _fpsStoreIndex;
+
 };
 
 

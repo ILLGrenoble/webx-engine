@@ -91,7 +91,7 @@ void WebXController::mainLoop() {
             WebXManager::instance()->flushEventListener();
 
             if (this->_state != WebXControllerState::Paused) {
-                
+
                 if (this->_displayDirty) {
                     // Dispatch display event to connectors
                     this->updateDisplay();
@@ -99,6 +99,10 @@ void WebXController::mainLoop() {
 
                 // Update necessary images
                 this->updateImages();
+
+                // @TODO check if cursor position is dirty and update
+                this->updateMouseCursor();
+
             }
 
             std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -166,7 +170,7 @@ void WebXController::updateImages() {
                         }
                     }
                 }
-            
+
             } else {
                 // Get sub image changes
 
@@ -211,6 +215,18 @@ void WebXController::updateFps(double fps) {
 
         spdlog::debug("Average FPS = {:f}", averageFps);
     }
+}
+
+/**
+ * Only called when the mouse cursor changes
+ */
+void WebXController::updateMouseCursor() {
+    WebXDisplay * display = WebXManager::instance()->getDisplay();
+    WebXMouse * mouse =  display->getMouse();
+    for (WebXConnection * connection : this->_connections) {
+        connection->onMouseCursorChanged(mouse);
+    }
+
 }
 
 

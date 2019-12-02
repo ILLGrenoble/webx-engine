@@ -4,6 +4,7 @@
 #include <display/WebXConnection.h>
 #include <utils/WebXQueue.h>
 #include <tinythread/tinythread.h>
+#include <input/WebXMouse.h>
 
 class WebXMessage;
 class WebXSerializer;
@@ -23,6 +24,7 @@ public:
     virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows);
     virtual void onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image);
     virtual void onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages);
+    virtual void onMouseCursorChanged(WebXMouse * mouse);
 
 private:
     static void threadMain(void * arg);

@@ -46,6 +46,10 @@ public:
         return this->_rootWindow;
     }
 
+    WebXMouse * getMouse() const {
+        return this->_mouse;
+    }
+
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 

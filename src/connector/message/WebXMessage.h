@@ -10,7 +10,8 @@ public:
         Windows,
         Image,
         Screen,
-        Subimages
+        Subimages,
+        MouseCursor
     };
 
     WebXMessage(Type type) :

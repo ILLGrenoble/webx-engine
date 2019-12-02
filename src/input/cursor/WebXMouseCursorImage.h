@@ -49,6 +49,10 @@ public:
         return this->_rawData ? this->_rawData->getBufferSize() : 0;
     }
 
+    std::string getFileExtension() const {
+        return "png";
+    }
+
     /**
      * Get the time taken to convert the cursor into an image
      * @return the time taken

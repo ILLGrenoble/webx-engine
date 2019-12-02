@@ -4,6 +4,7 @@
 #include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXSubImagesMessage.h>
+#include <connector/message/WebXMouseCursorMessage.h>
 #include <connector/instruction/WebXConnectInstruction.h>
 #include <connector/instruction/WebXImageInstruction.h>
 #include <connector/instruction/WebXScreenInstruction.h>
@@ -14,6 +15,7 @@
 #include <zmq.hpp>
 #include <base64/base64.h>
 #include <spdlog/spdlog.h>
+#include <input/cursor/WebXMouseCursorImage.h>
 
 WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
@@ -98,27 +100,44 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         };
 
     } else if (message->type == WebXMessage::Type::Subimages) {
-        WebXSubImagesMessage * subImagesMessage = (WebXSubImagesMessage *)message;
+        WebXSubImagesMessage * subImagesMessage = (WebXSubImagesMessage *) message;
 
         j = nlohmann::json{
-            {"type", "subimages"},
-            {"commandId", subImagesMessage->commandId},
-            {"windowId", subImagesMessage->windowId},
-            {"subImages", {}}
+                {"type",      "subimages"},
+                {"commandId", subImagesMessage->commandId},
+                {"windowId",  subImagesMessage->windowId},
+                {"subImages", {}}
         };
         for (auto it = subImagesMessage->images.begin(); it != subImagesMessage->images.end(); it++) {
-            const WebXSubImage & subImage = *it;
+            const WebXSubImage &subImage = *it;
 
             j["subImages"].push_back({
-                {"x", subImage.imageRectangle.x},
-                {"y", subImage.imageRectangle.y},
-                {"width", subImage.imageRectangle.size.width},
-                {"height", subImage.imageRectangle.size.height},
-                {"depth", subImage.image->getDepth()},
-                {"data", "data:image/" + subImage.image->getFileExtension() + ";base64," + base64_encode(subImage.image->getRawData(), subImage.image->getRawDataSize())}
-            });
+                                             {"x",      subImage.imageRectangle.x},
+                                             {"y",      subImage.imageRectangle.y},
+                                             {"width",  subImage.imageRectangle.size.width},
+                                             {"height", subImage.imageRectangle.size.height},
+                                             {"depth",  subImage.image->getDepth()},
+                                             {"data",   "data:image/" + subImage.image->getFileExtension() +
+                                                        ";base64," + base64_encode(subImage.image->getRawData(),
+                                                                                   subImage.image->getRawDataSize())}
+                                     });
         }
+    } else if (message->type == WebXMessage::Type::MouseCursor) {
+        WebXMouseCursorMessage * cursorMessage = (WebXMouseCursorMessage *) message;
+        auto mouseCursor = cursorMessage->mouseCursor;
+        auto cursorImage  = mouseCursor->getImage();
 
+        j = nlohmann::json{
+            {"type",      "cursor"},
+            {"commandId", cursorMessage->commandId},
+            {"x", cursorMessage->x},
+            {"y", cursorMessage->y},
+            {"name", mouseCursor->getInfo()->name},
+            {"data",   "data:image/" + cursorImage->getFileExtension() +
+                      ";base64," + base64_encode(cursorImage->getRawData(),
+                                                 cursorImage->getRawDataSize())
+            }
+        };
     } else {
         return new zmq::message_t(0);
     }

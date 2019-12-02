@@ -14,8 +14,8 @@
 
 #include <X11/extensions/Xfixes.h>
 #include "input/cursor/WebXMouseCursor.h"
+#include "WebXMouseState.h"
 
-class WebXMouseState;
 
 class WebXMouse {
 public:
@@ -25,12 +25,15 @@ public:
     void updateMouse(int x, int y, unsigned int buttonMask);
     WebXMouseState  * createDefaultMouseState();
 
+    WebXMouseState * getState();
+    void sendCursor();
+
 private:
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
-    void sendCursor();
     WebXMouseCursor * getCursor();
+
     void updateMouseState(int newX, int newY, int newButtonMask);
 
 private:

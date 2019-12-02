@@ -32,7 +32,7 @@ void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
         // Check if the state has changed for a given button
         if (buttonMaskDelta & buttonMasks[i]) {
             // update the button if changed
-            sendMouseButton(buttons[i], (newButtonMask & buttonMasks[i]));
+            sendMouseButton(buttons[i], newButtonMask & buttonMasks[i]);
         }
     }
 }
@@ -54,16 +54,10 @@ void WebXMouse::updateMouseState(int newX, int newY, int newButtonMask) {
 }
 
 void WebXMouse::sendCursor() {
-    WebXMouseCursor * currentCursor = _currentMouseState->getCursor();
     WebXMouseCursor * newCursor = getCursor();
-    XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
-    if (strcmp(newCursor->getInfo()->name, currentCursor->getInfo()->name) == 0) {
-        spdlog::debug("Same cursor image: {}", cursorImage->name);
-    } else {
-        spdlog::debug("Different cursor image: {}", cursorImage->name);
-        _currentMouseState->setCursor(newCursor);
-    }
+    _currentMouseState->setCursor(newCursor);
 }
+
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {
     WebXMouseCursor * cursor = getCursor();
@@ -74,6 +68,11 @@ WebXMouseCursor * WebXMouse::getCursor() {
     XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
     return new WebXMouseCursor(cursorImage);
 }
+
+WebXMouseState * WebXMouse::getState() {
+    return _currentMouseState;
+}
+
 
 
 
