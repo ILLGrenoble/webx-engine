@@ -4,6 +4,7 @@
 #include "WebXSerializer.h"
 #include <nlohmann/json.hpp>
 
+
 class WebXBinarySerializer : public WebXSerializer {
 public:
     WebXBinarySerializer() :
@@ -12,7 +13,6 @@ public:
 
     virtual WebXInstruction * deserialize(void * instructionData, size_t instructionDataSize);
     virtual zmq::message_t * serialize(WebXMessage * message);
-
 };
 
 void from_json(const nlohmann::json& j, WebXInstruction & request);
