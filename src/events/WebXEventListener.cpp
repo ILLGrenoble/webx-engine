@@ -13,7 +13,10 @@ WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow)
     _rootWindow(rootWindow),
     _damageEventBase(0),
     _damageErrorBase(0),
-    _damageAvailable(false) {
+    _damageAvailable(false),
+    _xfixesEventBase(0),
+    _xfixesErrorBase(0),
+    _xfixesAvailable(false){
 
     XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
 
@@ -21,6 +24,13 @@ WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow)
         this->_damageAvailable = true;
     } else {
         spdlog::error("No damage extension");
+        exit(1);
+    }
+    if (XFixesQueryExtension(this->_x11Display, &this->_xfixesEventBase, &this->_xfixesErrorBase)) {
+        this->_xfixesAvailable = true;
+        XFixesSelectCursorInput(this->_x11Display,  this->_rootWindow->getX11Window(), XFixesDisplayCursorNotifyMask);
+    } else {
+        spdlog::error("No xfixes extension");
         exit(1);
     }
 }

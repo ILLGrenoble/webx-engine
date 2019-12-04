@@ -26,6 +26,14 @@ public:
         this->_displayDirty = true;
     }
 
+    void onMouseCursorChanged() {
+        this->_mouseCursorDirty = true;
+    }
+
+    bool isMouseCursorDirty() const {
+        return this->_mouseCursorDirty;
+    }
+
     void run();
     void stop();
     void pause();
@@ -69,6 +77,8 @@ private:
     std::vector<WebXInstruction *> _instructions;
 
     bool _displayDirty;
+    bool _mouseCursorDirty;
+
     long _imageRefreshUs;
 
     tthread::thread * _thread;

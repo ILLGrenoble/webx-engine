@@ -39,7 +39,6 @@ private:
     WebXMessage * handleWindowsInstruction();
     WebXMessage * handleImageInstruction(long windowId);
 
-
 private:
     static WebXClientConnector * _instance;
     static int CONNECTOR_PORT;

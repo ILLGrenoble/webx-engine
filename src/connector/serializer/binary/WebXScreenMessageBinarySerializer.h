@@ -17,7 +17,7 @@ public:
     //   commandId: 4 bytes
     //   screenWidth: 4 bytes
     //   screenHeight: 4 bytes
-    zmq::message_t * serialize(WebXScreenMessage * message);
+    zmq::message_t * serialize(const WebXScreenMessage * message);
 };
 
 

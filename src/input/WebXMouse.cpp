@@ -2,7 +2,6 @@
 #include "WebXMouseState.h"
 #include <X11/X.h>
 #include <X11/extensions/XTest.h>
-#include <spdlog/spdlog.h>
 #include <input/cursor/WebXMouseCursorImageConverter.h>
 
 WebXMouse::WebXMouse(Display * x11Display, const Window &rootWindow) :
@@ -18,7 +17,6 @@ WebXMouse::~WebXMouse() {
 void WebXMouse::updateMouse(int x, int y, unsigned int buttonMask) {
     sendMouseMovement(x, y);
     sendMouseButtons(buttonMask);
-    sendCursor();
     updateMouseState(x, y, buttonMask);
 }
 
@@ -53,20 +51,30 @@ void WebXMouse::updateMouseState(int newX, int newY, int newButtonMask) {
     _currentMouseState->setState(newX, newY, newButtonMask);
 }
 
-void WebXMouse::sendCursor() {
+void WebXMouse::updateCursor() {
     WebXMouseCursor * newCursor = getCursor();
-    _currentMouseState->setCursor(newCursor);
+    if(newCursor) {
+        _currentMouseState->setCursor(newCursor);
+    }
 }
 
+WebXMouseCursor * WebXMouse::getCursor() {
+    unsigned long last_serial = 0;
+    XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
+    if(cursorImage) {
+        if(cursorImage->cursor_serial == last_serial) {
+            return NULL;
+        }
+        return new WebXMouseCursor(cursorImage);
+    } else {
+        XFree(cursorImage);
+    }
+    return NULL;
+}
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {
     WebXMouseCursor * cursor = getCursor();
     return new WebXMouseState(cursor);
-}
-
-WebXMouseCursor * WebXMouse::getCursor() {
-    XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
-    return new WebXMouseCursor(cursorImage);
 }
 
 WebXMouseState * WebXMouse::getState() {

@@ -2,7 +2,7 @@
 #include "WebXScreenMessageBinarySerializer.h"
 #include "utils/WebXBinaryBuffer.h"
 
-zmq::message_t * WebXScreenMessageBinarySerializer::serialize(WebXScreenMessage * message) {
+zmq::message_t * WebXScreenMessageBinarySerializer::serialize(const WebXScreenMessage * message) {
     size_t dataSize = 16 + 12;
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, (uint32_t) message->type);

@@ -42,7 +42,8 @@ private:
     void handleWindowGravityEvent(const WebXEvent & event);
     void handleWindowCirculateEvent(const WebXEvent & event);
     void handleWindowDamageEvent(const WebXEvent & event);
- 
+    void handleMouseCursorEvent(const WebXEvent & event);
+
     void updateDisplay();
 
 private:

@@ -14,7 +14,8 @@ enum WebXEventType {
     Gravity,
     Circulate,
     Damaged,
-    Other
+    Other,
+    MouseCursor
 };
 
 class WebXEvent {

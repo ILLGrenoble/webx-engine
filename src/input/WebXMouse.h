@@ -24,9 +24,8 @@ public:
 
     void updateMouse(int x, int y, unsigned int buttonMask);
     WebXMouseState  * createDefaultMouseState();
-
     WebXMouseState * getState();
-    void sendCursor();
+    void updateCursor();
 
 private:
     void sendMouseButtons(unsigned int newButtonMask);

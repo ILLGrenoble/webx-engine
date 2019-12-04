@@ -100,8 +100,9 @@ void WebXController::mainLoop() {
                 // Update necessary images
                 this->updateImages();
 
-                // @TODO check if cursor position is dirty and update
-                this->updateMouseCursor();
+                if(this->isMouseCursorDirty()) {
+                    this->updateMouseCursor();
+                }
 
             }
 
@@ -221,8 +222,8 @@ void WebXController::updateFps(double fps) {
  * Only called when the mouse cursor changes
  */
 void WebXController::updateMouseCursor() {
-    WebXDisplay * display = WebXManager::instance()->getDisplay();
-    WebXMouse * mouse =  display->getMouse();
+    this->_mouseCursorDirty = false;
+    WebXMouse * mouse =  this->_display->getMouse();
     for (WebXConnection * connection : this->_connections) {
         connection->onMouseCursorChanged(mouse);
     }

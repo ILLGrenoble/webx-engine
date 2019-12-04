@@ -3,6 +3,6 @@
 #include "utils/WebXBinaryBuffer.h"
 
 // @TODO Implement this
-zmq::message_t * WebXMouseCursorMessageBinarySerializer::serialize(WebXMouseCursorMessage * message) {
+zmq::message_t * WebXMouseCursorMessageBinarySerializer::serialize(const WebXMouseCursorMessage * message) {
     return NULL;
 }

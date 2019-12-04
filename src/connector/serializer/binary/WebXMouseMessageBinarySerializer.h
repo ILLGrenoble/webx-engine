@@ -10,7 +10,7 @@ class WebXMouseMessageBinarySerializer : public WebXBinaryMessageSerializer<WebX
 public:
 
     // @TODO Define structure here
-    zmq::message_t * serialize(WebXMouseCursorMessage * message);
+    zmq::message_t * serialize(const WebXMouseCursorMessage * message);
 };
 
 

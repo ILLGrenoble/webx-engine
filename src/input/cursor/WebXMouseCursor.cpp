@@ -14,7 +14,8 @@ WebXMouseCursor::WebXMouseCursor(XFixesCursorImage * cursor) :
 }
 
 std::shared_ptr<WebXMouseCursorImage> WebXMouseCursor::getImage() {
-    return std::shared_ptr<WebXMouseCursorImage>(_converter->convert(_cursor));
+    auto image = _converter->convert(_cursor);
+    return std::shared_ptr<WebXMouseCursorImage>(image);
 }
 
 

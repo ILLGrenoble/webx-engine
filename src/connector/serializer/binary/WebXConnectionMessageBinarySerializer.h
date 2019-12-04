@@ -17,7 +17,7 @@ public:
     //   commandId: 4 bytes
     //   publisherPort: 4 bytes
     //   collectorPort: 4 bytes
-    zmq::message_t * serialize(WebXConnectionMessage * message);
+    zmq::message_t * serialize(const WebXConnectionMessage * message);
 };
 
 

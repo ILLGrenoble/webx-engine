@@ -22,6 +22,10 @@ public:
         return this->_damageAvailable;
     }
 
+    bool getXFixesAvailable() const {
+        return this->_xfixesAvailable;
+    }
+
 private:
     void handleEvent(const WebXEvent & event);
 
@@ -33,6 +37,9 @@ private:
     int _damageEventBase;
     int _damageErrorBase;
     bool _damageAvailable;
+    int _xfixesEventBase;
+    int _xfixesErrorBase;
+    bool _xfixesAvailable;
 };
 
 

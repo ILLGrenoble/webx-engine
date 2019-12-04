@@ -17,7 +17,8 @@ public:
 
     }
     
-    virtual ~WebXMouseCursorMessage() {}
+    virtual ~WebXMouseCursorMessage() {
+    }
 
     int x;
     int y;

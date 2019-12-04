@@ -20,7 +20,7 @@ public:
     //   imageType: 4 bytes (chars)
     //   imageDataLength: 4 bytes
     //   imageData: n bytes
-    zmq::message_t * serialize(WebXImageMessage * message);
+    zmq::message_t * serialize(const WebXImageMessage * message);
 };
 
 

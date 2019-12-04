@@ -56,20 +56,19 @@ void WebXClientMessagePublisher::onImageChanged(unsigned long windowId, std::sha
     this->_messageQueue->put(message);
 }
 
-
-
 void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages) {
     WebXSubImagesMessage * message = new WebXSubImagesMessage(windowId, subImages);
     this->_messageQueue->put(message);
 }
 
 void WebXClientMessagePublisher::onMouseCursorChanged(WebXMouse * mouse) {
-    mouse->sendCursor();
+    mouse->updateCursor();
     WebXMouseState  * mouseState = mouse->getState();
     if(mouseState->isCursorDifferent()) {
         WebXMouseCursor * mouseCursor = mouseState->getCursor();
         spdlog::debug("Cursor is not the same. Sending new cursor: {}", mouseCursor->getInfo()->name);
-        WebXMouseCursorMessage * message = new WebXMouseCursorMessage(mouseState->getX(), mouseState->getY(),
+        WebXMouseCursorMessage * message = new WebXMouseCursorMessage(mouseState->getX(),
+                                                                      mouseState->getY(),
                                                                       mouseCursor);
         this->_messageQueue->put(message);
     }

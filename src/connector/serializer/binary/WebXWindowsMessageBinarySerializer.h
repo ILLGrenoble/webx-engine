@@ -22,7 +22,7 @@ public:
     //      y: 4 bytes
     //      width: 4 bytes
     //      height: 4 bytes
-    zmq::message_t * serialize(WebXWindowsMessage * message);
+    zmq::message_t * serialize(const WebXWindowsMessage * message);
 };
 
 

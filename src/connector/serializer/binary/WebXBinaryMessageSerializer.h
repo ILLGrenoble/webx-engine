@@ -7,7 +7,7 @@ template <typename T>
 class WebXBinaryMessageSerializer {
 public:
     virtual ~WebXBinaryMessageSerializer() = default;
-    virtual zmq::message_t * serialize(T * message) = 0;
+    virtual zmq::message_t * serialize(const T * message) = 0;
 };
 
 

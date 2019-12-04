@@ -2,9 +2,9 @@
 #define WEBX_MOUSE_CURSOR_H
 
 #include <X11/extensions/Xfixes.h>
+#include <memory>
 #include "input/cursor/WebXMouseCursorImage.h"
 #include "input/cursor/WebXMouseCursorImageConverter.h"
-#include <memory>
 
 class WebXMouseCursor {
 public:
@@ -15,7 +15,6 @@ public:
 
     /**
      * Ger the X11 cursor
-     * @return
      */
     XFixesCursorImage * getInfo() const {
         return _cursor;

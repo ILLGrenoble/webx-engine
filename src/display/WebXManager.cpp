@@ -2,9 +2,9 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXController.h"
-#include "WebXWindowDamageProperties.h"
 #include <events/WebXEventListener.h>
-#include <X11/Xatom.h>
+#include <X11/extensions/Xfixes.h>
+
 #include <stdio.h>
 #include <spdlog/spdlog.h>
 
@@ -84,6 +84,7 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Gravity, std::bind(&WebXManager::handleWindowGravityEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
+    this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
     // this->_eventListener->run();
 }
 
@@ -161,4 +162,9 @@ void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
 void WebXManager::updateDisplay() {
     this->_display->updateVisibleWindows();
     this->_controller->onDisplayChanged();
+}
+
+void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
+    spdlog::debug("Got new mouse cursor event");
+    this->_controller->onMouseCursorChanged();
 }

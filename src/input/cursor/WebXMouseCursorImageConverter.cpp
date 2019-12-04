@@ -2,6 +2,7 @@
 #include <png.h>
 #include <stdlib.h>
 #include <chrono>
+#include <spdlog/spdlog.h>
 
 void WebXMouseCursorImageConverter::RawDataWriter(png_struct *png, png_byte *data, size_t length) {
     // https://stackoverflow.com/questions/1821806/how-to-encode-png-to-buffer-using-libpng
@@ -16,11 +17,11 @@ WebXMouseCursorImageConverter::WebXMouseCursorImageConverter() {
 WebXMouseCursorImageConverter::~WebXMouseCursorImageConverter() {
 }
 
-WebXMouseCursorImage * WebXMouseCursorImageConverter::convert(XFixesCursorImage * image) const {
+WebXMouseCursorImage *WebXMouseCursorImageConverter::convert(XFixesCursorImage *image) const {
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-    png_struct * png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    png_info * pngInfo = png_create_info_struct(png);
+    png_struct *png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_info *pngInfo = png_create_info_struct(png);
 
     WebXDataBuffer *rawData = new WebXDataBuffer(1024);
     png_set_write_fn(png, rawData, WebXMouseCursorImageConverter::RawDataWriter, NULL);
@@ -36,7 +37,7 @@ WebXMouseCursorImage * WebXMouseCursorImageConverter::convert(XFixesCursorImage 
     png_write_info(png, pngInfo);
 
     unsigned long *src = image->pixels;
-    png_byte **rows = (png_byte **)malloc(sizeof(png_byte *) * image->height);
+    png_byte **rows = (png_byte **) malloc(sizeof(png_byte *) * image->height);
     for (unsigned long y = 0; y < image->height; y++) {
         rows[y] = static_cast<png_byte *>(malloc(static_cast<size_t>(image->width * 4)));
         for (unsigned long x = 0; x < image->width; x++) {
