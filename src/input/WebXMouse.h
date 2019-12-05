@@ -16,7 +16,6 @@
 #include "input/cursor/WebXMouseCursor.h"
 #include "WebXMouseState.h"
 
-
 class WebXMouse {
 public:
     WebXMouse(Display * x11Display, const Window &rootWindow);

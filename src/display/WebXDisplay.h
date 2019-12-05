@@ -8,6 +8,7 @@
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
 #include <connector/instruction/WebXMouseInstruction.h>
+#include <input/WebXKeyboard.h>
 #include "input/WebXMouse.h"
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
@@ -67,7 +68,9 @@ public:
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
     WebXMouse * createMouse();
+    WebXKeyboard * createKeyboard();
     void sendMouse(int x, int y, unsigned int buttonMask);
+    void sendKeyboard(int key, bool pressed);
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :
@@ -118,6 +121,7 @@ private:
     std::vector<WebXWindowDamageProperties> _damagedWindows;
     tthread::mutex _damagedWindowsMutex;
     WebXMouse * _mouse;
+    WebXKeyboard * _keyboard;
 };
 
 

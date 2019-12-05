@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <X11/extensions/XTest.h>
 #include <input/WebXMouse.h>
+#include <input/WebXKeyboard.h>
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
@@ -27,10 +28,17 @@ WebXDisplay::~WebXDisplay() {
         delete this->_imageConverter;
         this->_imageConverter = NULL;
     }
+
     if(this->_mouse) {
         delete this->_mouse;
         this->_mouse = NULL;
     }
+
+    if(this->_keyboard) {
+        delete this->_keyboard;
+        this->_keyboard = NULL;
+    }
+
 }
 
 void WebXDisplay::init() {
@@ -47,6 +55,7 @@ void WebXDisplay::init() {
     Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
     this->_screenSize = WebXSize(screen->width, screen->height);
     this->_mouse = createMouse();
+    this->_keyboard = createKeyboard();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -349,6 +358,19 @@ void WebXDisplay::sendMouse(int x, int y, unsigned int buttonMask) {
     this->_mouse->updateMouse(x, y, buttonMask);
 }
 
+WebXKeyboard * WebXDisplay::createKeyboard() {
+    return new WebXKeyboard(_x11Display);
+}
+
+void WebXDisplay::sendKeyboard(int key, bool pressed) {
+    spdlog::debug("Sending keyboard instruction key={}, pressed={}", key, pressed);
+    if(pressed) {
+        this->_keyboard->press(key);
+    } else {
+        this->_keyboard->release(key);
+    }
+}
+
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);
@@ -423,7 +445,7 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
     WebXWindow * parent = NULL;
     WebXTreeDetails tree;
     if (queryTree(this->_x11Display, window->getX11Window(), tree)) {
-        
+
         parent = this->getWindow(tree.parent);
         if (parent == NULL) {
             parent = this->createWindowInTree(tree.parent);

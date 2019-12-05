@@ -10,7 +10,8 @@ public:
         Windows,
         Image,
         Screen,
-        Mouse
+        Mouse,
+        Keyboard
     };
 
     WebXInstruction(Type type, uint32_t id) :

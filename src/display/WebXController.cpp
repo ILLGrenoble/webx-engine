@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
+#include <connector/instruction/WebXKeyboardInstruction.h>
 
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
@@ -125,6 +126,13 @@ void WebXController::handleClientInstructions() {
             display->sendMouse(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
 
+        if(instruction->type == WebXInstruction::Type::Keyboard) {
+            WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction;
+            spdlog::debug("Received keyboard instruction for key: {}", keyboardInstruction->key);
+            WebXDisplay * display = WebXManager::instance()->getDisplay();
+            display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
+        }
+
         delete instruction;
     }
 
@@ -227,7 +235,6 @@ void WebXController::updateMouseCursor() {
     for (WebXConnection * connection : this->_connections) {
         connection->onMouseCursorChanged(mouse);
     }
-
 }
 
 

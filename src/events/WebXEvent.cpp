@@ -68,7 +68,7 @@ void WebXEvent::convert() {
     default:
         if (this->_xEvent.type == this->_damageEventBase +  XDamageNotify) {
             this->_type = WebXEventType::Damaged;
-            XDamageNotifyEvent *damageEvent = (XDamageNotifyEvent *) &this->_xEvent;
+            XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *) &this->_xEvent;
             this->_x11Window = damageEvent->drawable;
             this->_x = damageEvent->area.x;
             this->_y = damageEvent->area.y;

@@ -1,15 +1,16 @@
 #include "WebXJsonSerializer.h"
-#include <connector/message/WebXWindowsMessage.h>
-#include <connector/message/WebXConnectionMessage.h>
-#include <connector/message/WebXScreenMessage.h>
-#include <connector/message/WebXImageMessage.h>
-#include <connector/message/WebXSubImagesMessage.h>
-#include <connector/message/WebXMouseCursorMessage.h>
-#include <connector/instruction/WebXConnectInstruction.h>
-#include <connector/instruction/WebXImageInstruction.h>
-#include <connector/instruction/WebXScreenInstruction.h>
-#include <connector/instruction/WebXWindowsInstruction.h>
-#include <connector/instruction/WebXMouseInstruction.h>
+#include "connector/message/WebXWindowsMessage.h"
+#include "connector/message/WebXConnectionMessage.h"
+#include "connector/message/WebXScreenMessage.h"
+#include "connector/message/WebXImageMessage.h"
+#include "connector/message/WebXSubImagesMessage.h"
+#include "connector/message/WebXMouseCursorMessage.h"
+#include "connector/instruction/WebXConnectInstruction.h"
+#include "connector/instruction/WebXImageInstruction.h"
+#include "connector/instruction/WebXScreenInstruction.h"
+#include "connector/instruction/WebXWindowsInstruction.h"
+#include "connector/instruction/WebXMouseInstruction.h"
+#include <connector/instruction/WebXKeyboardInstruction.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>
@@ -26,6 +27,7 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
     nlohmann::json jInstruction = nlohmann::json::parse(instructionString);
     unsigned long type = jInstruction.at("type");
     unsigned long id = jInstruction.at("id");
+    // TODO use enum?
     switch(type) {
         case 1: return new WebXConnectInstruction(id);
         case 2: return new WebXWindowsInstruction(id);
@@ -39,6 +41,11 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
             int y = jInstruction.at("y");
             unsigned int buttonMask = jInstruction.at("buttonMask");
             return new WebXMouseInstruction(id, x, y, buttonMask);
+        }
+        case 6: {
+            int key = jInstruction.at("key");
+            bool pressed = jInstruction.at("pressed");
+            return new WebXKeyboardInstruction(id, key, pressed);
         }
         default: return NULL;
     }
