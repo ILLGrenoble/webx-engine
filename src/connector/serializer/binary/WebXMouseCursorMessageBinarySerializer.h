@@ -8,7 +8,16 @@
 class WebXMouseCursorMessageBinarySerializer : public WebXBinaryMessageSerializer<WebXMouseCursorMessage> {
 public:
 
-    // @TODO Define structure here
+    // Structure:
+    // Header: 16 bytes
+    //   type: 4 bytes
+    //   id: 4 bytes
+    //   length: 4 bytes
+    //   padding: 4 bytes
+    // Content:
+    //   commandId: 4 bytes
+    //   imageDataLength: 4 bytes
+    //   imageData: n bytes
     zmq::message_t * serialize(const WebXMouseCursorMessage * message);
 };
 

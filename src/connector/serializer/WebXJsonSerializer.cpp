@@ -130,8 +130,6 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         j = nlohmann::json{
             {"type",      "cursor"},
             {"commandId", cursorMessage->commandId},
-            {"x", cursorMessage->x},
-            {"y", cursorMessage->y},
             {"name", mouseCursor->getInfo()->name},
             {"data",   "data:image/" + cursorImage->getFileExtension() +
                       ";base64," + base64_encode(cursorImage->getRawData(),
