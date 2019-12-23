@@ -200,7 +200,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
 
     XWindowAttributes attr;
     Status status = XGetWindowAttributes(this->_x11Display, window, &attr);
-    if (attr.map_state == IsViewable) {
+    if (attr.map_state == IsViewable && attr.c_class == InputOutput) {
         // Print window
         printf("%*c", indent, ' ');
         printf("0x%08lx : @ (%d, %d), %dx%d) %d %d %d\n", window, attr.x, attr.y, attr.width, attr.height, attr.map_state, attr.depth, attr.visual ? 1 : 0);
@@ -377,7 +377,7 @@ WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     if (window == NULL) {
         XWindowAttributes attr;
         Status status = XGetWindowAttributes(this->_x11Display, x11Window, &attr);
-        if (status != BadWindow && attr.map_state == IsViewable) {
+        if (status != BadWindow && attr.map_state == IsViewable && attr.c_class == InputOutput) {
             window = new WebXWindow(this->_x11Display, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
 
             this->_allWindows[x11Window] = window;
