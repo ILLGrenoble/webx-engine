@@ -57,7 +57,7 @@ void WebXWindow::updateAttributes() {
     Status status = XGetWindowAttributes(this->_display, this->_x11Window, &attr);
     if (status != BadWindow) {
         this->_rectangle = WebXRectangle(attr.x, attr.y, attr.width, attr.height);
-        this->_isViewable = (attr.map_state == IsViewable);
+        this->_isViewable = (attr.map_state == IsViewable && attr.c_class == InputOutput);
     } else {
         this->_rectangle = WebXRectangle(0, 0, -1, -1);
         this->_isViewable = false;

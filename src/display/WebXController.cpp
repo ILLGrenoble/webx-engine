@@ -222,7 +222,7 @@ void WebXController::updateFps(double fps) {
         }
         averageFps /= WebXController::FPS_STORE_SIZE;
 
-        spdlog::debug("Average FPS = {:f}", averageFps);
+        spdlog::trace("Average FPS = {:f}", averageFps);
     }
 }
 
