@@ -1,6 +1,5 @@
-#include <zmq.hpp>
 #include "WebXWindowsMessageBinarySerializer.h"
-#include "utils/WebXBinaryBuffer.h"
+#include <utils/WebXBinaryBuffer.h>
 
 zmq::message_t * WebXWindowsMessageBinarySerializer::serialize(const WebXWindowsMessage * message) {
     size_t dataSize = 16 + 8 + message->windows.size() * 20;

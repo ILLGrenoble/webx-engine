@@ -53,7 +53,7 @@ public:
             return "png";
         } else if (this->_type == WebXImageTypeJPG) {
             return "jpg";
-        } else if(this->_type == WebXImageTypeWebP) {
+        } else if (this->_type == WebXImageTypeWebP) {
             return "webp";    
         }else {
             return "img";

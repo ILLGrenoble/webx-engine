@@ -2,18 +2,18 @@
 #define WEBX_MOUSE_CURSOR_MESSAGE_H
 
 #include <utility>
-
+#include <memory>
 #include "WebXMessage.h"
-
-#include "input/cursor/WebXMouseCursor.h"
+#include <input/cursor/WebXMouseCursorImage.h>
 
 class WebXMouseCursorMessage : public WebXMessage {
 public:
-    WebXMouseCursorMessage(int x, int y, WebXMouseCursor *  mouseCursor) :
+    WebXMouseCursorMessage(int x, int y, std::shared_ptr<WebXMouseCursorImage>  mouseCursorImage, const char * mouseCursorName) :
         WebXMessage(Type::MouseCursor),
         x(x),
         y(y),
-        mouseCursor(mouseCursor){
+        mouseCursorImage(mouseCursorImage),
+        mouseCursorName(mouseCursorName) {
 
     }
     
@@ -23,7 +23,8 @@ public:
     int x;
     int y;
 
-    WebXMouseCursor * mouseCursor;
+    std::shared_ptr<WebXMouseCursorImage> mouseCursorImage;
+    std::string mouseCursorName;
 
 };
 

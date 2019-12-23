@@ -1,10 +1,11 @@
 #ifndef WEBX_MOUSE_CURSOR_IMAGE_CONVERTER_H
 #define WEBX_MOUSE_CURSOR_IMAGE_CONVERTER_H
 
-#include "input/cursor/WebXMouseCursorImage.h"
 #include <png.h>
 #include <stdlib.h>
 #include <X11/extensions/Xfixes.h>
+
+#include "WebXMouseCursorImage.h"
 
 class WebXMouseCursorImageConverter {
 public:
@@ -17,7 +18,7 @@ public:
      * @param image the x11 cursor
      * @return the image
      */
-    virtual WebXMouseCursorImage * convert(XFixesCursorImage * image) const;
+    WebXMouseCursorImage * convert(XFixesCursorImage * image) const;
 
 private:
     static void RawDataWriter(png_struct * png, png_byte * data, png_size_t length);

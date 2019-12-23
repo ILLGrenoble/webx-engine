@@ -1,7 +1,7 @@
 #ifndef WEBX_MOUSE_CURSOR_IMAGE_H
 #define WEBX_MOUSE_CURSOR_IMAGE_H
 
-#include "utils/WebXDataBuffer.h"
+#include <utils/WebXDataBuffer.h>
 #include <string>
 
 class WebXMouseCursorImage {
@@ -13,7 +13,7 @@ public:
      * @param rawData the cursor image data
      * @param encodingTimeUs  the time taken to convert into an image
      */
-    WebXMouseCursorImage(unsigned int width, unsigned int height, WebXDataBuffer *rawData, double encodingTimeUs);
+    WebXMouseCursorImage(unsigned int width, unsigned int height, WebXDataBuffer * rawData, double encodingTimeUs);
 
     virtual ~WebXMouseCursorImage();
 

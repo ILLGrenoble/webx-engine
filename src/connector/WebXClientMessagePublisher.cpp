@@ -2,10 +2,11 @@
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
 #include "message/WebXSubImagesMessage.h"
+#include "message/WebXMouseCursorMessage.h"
 #include "serializer/WebXSerializer.h"
+#include <input/cursor/WebXMouseCursor.h>
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
-#include <connector/message/WebXMouseCursorMessage.h>
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
     _thread(NULL),
@@ -61,17 +62,10 @@ void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std:
     this->_messageQueue->put(message);
 }
 
-void WebXClientMessagePublisher::onMouseCursorChanged(WebXMouse * mouse) {
-    mouse->updateCursor();
-    const WebXMouseState  * mouseState = mouse->getState();
-    if(mouseState->isCursorDifferent()) {
-        WebXMouseCursor * mouseCursor = mouseState->getCursor();
-        spdlog::debug("Cursor is not the same. Sending new cursor: {}", mouseCursor->getInfo()->name);
-        WebXMouseCursorMessage * message = new WebXMouseCursorMessage(mouseState->getX(),
-                                                                      mouseState->getY(),
-                                                                      mouseCursor);
-        this->_messageQueue->put(message);
-    }
+void WebXClientMessagePublisher::onMouseCursorChanged(int x, int y, WebXMouseCursor * mouseCursor) {
+    spdlog::debug("Cursor is not the same. Sending new cursor: {}", mouseCursor->getName());
+    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getImage(), mouseCursor->getName());
+    this->_messageQueue->put(message);
 }
 
 void WebXClientMessagePublisher::threadMain(void * arg) {

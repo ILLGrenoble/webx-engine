@@ -18,7 +18,7 @@ public:
 
     ~WebXMouseState() {
         delete _cursor;
-        if(_previousCursor) {
+        if (_previousCursor) {
             delete _previousCursor;
         }
     }
@@ -68,12 +68,12 @@ public:
      * @return true if different, false if not
      */
     bool isCursorDifferent() const {
-        if(_cursor) {
-            if(_previousCursor) {
+        if (_cursor) {
+            if (_previousCursor) {
                 return strcmp(_cursor->getInfo()->name, _previousCursor->getInfo()->name) != 0;
             }
         } else {
-            if(!_previousCursor) {
+            if (!_previousCursor) {
                 return true;
             }
         }
@@ -81,7 +81,7 @@ public:
     }
 
     void setCursor(WebXMouseCursor * newCursor) {
-        if(_previousCursor) {
+        if (_previousCursor) {
             delete _previousCursor;
             _previousCursor = nullptr;
         }

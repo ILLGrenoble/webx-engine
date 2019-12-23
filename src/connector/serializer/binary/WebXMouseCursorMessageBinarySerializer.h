@@ -1,12 +1,13 @@
 #ifndef WEBX_MOUSE_CURSOR_MESSAGE_BINARY_SERIALIZER_H
 #define WEBX_MOUSE_CURSOR_MESSAGE_BINARY_SERIALIZER_H
 
-#include <zmq.hpp>
-#include "connector/message/WebXMouseCursorMessage.h"
-#include "connector/serializer/binary/WebXBinaryMessageSerializer.h"
+#include "WebXBinaryMessageSerializer.h"
+#include <connector/message/WebXMouseCursorMessage.h>
 
 class WebXMouseCursorMessageBinarySerializer : public WebXBinaryMessageSerializer<WebXMouseCursorMessage> {
 public:
+    WebXMouseCursorMessageBinarySerializer() {}
+    virtual ~WebXMouseCursorMessageBinarySerializer() {}
 
     // Structure:
     // Header: 16 bytes
@@ -16,9 +17,13 @@ public:
     //   padding: 4 bytes
     // Content:
     //   commandId: 4 bytes
+    //   x: 4 bytes
+    //   y: 4 bytes
+    //   imageNameLength: 4 bytes
+    //   imageName: n bytes
     //   imageDataLength: 4 bytes
     //   imageData: n bytes
-    zmq::message_t * serialize(const WebXMouseCursorMessage * message);
+    virtual zmq::message_t * serialize(const WebXMouseCursorMessage * message);
 };
 
 

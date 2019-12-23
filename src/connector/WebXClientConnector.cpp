@@ -30,7 +30,7 @@ WebXClientConnector::WebXClientConnector(std::string &transport) :
     _serializer(NULL),
     _running(false) {
     spdlog::info("Using {} for the transport", transport);
-    if(transport == "json") {
+    if (transport == "json") {
         _serializer = new WebXJsonSerializer();
     } else {
         _serializer = new WebXBinarySerializer();
@@ -97,7 +97,7 @@ void WebXClientConnector::run() {
             } else {
                 // Deserialize instruction
                 WebXInstruction * instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
-                if(instruction != NULL) {
+                if (instruction != NULL) {
                     // Handle message and get message
                     WebXMessage *message = this->handleInstruction(instruction);
                     delete instruction;

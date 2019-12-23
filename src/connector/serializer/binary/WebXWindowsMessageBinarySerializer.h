@@ -1,12 +1,14 @@
 #ifndef WEBX_WINDOWS_MESSAGE_BINARY_SERIALIZER_H
 #define WEBX_WINDOWS_MESSAGE_BINARY_SERIALIZER_H
 
-#include <zmq.hpp>
-#include "connector/message/WebXWindowsMessage.h"
-#include "connector/serializer/binary/WebXBinaryMessageSerializer.h"
+#include "WebXBinaryMessageSerializer.h"
+#include <connector/message/WebXWindowsMessage.h>
 
 class WebXWindowsMessageBinarySerializer : public WebXBinaryMessageSerializer<WebXWindowsMessage> {
 public:
+    WebXWindowsMessageBinarySerializer() {}
+    virtual ~WebXWindowsMessageBinarySerializer() {}
+
     // Structure:
     // Header: 16 bytes
     //   type: 4 bytes
@@ -22,7 +24,7 @@ public:
     //      y: 4 bytes
     //      width: 4 bytes
     //      height: 4 bytes
-    zmq::message_t * serialize(const WebXWindowsMessage * message);
+    virtual zmq::message_t * serialize(const WebXWindowsMessage * message);
 };
 
 

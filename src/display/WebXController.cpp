@@ -101,7 +101,7 @@ void WebXController::mainLoop() {
                 // Update necessary images
                 this->updateImages();
 
-                if(this->isMouseCursorDirty()) {
+                if (this->isMouseCursorDirty()) {
                     this->updateMouseCursor();
                 }
 
@@ -120,13 +120,13 @@ void WebXController::handleClientInstructions() {
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         WebXInstruction * instruction = *it;
 
-        if(instruction->type == WebXInstruction::Type::Mouse) {
+        if (instruction->type == WebXInstruction::Type::Mouse) {
             WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendMouse(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
 
-        if(instruction->type == WebXInstruction::Type::Keyboard) {
+        if (instruction->type == WebXInstruction::Type::Keyboard) {
             WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction;
             spdlog::debug("Received keyboard instruction for key: {}", keyboardInstruction->key);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
@@ -231,11 +231,16 @@ void WebXController::updateFps(double fps) {
  */
 void WebXController::updateMouseCursor() {
     this->_mouseCursorDirty = false;
+
+    // Update mouse and check for changes
     WebXMouse * mouse =  this->_display->getMouse();
-    for (WebXConnection * connection : this->_connections) {
-        connection->onMouseCursorChanged(mouse);
+    mouse->updateCursor();
+    const WebXMouseState  * mouseState = mouse->getState();
+
+    if (mouseState->isCursorDifferent()) {
+        for (WebXConnection * connection : this->_connections) {
+            connection->onMouseCursorChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor());
+        }
     }
 }
-
-
 

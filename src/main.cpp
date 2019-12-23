@@ -16,14 +16,14 @@ int main(int argc, char *argv[]) {
         switch(opt)  
         {  
             case 'l': 
-                if(strcmp(optarg,"debug") == 0) {
+                if (strcmp(optarg,"debug") == 0) {
                     spdlog::set_level(spdlog::level::debug);
-                } else if(strcmp(optarg, "trace") == 0) {
+                } else if (strcmp(optarg, "trace") == 0) {
                     spdlog::set_level(spdlog::level::trace);
                 }
                 break;
             case 't':
-                if(strcmp(optarg,"json") == 0) {
+                if (strcmp(optarg,"json") == 0) {
                     transport = optarg;
                 } else {
                     spdlog::error("The provided transport '{}' is unknown. Defaulting to using binary transport", optarg);

@@ -12,7 +12,7 @@ WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
     _rootWindow(NULL),
     _imageConverter(NULL),
-    _mouse(NULL){
+    _mouse(NULL) {
 
 }
 
@@ -29,12 +29,12 @@ WebXDisplay::~WebXDisplay() {
         this->_imageConverter = NULL;
     }
 
-    if(this->_mouse) {
+    if (this->_mouse) {
         delete this->_mouse;
         this->_mouse = NULL;
     }
 
-    if(this->_keyboard) {
+    if (this->_keyboard) {
         delete this->_keyboard;
         this->_keyboard = NULL;
     }
@@ -364,7 +364,7 @@ WebXKeyboard * WebXDisplay::createKeyboard() {
 
 void WebXDisplay::sendKeyboard(int key, bool pressed) {
     spdlog::debug("Sending keyboard instruction key={}, pressed={}", key, pressed);
-    if(pressed) {
+    if (pressed) {
         this->_keyboard->press(key);
     } else {
         this->_keyboard->release(key);

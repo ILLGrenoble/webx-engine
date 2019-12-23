@@ -3,8 +3,9 @@
 
 #include <X11/extensions/Xfixes.h>
 #include <memory>
-#include "input/cursor/WebXMouseCursorImage.h"
-#include "input/cursor/WebXMouseCursorImageConverter.h"
+
+class WebXMouseCursorImage;
+class WebXMouseCursorImageConverter;
 
 class WebXMouseCursor {
 public:
@@ -25,6 +26,10 @@ public:
      * @return  the mouse cursor image
      */
     std::shared_ptr<WebXMouseCursorImage> getImage();
+
+    const char * getName() const {
+        return _cursor->name;
+    }
 
 private:
     XFixesCursorImage * _cursor;

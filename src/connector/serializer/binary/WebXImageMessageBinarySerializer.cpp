@@ -1,7 +1,6 @@
-#include <zmq.hpp>
 #include "WebXImageMessageBinarySerializer.h"
-#include "utils/WebXBinaryBuffer.h"
-#include "image/WebXImage.h"
+#include <utils/WebXBinaryBuffer.h>
+#include <image/WebXImage.h>
 
 zmq::message_t * WebXImageMessageBinarySerializer::serialize(const WebXImageMessage * message) {
     std::shared_ptr<WebXImage> image = message->image;

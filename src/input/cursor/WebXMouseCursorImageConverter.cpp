@@ -1,4 +1,5 @@
 #include "WebXMouseCursorImageConverter.h"
+#include "WebXMouseCursorImage.h"
 #include <png.h>
 #include <stdlib.h>
 #include <chrono>
@@ -17,7 +18,7 @@ WebXMouseCursorImageConverter::WebXMouseCursorImageConverter() {
 WebXMouseCursorImageConverter::~WebXMouseCursorImageConverter() {
 }
 
-WebXMouseCursorImage *WebXMouseCursorImageConverter::convert(XFixesCursorImage *image) const {
+WebXMouseCursorImage * WebXMouseCursorImageConverter::convert(XFixesCursorImage * image) const {
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     png_struct *png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);

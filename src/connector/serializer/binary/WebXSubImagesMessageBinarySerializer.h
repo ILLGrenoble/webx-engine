@@ -1,12 +1,14 @@
 #ifndef WEBX_SUB_IMAGES_MESSAGE_BINARY_SERIALIZER_H
 #define WEBX_SUB_IMAGES_MESSAGE_BINARY_SERIALIZER_H
 
-#include <zmq.hpp>
-#include "connector/message/WebXSubImagesMessage.h"
-#include "connector/serializer/binary/WebXBinaryMessageSerializer.h"
+#include "WebXBinaryMessageSerializer.h"
+#include <connector/message/WebXSubImagesMessage.h>
 
 class WebXSubImagesMessageBinarySerializer : public WebXBinaryMessageSerializer<WebXSubImagesMessage> {
 public:
+    WebXSubImagesMessageBinarySerializer() {}
+    virtual ~WebXSubImagesMessageBinarySerializer() {}
+
     // Structure:
     // Header: 16 bytes
     //   type: 4 bytes
@@ -26,7 +28,7 @@ public:
     //     imageType: 4 bytes (chars)
     //     imageDataLength: 4 bytes
     //     imageData: n bytes
-    zmq::message_t * serialize(const WebXSubImagesMessage * message);
+    virtual zmq::message_t * serialize(const WebXSubImagesMessage * message);
 };
 
 

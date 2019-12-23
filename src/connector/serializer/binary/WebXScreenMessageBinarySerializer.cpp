@@ -1,6 +1,5 @@
-#include <zmq.hpp>
 #include "WebXScreenMessageBinarySerializer.h"
-#include "utils/WebXBinaryBuffer.h"
+#include <utils/WebXBinaryBuffer.h>
 
 zmq::message_t * WebXScreenMessageBinarySerializer::serialize(const WebXScreenMessage * message) {
     size_t dataSize = 16 + 12;

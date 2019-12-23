@@ -53,7 +53,7 @@ void WebXMouse::updateMouseState(int newX, int newY, int newButtonMask) {
 
 void WebXMouse::updateCursor() {
     WebXMouseCursor * newCursor = getCursor();
-    if(newCursor) {
+    if (newCursor) {
         _currentMouseState->setCursor(newCursor);
     }
 }
@@ -61,8 +61,8 @@ void WebXMouse::updateCursor() {
 WebXMouseCursor * WebXMouse::getCursor() {
     unsigned long last_serial = 0;
     XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
-    if(cursorImage) {
-        if(cursorImage->cursor_serial == last_serial) {
+    if (cursorImage) {
+        if (cursorImage->cursor_serial == last_serial) {
             return NULL;
         }
         return new WebXMouseCursor(cursorImage);

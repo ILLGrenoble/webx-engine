@@ -9,7 +9,7 @@ bool WebXImageAlphaConverter::convert(XImage * image, WebXRectangle * mainWindow
         subWindowRectangle->x == 0 && 
         subWindowRectangle->y == 0 && 
         subWindowRectangle->size.width == mainWindowRectangle->size.width && 
-        subWindowRectangle->size.height == mainWindowRectangle->size.height){
+        subWindowRectangle->size.height == mainWindowRectangle->size.height) {
         return false;
     
     } else if (image->depth == 32) {

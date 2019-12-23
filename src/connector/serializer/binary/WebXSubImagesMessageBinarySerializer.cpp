@@ -1,8 +1,7 @@
-#include <zmq.hpp>
 #include "WebXSubImagesMessageBinarySerializer.h"
-#include "utils/WebXBinaryBuffer.h"
-#include "image/WebXSubImage.h"
-#include "image/WebXImage.h"
+#include <utils/WebXBinaryBuffer.h>
+#include <image/WebXSubImage.h>
+#include <image/WebXImage.h>
 
 zmq::message_t * WebXSubImagesMessageBinarySerializer::serialize(const WebXSubImagesMessage * message) {
     unsigned int nImages = message->images.size();
