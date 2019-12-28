@@ -11,17 +11,19 @@
 #include "connector/message/WebXImageMessage.h"
 #include "connector/message/WebXScreenMessage.h"
 #include "connector/message/WebXWindowsMessage.h"
+#include "connector/message/WebXMouseCursorMessage.h"
 #include "connector/message/WebXConnectionMessage.h"
 #include "connector/serializer/binary/WebXScreenMessageBinarySerializer.h"
 #include "connector/serializer/binary/WebXWindowsMessageBinarySerializer.h"
 #include "connector/serializer/binary/WebXSubImagesMessageBinarySerializer.h"
 #include "connector/serializer/binary/WebXImageMessageBinarySerializer.h"
 #include "connector/serializer/binary/WebXConnectionMessageBinarySerializer.h"
+#include "connector/serializer/binary/WebXMouseCursorMessageBinarySerializer.h"
 
 WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    spdlog::info("instruction: {}", instructionString.c_str());
+    spdlog::debug("instruction: {}", instructionString.c_str());
 
     // Convert to json
     nlohmann::json jInstruction = nlohmann::json::parse(instructionString);
@@ -72,9 +74,12 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
             WebXSubImagesMessageBinarySerializer serializer;
             return serializer.serialize(subImagesMessage);
         }
-        case WebXMessage::MouseCursor:
-            spdlog::debug("MouseCursor binary serializer not implemented for the moment");
-            return new zmq::message_t(0);
+        case WebXMessage::MouseCursor: {
+            auto cursorMessage = (WebXMouseCursorMessage *) message;
+            WebXMouseCursorMessageBinarySerializer serializer;
+            return serializer.serialize(cursorMessage);
+        }
+
         default:
             return new zmq::message_t(0);
     }
