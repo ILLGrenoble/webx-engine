@@ -8,10 +8,12 @@
 
 class WebXMouseCursorMessage : public WebXMessage {
 public:
-    WebXMouseCursorMessage(int x, int y, std::shared_ptr<WebXMouseCursorImage>  mouseCursorImage, const char * mouseCursorName) :
+    WebXMouseCursorMessage(int x, int y, int xhot, int yhot, std::shared_ptr<WebXMouseCursorImage>  mouseCursorImage, const char * mouseCursorName) :
         WebXMessage(Type::MouseCursor),
         x(x),
         y(y),
+        xhot(xhot),
+        yhot(yhot),
         mouseCursorImage(mouseCursorImage),
         mouseCursorName(mouseCursorName) {
 
@@ -22,6 +24,8 @@ public:
 
     int x;
     int y;
+    int xhot;
+    int yhot;
 
     std::shared_ptr<WebXMouseCursorImage> mouseCursorImage;
     std::string mouseCursorName;

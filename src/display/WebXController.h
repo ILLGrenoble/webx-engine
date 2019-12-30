@@ -30,10 +30,6 @@ public:
         this->_mouseCursorDirty = true;
     }
 
-    bool isMouseCursorDirty() const {
-        return this->_mouseCursorDirty;
-    }
-
     void run();
     void stop();
     void pause();

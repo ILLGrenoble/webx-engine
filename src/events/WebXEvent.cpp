@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <spdlog/spdlog.h>
 
-WebXEvent::WebXEvent(const XEvent & xEvent, int damageEventBase) :
+WebXEvent::WebXEvent(const XEvent & xEvent, int damageEventBase, int fixesEventBase) :
     _xEvent(xEvent),
-    _damageEventBase(damageEventBase) {
+    _damageEventBase(damageEventBase),
+    _fixesEventBase(fixesEventBase) {
 
     this->convert();
 }
@@ -77,7 +78,7 @@ void WebXEvent::convert() {
             // printf("Damage event on window 0x%0lx area = [%d %d %d %d], geometry = [%d %d %d %d]\n", this->_x11Window, 
             //     damageEvent->area.x, damageEvent->area.y, damageEvent->area.width, damageEvent->area.height,
             //     damageEvent->geometry.x, damageEvent->geometry.y, damageEvent->geometry.width, damageEvent->geometry.height);
-        } else if (this->_damageEventBase + XFixesCursorNotify) {
+        } else if (this->_fixesEventBase + XFixesCursorNotify) {
             // XFixesCursorNotifyEvent?
             // TODO cast this to a XFixesCursorNotifyEvent. Although this would pollute this class by adding cursor attributes...
             this->_type = WebXEventType::MouseCursor;

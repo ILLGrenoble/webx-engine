@@ -101,7 +101,7 @@ void WebXController::mainLoop() {
                 // Update necessary images
                 this->updateImages();
 
-                if (this->isMouseCursorDirty()) {
+                if (this->_mouseCursorDirty) {
                     this->updateMouseCursor();
                 }
 

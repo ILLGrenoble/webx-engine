@@ -7,13 +7,15 @@ zmq::message_t * WebXMouseCursorMessageBinarySerializer::serialize(const WebXMou
 
     unsigned int nameLength = cursorName.size();
 
-    size_t dataSize = 16 + 24 + mouseCursorImage->getRawDataSize() + nameLength;
+    size_t dataSize = 16 + 32 + mouseCursorImage->getRawDataSize() + nameLength;
     zmq::message_t * output= new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, (uint32_t)message->type);
     buffer.write<uint32_t>(message->commandId);
     buffer.write<int32_t>(message->x);
     buffer.write<int32_t>(message->y);
+    buffer.write<int32_t>(message->xhot);
+    buffer.write<int32_t>(message->yhot);
     buffer.write<uint32_t>(cursorName.size());
     buffer.append((unsigned char *)cursorName.c_str(), nameLength);
     buffer.write<uint32_t>(mouseCursorImage->getRawDataSize());

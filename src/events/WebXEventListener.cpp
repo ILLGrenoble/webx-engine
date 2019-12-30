@@ -41,7 +41,7 @@ void WebXEventListener::flushQueuedEvents() {
 
     for (int i = 0; i < qLength; i++) {
         XNextEvent(this->_x11Display, &x11Event);
-        WebXEvent event(x11Event, this->_damageEventBase);
+        WebXEvent event(x11Event, this->_damageEventBase, this->_xfixesEventBase);
         this->handleEvent(event);
     }
 }

@@ -20,7 +20,7 @@ enum WebXEventType {
 
 class WebXEvent {
 public:
-    WebXEvent(const XEvent & xEvent, int damageEventBase);
+    WebXEvent(const XEvent & xEvent, int damageEventBase, int fixesEventBase);
     virtual ~WebXEvent();
 
     Window getX11Window() const {
@@ -69,6 +69,7 @@ private:
     int _height;
     Window _parent;
     int _damageEventBase;
+    int _fixesEventBase;
 };
 
 

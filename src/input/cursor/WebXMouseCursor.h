@@ -31,6 +31,14 @@ public:
         return _cursor->name;
     }
 
+    int getXhot() const {
+        return _cursor->xhot;
+    }
+
+    int getYhot() const {
+        return _cursor->yhot;
+    }
+
 private:
     XFixesCursorImage * _cursor;
     WebXMouseCursorImageConverter * _converter;

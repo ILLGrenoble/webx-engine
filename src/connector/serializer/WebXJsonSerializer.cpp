@@ -137,6 +137,8 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"commandId", cursorMessage->commandId},
             {"x", cursorMessage->x},
             {"y", cursorMessage->y},
+            {"xHot", cursorMessage->xhot},
+            {"yHot", cursorMessage->yhot},
             {"name", cursorName},
             {"data",   "data:image/" + cursorImage->getFileExtension() + ";base64," + base64_encode(cursorImage->getRawData(), cursorImage->getRawDataSize())}
         };
