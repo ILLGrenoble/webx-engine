@@ -17,7 +17,7 @@ public:
 private:
     Display * _x11Display;
     int getMappedKey(int key) const;
-
+    KeyCode getMappedKeyAsKeyCode(int mappedKey) const;
 };
 
 

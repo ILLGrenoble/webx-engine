@@ -7,6 +7,7 @@
 #include "connector/instruction/WebXScreenInstruction.h"
 #include "connector/instruction/WebXWindowsInstruction.h"
 #include "connector/instruction/WebXMouseInstruction.h"
+#include "connector/instruction/WebXKeyboardInstruction.h"
 #include "connector/message/WebXSubImagesMessage.h"
 #include "connector/message/WebXImageMessage.h"
 #include "connector/message/WebXScreenMessage.h"
@@ -42,6 +43,11 @@ WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size
             int y = jInstruction.at("y");
             int buttonMask = jInstruction.at("buttonMask");
             return new WebXMouseInstruction(id, x, y, buttonMask);
+        }
+        case 6: {
+            bool pressed = jInstruction.at("pressed");
+            int key = jInstruction.at("key");
+            return new WebXKeyboardInstruction(id, key, pressed);
         }
         default: return NULL;
     }

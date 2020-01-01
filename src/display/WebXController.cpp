@@ -119,7 +119,6 @@ void WebXController::handleClientInstructions() {
     tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         WebXInstruction * instruction = *it;
-
         if (instruction->type == WebXInstruction::Type::Mouse) {
             WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
             WebXDisplay * display = WebXManager::instance()->getDisplay();
@@ -128,7 +127,6 @@ void WebXController::handleClientInstructions() {
 
         if (instruction->type == WebXInstruction::Type::Keyboard) {
             WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction;
-            spdlog::debug("Received keyboard instruction for key: {}", keyboardInstruction->key);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
         }
