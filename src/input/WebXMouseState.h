@@ -70,7 +70,7 @@ public:
     bool isCursorDifferent() const {
         if (_cursor) {
             if (_previousCursor) {
-                return strcmp(_cursor->getInfo()->name, _previousCursor->getInfo()->name) != 0;
+                return (_cursor->getInfo()->pixels != _previousCursor->getInfo()->pixels);
             }
         } else {
             if (!_previousCursor) {
