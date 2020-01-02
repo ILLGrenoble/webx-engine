@@ -33,7 +33,7 @@ KeyCode WebXKeyboard::getMappedKeyAsKeyCode(int mappedKey) const {
 void WebXKeyboard::press(int key) {
   int mappedKey  = this->getMappedKey(key);
   if(mappedKey != 0) {
-    KeyCode keyCode = XKeysymToKeycode(this->_x11Display, mappedKey);
+    KeyCode keyCode = this->getMappedKeyAsKeyCode(mappedKey);
     if (keyCode != NoSymbol) {
       XTestFakeKeyEvent(this->_x11Display,  keyCode, True, 0);
     }
@@ -44,7 +44,7 @@ void WebXKeyboard::press(int key) {
 void WebXKeyboard::release(int key) {
   int mappedKey  = this->getMappedKey(key);
   if(mappedKey != 0) {
-    KeyCode keyCode = XKeysymToKeycode(this->_x11Display, mappedKey);
+    KeyCode keyCode = this->getMappedKeyAsKeyCode(mappedKey);
     if (keyCode != NoSymbol) {
       XTestFakeKeyEvent(this->_x11Display,  keyCode, False, 0);
     }
