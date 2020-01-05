@@ -6,12 +6,13 @@
 
 class WebXImage;
 
-class WebXJPGImageConverter : public WebXImageConverter{
+class WebXJPGImageConverter : public WebXImageConverter {
 public:
     WebXJPGImageConverter();
     virtual ~WebXJPGImageConverter();
 
     virtual WebXImage * convert(XImage * image, bool hasAlphaChannel) const;
+    virtual WebXImage * convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const;
 
 };
 

@@ -104,16 +104,17 @@ target_link_libraries(
     -lX11
 )
 
-file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/*)
+file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/image/*)
 
 add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
 
 target_link_libraries(
-        testCursorImageEncoder
-        -lXtst
-        -lX11
-        -lXfixes
-        -lwebp
-        -lpng
+    testCursorImageEncoder
+    -lXtst
+    -lX11
+    -lXfixes
+    -ljpeg
+    -lwebp
+    -lpng
 )
 

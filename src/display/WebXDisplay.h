@@ -67,10 +67,9 @@ public:
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool isFullWindow = false);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
-    WebXMouse * createMouse();
-    WebXKeyboard * createKeyboard();
-    void sendMouse(int x, int y, unsigned int buttonMask);
+    void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
     void sendKeyboard(int key, bool pressed);
+    
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :

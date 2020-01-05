@@ -122,7 +122,7 @@ void WebXController::handleClientInstructions() {
         if (instruction->type == WebXInstruction::Type::Mouse) {
             WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
             WebXDisplay * display = WebXManager::instance()->getDisplay();
-            display->sendMouse(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
+            display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
 
         if (instruction->type == WebXInstruction::Type::Keyboard) {

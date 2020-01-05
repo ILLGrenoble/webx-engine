@@ -11,6 +11,7 @@ public:
     virtual ~WebXImageConverter() {}
 
     virtual WebXImage * convert(XImage * image, bool hasAlphaChannel) const = 0;
+    virtual WebXImage * convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const = 0;
 
 private:
 

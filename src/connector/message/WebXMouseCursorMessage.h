@@ -4,11 +4,11 @@
 #include <utility>
 #include <memory>
 #include "WebXMessage.h"
-#include <input/cursor/WebXMouseCursorImage.h>
+#include <image/WebXImage.h>
 
 class WebXMouseCursorMessage : public WebXMessage {
 public:
-    WebXMouseCursorMessage(int x, int y, int xhot, int yhot, std::shared_ptr<WebXMouseCursorImage>  mouseCursorImage, const char * mouseCursorName) :
+    WebXMouseCursorMessage(int x, int y, int xhot, int yhot, std::shared_ptr<WebXImage> mouseCursorImage, const std::string & mouseCursorName) :
         WebXMessage(Type::MouseCursor),
         x(x),
         y(y),
@@ -27,7 +27,7 @@ public:
     int xhot;
     int yhot;
 
-    std::shared_ptr<WebXMouseCursorImage> mouseCursorImage;
+    std::shared_ptr<WebXImage> mouseCursorImage;
     std::string mouseCursorName;
 
 };

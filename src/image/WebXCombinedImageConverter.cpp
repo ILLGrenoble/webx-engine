@@ -24,3 +24,13 @@ WebXImage * WebXCombinedImageConverter::convert(XImage * image, bool hasAlphaCha
         return this->_jpgImageConverter->convert(image, hasAlphaChannel);
     }
 }
+
+WebXImage * WebXCombinedImageConverter::convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+    if (imageDepth == 32) {
+        return this->_pngImageConverter->convert(data, width, height, bytesPerLine, imageDepth);
+
+    } else {
+        return this->_jpgImageConverter->convert(data, width, height, bytesPerLine, imageDepth);
+    }
+}
+

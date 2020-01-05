@@ -2,7 +2,7 @@
 #include <utils/WebXBinaryBuffer.h>
 
 zmq::message_t * WebXMouseCursorMessageBinarySerializer::serialize(const WebXMouseCursorMessage * message) {
-    std::shared_ptr<WebXMouseCursorImage> mouseCursorImage = message->mouseCursorImage;
+    std::shared_ptr<WebXImage> mouseCursorImage = message->mouseCursorImage;
     std::string cursorName = message->mouseCursorName;
 
     unsigned int nameLength = cursorName.size();

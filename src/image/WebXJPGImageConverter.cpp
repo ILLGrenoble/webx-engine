@@ -12,6 +12,10 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 }
 
 WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
+    return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
+}
+
+WebXImage * WebXJPGImageConverter::convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -26,8 +30,8 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     jpeg_mem_dest(&cinfo, &jpegData, &jpegDataSize);
 
-    cinfo.image_width = image->width;
-    cinfo.image_height = image->height;
+    cinfo.image_width = width;
+    cinfo.image_height = height;
     cinfo.input_components = 4;
     cinfo.in_color_space = JCS_EXT_BGRA;
     
@@ -39,9 +43,7 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     jpeg_start_compress(&cinfo, TRUE);
 
-    int bytes_per_line = image->width * 4;
-
-    unsigned char * imageData = (unsigned char *)image->data;
+    unsigned char * imageData = (unsigned char *)data;
     unsigned char row_buf[4096];
 
     unsigned long offset;
@@ -49,7 +51,7 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     unsigned int i;
     unsigned int j;
     while (cinfo.next_scanline < cinfo.image_height) {
-        offset = cinfo.next_scanline * bytes_per_line;
+        offset = cinfo.next_scanline * bytesPerLine;
         row_pointer[0] = &imageData[offset];
         (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
     }
@@ -62,6 +64,6 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    WebXImage * webXImage = new WebXImage(WebXImageTypeJPG, image->width, image->height, rawData, image->depth, duration.count());
+    WebXImage * webXImage = new WebXImage(WebXImageTypeJPG, width, height, rawData, imageDepth, duration.count());
     return webXImage;
 }

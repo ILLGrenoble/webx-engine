@@ -13,10 +13,14 @@
 class WebXMouseState {
 public:
     WebXMouseState(WebXMouseCursor * cursor) :
-        _x(0), _y(0), _buttonMask(0), _cursor(cursor), _previousCursor(nullptr) {
+        _x(0), 
+        _y(0), 
+        _buttonMask(0), 
+        _cursor(cursor), 
+        _previousCursor(NULL) {
     }
 
-    ~WebXMouseState() {
+    virtual ~WebXMouseState() {
         delete _cursor;
         if (_previousCursor) {
             delete _previousCursor;
@@ -74,7 +78,8 @@ public:
     bool isCursorDifferent() const {
         if (_cursor) {
             if (_previousCursor) {
-                return (_cursor->getInfo()->pixels != _previousCursor->getInfo()->pixels);
+                printf("current %lu previous %lu\n", _cursor->getSerial(), _previousCursor->getSerial());
+                return (_cursor->getSerial() != _previousCursor->getSerial());
             }
         } else {
             if (!_previousCursor) {

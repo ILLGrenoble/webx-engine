@@ -54,8 +54,8 @@ void WebXDisplay::init() {
 
     Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
     this->_screenSize = WebXSize(screen->width, screen->height);
-    this->_mouse = createMouse();
-    this->_keyboard = createKeyboard();
+    this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
+    this->_keyboard = new WebXKeyboard(this->_x11Display);
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -348,18 +348,9 @@ void WebXDisplay::updateManagedWindows() {
     XFree(windowIds);
 }
 
-WebXMouse * WebXDisplay::createMouse() {
-    Window rootWindow = _rootWindow->getX11Window();
-    return new WebXMouse(_x11Display, rootWindow);
-}
-
-void WebXDisplay::sendMouse(int x, int y, unsigned int buttonMask) {
+void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
     spdlog::debug("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
-    this->_mouse->updateMouse(x, y, buttonMask);
-}
-
-WebXKeyboard * WebXDisplay::createKeyboard() {
-    return new WebXKeyboard(_x11Display);
+    this->_mouse->sendClientInstruction(x, y, buttonMask);
 }
 
 void WebXDisplay::sendKeyboard(int key, bool pressed) {

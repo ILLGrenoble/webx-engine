@@ -16,6 +16,13 @@ WebXPNGImageConverter::~WebXPNGImageConverter() {
 }
 
 WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
+    // Determine bit depth and if we need to convert alpha
+    int imageDepth = hasAlphaChannel ? 32 : image->depth;
+
+    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, imageDepth);
+}
+
+WebXImage * WebXPNGImageConverter::convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -35,9 +42,6 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
         return NULL;
     }
 
-    // Determine bit depth and if we need to convert alpha
-    int image_depth = hasAlphaChannel ? 32 : image->depth;
-
     // png_set_filter(png, 0, PNG_FILTER_SUB);
     // png_set_compression_level(png, 0);
 
@@ -46,9 +50,9 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     // Output is 8bit/channel depth, RGBA format.
     png_set_IHDR(png, pngInfo,
-                 image->width, image->height,
+                 width, height,
                  8, // depth
-                 image_depth == 32 ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
+                 imageDepth == 32 ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
                  PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_DEFAULT,
                  PNG_FILTER_TYPE_DEFAULT);
@@ -56,7 +60,7 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
 
     // To remove the alpha channel for PNG_COLOR_TYPE_RGB format,
     // Use png_set_filler().
-    if (image_depth == 24) {
+    if (imageDepth == 24) {
         png_set_filler(png, 0, PNG_FILLER_AFTER);
     }
     png_set_bgr(png); // RGB > BGR if needed, we need this
@@ -64,14 +68,14 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     // write image data
     png_byte **row_pointers = NULL; // png_byte *row_pointers[height]
 
-    u_int8_t * image_data_ptr = (u_int8_t *)image->data;
+    u_int8_t * image_data_ptr = (u_int8_t *)data;
 
-    row_pointers = (png_byte **)malloc(sizeof(png_byte *) * image->height);
+    row_pointers = (png_byte **)malloc(sizeof(png_byte *) * height);
     if (row_pointers) {
-        for (int i = 0; i < image->height; i++) {
-            // directly point each row into XImage data
+        for (int i = 0; i < height; i++) {
+            // directly point each row into image data
             row_pointers[i] = image_data_ptr;
-            image_data_ptr += image->bytes_per_line; // move to next row
+            image_data_ptr += bytesPerLine; // move to next row
         }
 
         // printf("Producing PNG with depth of %dbpp\n", image_depth);
@@ -94,6 +98,6 @@ WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    WebXImage * webXImage = new WebXImage(WebXImageTypePNG, image->width, image->height, rawData, image_depth, duration.count());
+    WebXImage * webXImage = new WebXImage(WebXImageTypePNG, width, height, rawData, imageDepth, duration.count());
     return webXImage;
 }
