@@ -59,6 +59,10 @@ public:
         return _buttonMask;
     }
 
+    void setButtonMask(int buttonMask) {
+        this->_buttonMask = buttonMask;
+    }
+    
     WebXMouseCursor * getCursor() const {
         return _cursor;
     }

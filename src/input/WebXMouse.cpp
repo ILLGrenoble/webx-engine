@@ -33,6 +33,8 @@ void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
             sendMouseButton(buttons[i], newButtonMask & buttonMasks[i]);
         }
     }
+    // reset the mask
+    _currentMouseState->setButtonMask(0);
 }
 
 void WebXMouse::sendMouseButton(unsigned int button, Bool isPressed) {
