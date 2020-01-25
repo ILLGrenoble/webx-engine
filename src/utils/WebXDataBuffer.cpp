@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <spdlog/spdlog.h>
+#include <crc32/Crc32.h>
 
 WebXDataBuffer::WebXDataBuffer() :
     _buffer(0),
@@ -77,5 +78,17 @@ unsigned long WebXDataBuffer::upperPowerOfTwo(unsigned long v) {
     v |= v >> 16;
     v++;
     return v;
+}
+
+uint32_t WebXDataBuffer::calculateChecksum() const {
+    spdlog::debug("Calculating checksum of WebXDataBuffer");
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    uint32_t checksum = crc32_16bytes(this->_buffer, this->_size);
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> duration = end - start;
+    spdlog::debug("Checksum for {:d} bytes in {:f}us", this->_size, duration.count());
+    return checksum;
 }
 

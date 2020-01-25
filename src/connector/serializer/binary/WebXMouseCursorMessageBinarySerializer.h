@@ -19,8 +19,7 @@ public:
     //   commandId: 4 bytes
     //   x: 4 bytes
     //   y: 4 bytes
-    //   imageNameLength: 4 bytes
-    //   imageName: n bytes
+    //   id: 4 bytes
     //   imageDataLength: 4 bytes
     //   imageData: n bytes
     virtual zmq::message_t * serialize(const WebXMouseCursorMessage * message);

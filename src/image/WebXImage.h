@@ -60,12 +60,20 @@ public:
         }
     }
 
+    uint32_t getChecksum() {
+        if (this->_checksum == 0) {
+            this->_checksum = this->_rawData->calculateChecksum();
+        }
+        return this->_checksum;
+    }
+
 private:
     WebXImageType _type;
     unsigned int _width;
     unsigned int _height;
 
     WebXDataBuffer * _rawData;
+    uint32_t _checksum;
 
     unsigned int _depth;
 

@@ -63,8 +63,7 @@ void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std:
 }
 
 void WebXClientMessagePublisher::onMouseCursorChanged(int x, int y, WebXMouseCursor * mouseCursor) {
-    spdlog::debug("Cursor is not the same. Sending new cursor: {}", mouseCursor->getName());
-    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getName());
+    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getChecksum());
     this->_messageQueue->put(message);
 }
 

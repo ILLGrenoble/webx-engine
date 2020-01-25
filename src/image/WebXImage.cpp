@@ -5,6 +5,7 @@ WebXImage::WebXImage(WebXImageType type, unsigned int width, unsigned int height
     _width(width),
     _height(height),
     _rawData(rawData),
+    _checksum(0),
     _depth(depth),
     _encodingTimeUs(encodingTimeUs) {
 }
@@ -33,5 +34,4 @@ bool WebXImage::save(const std::string & fileName) {
     } else {
         return false;
     }
-
 }

@@ -73,12 +73,12 @@ public:
     void enableDamage();
     void disableDamage();
 
-    const uint32_t getWindowChecksum() const {
+    uint32_t getWindowChecksum() const {
         return this->_windowChecksum;
     }
 
 private:
-    uint32_t calculateImageChecksum(XImage * image);
+    uint32_t calculateImageChecksum(std::shared_ptr<WebXImage> image);
     uint32_t getHashValue(const char * data, int len);
 
 private:

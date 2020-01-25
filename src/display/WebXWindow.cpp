@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
-#include <crc32/Crc32.h>
 
 /* CRC-32C (iSCSI) polynomial in reversed bit order. */
 #define POLY 0x82f63b78
@@ -110,7 +109,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
 
         if (imageRectangle == NULL) {
-            uint32_t checksum = this->calculateImageChecksum(image);
+            uint32_t checksum = this->calculateImageChecksum(webXImage);
             this->_windowChecksum = checksum;
         }
 
@@ -141,15 +140,15 @@ void WebXWindow::removeChild(WebXWindow * child) {
     }
 }
 
-uint32_t WebXWindow::calculateImageChecksum(XImage * image) {
-    spdlog::debug("Calculating checksum");
+uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
+    spdlog::debug("Calculating window image checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-    uint32_t checksum = crc32_16bytes(image->data, (image->bytes_per_line * image->height));
+    uint32_t checksum = image->getChecksum();
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::debug("Checksum for {:d} x {:d} in {:f}us", image->width, image->height, duration.count());
+    spdlog::debug("Checksum for window image {:d} x {:d} in {:f}us", image->getWidth(), image->getHeight(), duration.count());
     return checksum;
 }
 

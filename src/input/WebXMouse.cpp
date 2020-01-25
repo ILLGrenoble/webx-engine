@@ -26,8 +26,7 @@ void WebXMouse::sendClientInstruction(int x, int y, unsigned int buttonMask) {
 void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
     int currentButtonMask = _currentMouseState->getButtonMask();
     int buttonMaskDelta = currentButtonMask ^newButtonMask;
-    unsigned int buttonMasks[5] = {LeftButtonMask, MiddleButtonMask, RightButtonMask, ScrollUpButtonMask,
-                                   ScrollDownButtonMask};
+    unsigned int buttonMasks[5] = {LeftButtonMask, MiddleButtonMask, RightButtonMask, ScrollUpButtonMask, ScrollDownButtonMask};
     unsigned int buttons[5] = {LeftButton, MiddleButton, RightButton, ScrollUpButton, ScrollDownButton};
     for (int i = 0; i <= 4; i++) {
         // Check if the state has changed for a given button
@@ -64,7 +63,7 @@ WebXMouseCursor * WebXMouse::createCursor() {
     if (cursorImage) {
         WebXImage * image = convertCursorImage(cursorImage);
         if (image != NULL) {
-            return new WebXMouseCursor(cursorImage->name, cursorImage->cursor_serial, std::shared_ptr<WebXImage>(image), (int)cursorImage->xhot, (int)cursorImage->yhot);
+            return new WebXMouseCursor(std::shared_ptr<WebXImage>(image), (int)cursorImage->xhot, (int)cursorImage->yhot);
         }
     }
     return NULL;

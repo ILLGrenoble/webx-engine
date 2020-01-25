@@ -78,8 +78,7 @@ public:
     bool isCursorDifferent() const {
         if (_cursor) {
             if (_previousCursor) {
-                printf("current %lu previous %lu\n", _cursor->getSerial(), _previousCursor->getSerial());
-                return (_cursor->getSerial() != _previousCursor->getSerial());
+                return (_cursor->getChecksum() != _previousCursor->getChecksum());
             }
         } else {
             if (!_previousCursor) {

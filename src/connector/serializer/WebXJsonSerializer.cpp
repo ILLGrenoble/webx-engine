@@ -129,7 +129,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
     } else if (message->type == WebXMessage::Type::MouseCursor) {
         WebXMouseCursorMessage * cursorMessage = (WebXMouseCursorMessage *) message;
         auto cursorImage  = cursorMessage->mouseCursorImage;
-        auto cursorName  = cursorMessage->mouseCursorName;
+        auto cursorId  = cursorMessage->cursorId;
 
         j = nlohmann::json{
             {"type",      "cursor"},
@@ -138,7 +138,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"y", cursorMessage->y},
             {"xHot", cursorMessage->xhot},
             {"yHot", cursorMessage->yhot},
-            {"name", cursorName},
+            {"id", cursorId},
             {"data",   "data:image/" + cursorImage->getFileExtension() + ";base64," + base64_encode(cursorImage->getRawData(), cursorImage->getRawDataSize())}
         };
     } else {

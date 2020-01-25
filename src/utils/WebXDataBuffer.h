@@ -2,6 +2,7 @@
 #define WEBX_DATA_BUFFER_H
 
 #include <stdlib.h>
+#include <string>
 
 class WebXDataBuffer {
 public:
@@ -19,6 +20,8 @@ public:
     size_t getBufferSize() const {
         return this->_size;
     }
+
+    uint32_t calculateChecksum() const;
 
 private:
     unsigned long upperPowerOfTwo(unsigned long v);
