@@ -11,7 +11,6 @@
 #include <connector/instruction/WebXWindowsInstruction.h>
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
-#include <input/cursor/WebXMouseCursorImage.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>

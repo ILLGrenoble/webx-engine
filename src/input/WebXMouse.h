@@ -36,7 +36,7 @@ private:
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
-    WebXMouseCursor * getCursor();
+    WebXMouseCursor * createCursor();
 
 private:
     Display * _x11Display;

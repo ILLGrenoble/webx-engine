@@ -53,13 +53,13 @@ void WebXMouse::sendMouseMovement(int newX, int newY) {
 }
 
 void WebXMouse::updateCursor() {
-    WebXMouseCursor * newCursor = getCursor();
+    WebXMouseCursor * newCursor = createCursor();
     if (newCursor) {
         _currentMouseState->setCursor(newCursor);
     }
 }
 
-WebXMouseCursor * WebXMouse::getCursor() {
+WebXMouseCursor * WebXMouse::createCursor() {
     XFixesCursorImage * cursorImage = XFixesGetCursorImage(_x11Display);
     if (cursorImage) {
         WebXImage * image = convertCursorImage(cursorImage);
@@ -71,7 +71,7 @@ WebXMouseCursor * WebXMouse::getCursor() {
 }
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {
-    WebXMouseCursor * cursor = getCursor();
+    WebXMouseCursor * cursor = createCursor();
     return new WebXMouseState(cursor);
 }
 
