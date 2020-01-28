@@ -2,6 +2,7 @@
 #include <X11/extensions/Xfixes.h>
 #include <chrono>
 #include <input/WebXMouse.h>
+#include <input/cursor/WebXMouseCursorFactory.h>
 #include <image/WebXImage.h>
 
 int main() {
@@ -10,13 +11,14 @@ int main() {
     int screen = XDefaultScreen(display);
     Window rootWindow = XRootWindow(display, screen);
     WebXMouse mouse(display, rootWindow);
+    WebXMouseCursorFactory cursorFactory(display);
 
     XFixesCursorImage * cursor = XFixesGetCursorImage(display);
     int nIter = 60;
     double cummulativeTimeUs = 0;
     size_t fileSize = 0;
     for (int i = 0; i < nIter; i++) {
-        WebXImage * image = mouse.convertCursorImage(cursor);
+        std::shared_ptr<WebXImage> image = cursorFactory.convertCursorImage(cursor);
         cummulativeTimeUs += image->getEncodingTimeUs();
         if (i == 0) {
             fileSize = image->getRawDataSize();

@@ -12,19 +12,15 @@
  */
 class WebXMouseState {
 public:
-    WebXMouseState(WebXMouseCursor * cursor) :
+    WebXMouseState(std::shared_ptr<WebXMouseCursor> cursor) :
         _x(0), 
         _y(0), 
         _buttonMask(0), 
         _cursor(cursor), 
-        _previousCursor(NULL) {
+        _previousCursor(nullptr) {
     }
 
     virtual ~WebXMouseState() {
-        delete _cursor;
-        if (_previousCursor) {
-            delete _previousCursor;
-        }
     }
 
     /**
@@ -67,7 +63,7 @@ public:
         this->_buttonMask = buttonMask;
     }
     
-    WebXMouseCursor * getCursor() const {
+    std::shared_ptr<WebXMouseCursor> getCursor() const {
         return _cursor;
     }
 
@@ -78,7 +74,7 @@ public:
     bool isCursorDifferent() const {
         if (_cursor) {
             if (_previousCursor) {
-                return (_cursor->getChecksum() != _previousCursor->getChecksum());
+                return (_cursor->getId() != _previousCursor->getId());
             }
         } else {
             if (!_previousCursor) {
@@ -88,11 +84,7 @@ public:
         return false;
     }
 
-    void setCursor(WebXMouseCursor * newCursor) {
-        if (_previousCursor) {
-            delete _previousCursor;
-            _previousCursor = nullptr;
-        }
+    void setCursor(std::shared_ptr<WebXMouseCursor> newCursor) {
         _previousCursor = _cursor;
         _cursor = newCursor;
     }
@@ -101,8 +93,8 @@ private:
     int _x;
     int _y;
     int _buttonMask;
-    WebXMouseCursor * _cursor;
-    WebXMouseCursor * _previousCursor;
+    std::shared_ptr<WebXMouseCursor> _cursor;
+    std::shared_ptr<WebXMouseCursor> _previousCursor;
 };
 
 #endif //WEBX_MOUSE_STATE_H

@@ -15,7 +15,7 @@ public:
     virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows) = 0;
     virtual void onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image) = 0;
     virtual void onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages) = 0;
-    virtual void onMouseCursorChanged(int x, int y, WebXMouseCursor * mouseCursor) = 0;
+    virtual void onMouseCursorChanged(int x, int y, std::shared_ptr<WebXMouseCursor> mouseCursor) = 0;
 //    virtual void onMouseCursorPositionChanged();
 };
 

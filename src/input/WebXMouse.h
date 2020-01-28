@@ -14,8 +14,7 @@
 
 #include "WebXMouseState.h"
 
-class WebXMouseCursor;
-class WebXImageConverter;
+class WebXMouseCursorFactory;
 
 class WebXMouse {
 public:
@@ -29,19 +28,17 @@ public:
     }
 
     void updateCursor();
-    WebXImage * convertCursorImage(XFixesCursorImage * cursorImage);
 
 private:
     WebXMouseState * createDefaultMouseState();
     void sendMouseButtons(unsigned int newButtonMask);
     void sendMouseButton(unsigned int button, Bool isPressed);
     void sendMouseMovement(int newX, int newY);
-    WebXMouseCursor * createCursor();
 
 private:
     Display * _x11Display;
     Window  _rootWindow;
-    WebXImageConverter * _imageConverter;
+    WebXMouseCursorFactory * _cursorFactory;
     WebXMouseState  * _currentMouseState;
 };
 

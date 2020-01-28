@@ -62,8 +62,8 @@ void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std:
     this->_messageQueue->put(message);
 }
 
-void WebXClientMessagePublisher::onMouseCursorChanged(int x, int y, WebXMouseCursor * mouseCursor) {
-    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getChecksum());
+void WebXClientMessagePublisher::onMouseCursorChanged(int x, int y, std::shared_ptr<WebXMouseCursor> mouseCursor) {
+    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getId());
     this->_messageQueue->put(message);
 }
 

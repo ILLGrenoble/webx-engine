@@ -10,7 +10,7 @@ class WebXMouseCursorImageConverter;
 class WebXMouseCursor {
 public:
 
-    WebXMouseCursor(std::shared_ptr<WebXImage> image, int xhot, int yhot);
+    WebXMouseCursor(uint32_t cursorId, std::shared_ptr<WebXImage> image, int xhot, int yhot);
     virtual ~WebXMouseCursor();
 
     /**
@@ -29,11 +29,12 @@ public:
         return this->_yhot;
     }
 
-    uint32_t getChecksum() {
-        return this->_image->getChecksum();
+    uint32_t getId() const {
+        return this->_id;
     }
 
 private:
+    uint32_t _id;
     int _xhot;
     int _yhot;
     std::shared_ptr<WebXImage> _image;
