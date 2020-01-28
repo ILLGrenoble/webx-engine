@@ -11,7 +11,8 @@ public:
         Image,
         Screen,
         Mouse,
-        Keyboard
+        Keyboard,
+        Cursor
     };
 
     WebXInstruction(Type type, uint32_t id) :

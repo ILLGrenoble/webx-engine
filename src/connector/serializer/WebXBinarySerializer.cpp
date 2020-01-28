@@ -2,24 +2,25 @@
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
 #include "WebXBinarySerializer.h"
-#include "connector/instruction/WebXConnectInstruction.h"
-#include "connector/instruction/WebXImageInstruction.h"
-#include "connector/instruction/WebXScreenInstruction.h"
-#include "connector/instruction/WebXWindowsInstruction.h"
-#include "connector/instruction/WebXMouseInstruction.h"
-#include "connector/instruction/WebXKeyboardInstruction.h"
-#include "connector/message/WebXSubImagesMessage.h"
-#include "connector/message/WebXImageMessage.h"
-#include "connector/message/WebXScreenMessage.h"
-#include "connector/message/WebXWindowsMessage.h"
-#include "connector/message/WebXMouseCursorMessage.h"
-#include "connector/message/WebXConnectionMessage.h"
-#include "connector/serializer/binary/WebXScreenMessageBinarySerializer.h"
-#include "connector/serializer/binary/WebXWindowsMessageBinarySerializer.h"
-#include "connector/serializer/binary/WebXSubImagesMessageBinarySerializer.h"
-#include "connector/serializer/binary/WebXImageMessageBinarySerializer.h"
-#include "connector/serializer/binary/WebXConnectionMessageBinarySerializer.h"
-#include "connector/serializer/binary/WebXMouseCursorMessageBinarySerializer.h"
+#include <connector/instruction/WebXConnectInstruction.h>
+#include <connector/instruction/WebXImageInstruction.h>
+#include <connector/instruction/WebXScreenInstruction.h>
+#include <connector/instruction/WebXWindowsInstruction.h>
+#include <connector/instruction/WebXMouseInstruction.h>
+#include <connector/instruction/WebXKeyboardInstruction.h>
+#include <connector/instruction/WebXCursorInstruction.h>
+#include <connector/message/WebXSubImagesMessage.h>
+#include <connector/message/WebXImageMessage.h>
+#include <connector/message/WebXScreenMessage.h>
+#include <connector/message/WebXWindowsMessage.h>
+#include <connector/message/WebXMouseCursorMessage.h>
+#include <connector/message/WebXConnectionMessage.h>
+#include "binary/WebXScreenMessageBinarySerializer.h"
+#include "binary/WebXWindowsMessageBinarySerializer.h"
+#include "binary/WebXSubImagesMessageBinarySerializer.h"
+#include "binary/WebXImageMessageBinarySerializer.h"
+#include "binary/WebXConnectionMessageBinarySerializer.h"
+#include "binary/WebXMouseCursorMessageBinarySerializer.h"
 
 WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
@@ -49,6 +50,7 @@ WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size
             int key = jInstruction.at("key");
             return new WebXKeyboardInstruction(id, key, pressed);
         }
+        case 7: return new WebXCursorInstruction(id);
         default: return NULL;
     }
 }

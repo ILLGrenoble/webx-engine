@@ -11,6 +11,7 @@
 #include <connector/instruction/WebXWindowsInstruction.h>
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
+#include <connector/instruction/WebXCursorInstruction.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>
@@ -46,6 +47,7 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
             bool pressed = jInstruction.at("pressed");
             return new WebXKeyboardInstruction(id, key, pressed);
         }
+        case 7: return new WebXCursorInstruction(id);
         default: return NULL;
     }
 
