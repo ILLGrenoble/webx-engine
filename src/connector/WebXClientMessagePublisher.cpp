@@ -2,9 +2,8 @@
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
 #include "message/WebXSubImagesMessage.h"
-#include "message/WebXMouseCursorMessage.h"
+#include "message/WebXMouseMessage.h"
 #include "serializer/WebXSerializer.h"
-#include <input/cursor/WebXMouseCursor.h>
 #include <zmq.hpp>
 #include <spdlog/spdlog.h>
 
@@ -62,8 +61,8 @@ void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std:
     this->_messageQueue->put(message);
 }
 
-void WebXClientMessagePublisher::onMouseCursorChanged(int x, int y, std::shared_ptr<WebXMouseCursor> mouseCursor) {
-    WebXMouseCursorMessage * message = new WebXMouseCursorMessage(x, y, mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getId());
+void WebXClientMessagePublisher::onMouseChanged(int x, int y, uint32_t cursorId) {
+    WebXMouseMessage * message = new WebXMouseMessage(x, y, cursorId);
     this->_messageQueue->put(message);
 }
 

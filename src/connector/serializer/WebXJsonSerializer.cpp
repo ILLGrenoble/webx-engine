@@ -4,7 +4,8 @@
 #include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXSubImagesMessage.h>
-#include <connector/message/WebXMouseCursorMessage.h>
+#include <connector/message/WebXMouseMessage.h>
+#include <connector/message/WebXCursorImageMessage.h>
 #include <connector/instruction/WebXConnectInstruction.h>
 #include <connector/instruction/WebXImageInstruction.h>
 #include <connector/instruction/WebXScreenInstruction.h>
@@ -128,21 +129,31 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
                 {"data",   "data:image/" + subImage.image->getFileExtension() + ";base64," + base64_encode(subImage.image->getRawData(), subImage.image->getRawDataSize())}
             });
         }
-    } else if (message->type == WebXMessage::Type::MouseCursor) {
-        WebXMouseCursorMessage * cursorMessage = (WebXMouseCursorMessage *) message;
-        auto cursorImage  = cursorMessage->mouseCursorImage;
-        auto cursorId  = cursorMessage->cursorId;
+        
+    } else if (message->type == WebXMessage::Type::Mouse) {
+        WebXMouseMessage * cursorMessage = (WebXMouseMessage *) message;
 
         j = nlohmann::json{
-            {"type",      "cursor"},
+            {"type", "mouse"},
             {"commandId", cursorMessage->commandId},
             {"x", cursorMessage->x},
             {"y", cursorMessage->y},
+            {"id", cursorMessage->cursorId}
+        };
+
+    } else if (message->type == WebXMessage::Type::CursorImage) {
+        WebXCursorImageMessage * cursorMessage = (WebXCursorImageMessage *) message;
+        auto cursorImage  = cursorMessage->mouseCursorImage;
+
+        j = nlohmann::json{
+            {"type", "cursorimage"},
+            {"commandId", cursorMessage->commandId},
             {"xHot", cursorMessage->xhot},
             {"yHot", cursorMessage->yhot},
-            {"id", cursorId},
+            {"id", cursorMessage->cursorId},
             {"data",   "data:image/" + cursorImage->getFileExtension() + ";base64," + base64_encode(cursorImage->getRawData(), cursorImage->getRawDataSize())}
         };
+
     } else {
         return new zmq::message_t(0);
     }

@@ -237,7 +237,7 @@ void WebXController::updateMouseCursor() {
 
     if (mouseState->isCursorDifferent()) {
         for (WebXConnection * connection : this->_connections) {
-            connection->onMouseCursorChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor());
+            connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
         }
     }
 }

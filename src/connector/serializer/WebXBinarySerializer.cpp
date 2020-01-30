@@ -13,14 +13,16 @@
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXScreenMessage.h>
 #include <connector/message/WebXWindowsMessage.h>
-#include <connector/message/WebXMouseCursorMessage.h>
+#include <connector/message/WebXMouseMessage.h>
+#include <connector/message/WebXCursorImageMessage.h>
 #include <connector/message/WebXConnectionMessage.h>
 #include "binary/WebXScreenMessageBinarySerializer.h"
 #include "binary/WebXWindowsMessageBinarySerializer.h"
 #include "binary/WebXSubImagesMessageBinarySerializer.h"
 #include "binary/WebXImageMessageBinarySerializer.h"
 #include "binary/WebXConnectionMessageBinarySerializer.h"
-#include "binary/WebXMouseCursorMessageBinarySerializer.h"
+#include "binary/WebXMouseMessageBinarySerializer.h"
+#include "binary/WebXCursorImageMessageBinarySerializer.h"
 
 WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
@@ -82,10 +84,15 @@ zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
             WebXSubImagesMessageBinarySerializer serializer;
             return serializer.serialize(subImagesMessage);
         }
-        case WebXMessage::MouseCursor: {
-            auto cursorMessage = (WebXMouseCursorMessage *) message;
-            WebXMouseCursorMessageBinarySerializer serializer;
-            return serializer.serialize(cursorMessage);
+        case WebXMessage::Mouse: {
+            auto mouseMessage = (WebXMouseMessage *) message;
+            WebXMouseMessageBinarySerializer serializer;
+            return serializer.serialize(mouseMessage);
+        }
+        case WebXMessage::CursorImage: {
+            auto cursorImageMessage = (WebXCursorImageMessage *) message;
+            WebXCursorImageMessageBinarySerializer serializer;
+            return serializer.serialize(cursorImageMessage);
         }
 
         default:

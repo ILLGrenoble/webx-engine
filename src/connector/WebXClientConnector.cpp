@@ -3,7 +3,7 @@
 #include "message/WebXScreenMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
-#include "message/WebXMouseCursorMessage.h"
+#include "message/WebXCursorImageMessage.h"
 #include "instruction/WebXImageInstruction.h"
 #include "instruction/WebXMouseInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
@@ -205,6 +205,6 @@ WebXMessage * WebXClientConnector::handleImageInstruction(long windowId) {
 WebXMessage * WebXClientConnector::handleCursorInstruction() {
     WebXMouseState * mouseState = WebXManager::instance()->getDisplay()->getMouse()->getState();
     std::shared_ptr<WebXMouseCursor> mouseCursor = mouseState->getCursor();
-    return new WebXMouseCursorMessage(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getImage(), mouseCursor->getId());
+    return new WebXCursorImageMessage(mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
 }
 
