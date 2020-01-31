@@ -12,7 +12,7 @@
 #include <connector/instruction/WebXWindowsInstruction.h>
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
-#include <connector/instruction/WebXCursorInstruction.h>
+#include <connector/instruction/WebXCursorImageInstruction.h>
 #include <utils/WebXSize.h>
 #include <string>
 #include <zmq.hpp>
@@ -48,7 +48,10 @@ WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t
             bool pressed = jInstruction.at("pressed");
             return new WebXKeyboardInstruction(id, key, pressed);
         }
-        case 7: return new WebXCursorInstruction(id);
+        case 7: {
+            uint32_t cursorId = jInstruction.at("cursorId");
+            return new WebXCursorImageInstruction(id, cursorId);
+        }
         default: return NULL;
     }
 
@@ -138,7 +141,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
             {"commandId", cursorMessage->commandId},
             {"x", cursorMessage->x},
             {"y", cursorMessage->y},
-            {"id", cursorMessage->cursorId}
+            {"cursorId", cursorMessage->cursorId}
         };
 
     } else if (message->type == WebXMessage::Type::CursorImage) {
@@ -148,9 +151,11 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         j = nlohmann::json{
             {"type", "cursorimage"},
             {"commandId", cursorMessage->commandId},
+            {"x", cursorMessage->x},
+            {"y", cursorMessage->y},
             {"xHot", cursorMessage->xhot},
             {"yHot", cursorMessage->yhot},
-            {"id", cursorMessage->cursorId},
+            {"cursorId", cursorMessage->cursorId},
             {"data",   "data:image/" + cursorImage->getFileExtension() + ";base64," + base64_encode(cursorImage->getRawData(), cursorImage->getRawDataSize())}
         };
 

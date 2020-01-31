@@ -17,6 +17,8 @@ public:
     //   padding: 4 bytes
     // Content:
     //   commandId: 4 bytes
+    //   x: 4 bytes
+    //   y: 4 bytes
     //   xHot: 4 bytes
     //   yHot: 4 bytes
     //   id: 4 bytes

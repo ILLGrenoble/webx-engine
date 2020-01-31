@@ -28,6 +28,7 @@ public:
     }
 
     void updateCursor();
+    std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
 
 private:
     WebXMouseState * createDefaultMouseState();

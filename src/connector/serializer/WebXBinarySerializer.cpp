@@ -8,7 +8,7 @@
 #include <connector/instruction/WebXWindowsInstruction.h>
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
-#include <connector/instruction/WebXCursorInstruction.h>
+#include <connector/instruction/WebXCursorImageInstruction.h>
 #include <connector/message/WebXSubImagesMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXScreenMessage.h>
@@ -52,7 +52,10 @@ WebXInstruction * WebXBinarySerializer::deserialize(void * instructionData, size
             int key = jInstruction.at("key");
             return new WebXKeyboardInstruction(id, key, pressed);
         }
-        case 7: return new WebXCursorInstruction(id);
+        case 7: {
+            uint32_t cursorId = jInstruction.at("cursorId");
+            return new WebXCursorImageInstruction(id, cursorId);
+        }
         default: return NULL;
     }
 }

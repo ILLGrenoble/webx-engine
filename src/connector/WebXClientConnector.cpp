@@ -6,6 +6,7 @@
 #include "message/WebXCursorImageMessage.h"
 #include "instruction/WebXImageInstruction.h"
 #include "instruction/WebXMouseInstruction.h"
+#include "instruction/WebXCursorImageInstruction.h"
 #include "serializer/WebXJsonSerializer.h"
 #include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
@@ -176,13 +177,12 @@ WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instructi
         return this->handleImageInstruction(imageInstruction->windowId);
     
     } else if (instruction->type == WebXInstruction::Type::Cursor) {
-        return this->handleCursorInstruction();
+        WebXCursorImageInstruction * cursorImageInstruction = (WebXCursorImageInstruction *)instruction;
+        return this->handleCursorInstruction(cursorImageInstruction->cursorId);
     }
 
     return NULL;
 }
-
-
 
 WebXMessage * WebXClientConnector::handleConnectionInstruction() {
     return new WebXConnectionMessage(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);
@@ -202,9 +202,10 @@ WebXMessage * WebXClientConnector::handleImageInstruction(long windowId) {
     return new WebXImageMessage(windowId, image);
 }
 
-WebXMessage * WebXClientConnector::handleCursorInstruction() {
-    WebXMouseState * mouseState = WebXManager::instance()->getDisplay()->getMouse()->getState();
-    std::shared_ptr<WebXMouseCursor> mouseCursor = mouseState->getCursor();
-    return new WebXCursorImageMessage(mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
+WebXMessage * WebXClientConnector::handleCursorInstruction(uint32_t cursorId) {
+    WebXMouse * mouse = WebXManager::instance()->getDisplay()->getMouse();
+    WebXMouseState * mouseState = mouse->getState();
+    std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorId);
+    return new WebXCursorImageMessage(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
 }
 

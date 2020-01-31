@@ -38,7 +38,7 @@ private:
     WebXMessage * handleScreenInstruction();
     WebXMessage * handleWindowsInstruction();
     WebXMessage * handleImageInstruction(long windowId);
-    WebXMessage * handleCursorInstruction();
+    WebXMessage * handleCursorInstruction(uint32_t cursorId);
 
 private:
     static WebXClientConnector * _instance;
