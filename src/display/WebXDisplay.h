@@ -8,13 +8,13 @@
 #include <utils/WebXSize.h>
 #include <tinythread/tinythread.h>
 #include <connector/instruction/WebXMouseInstruction.h>
-#include <input/WebXKeyboard.h>
-#include "input/WebXMouse.h"
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 
 class WebXWindow;
 class WebXImageConverter;
+class WebXMouse;
+class WebXKeyboard;
 
 class WebXDisplay {
 public:
@@ -47,10 +47,6 @@ public:
         return this->_rootWindow;
     }
 
-    WebXMouse * getMouse() const {
-        return this->_mouse;
-    }
-
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 
@@ -67,6 +63,14 @@ public:
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool isFullWindow = false);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
     uint64_t getWindowChecksum(Window x11Window);
+    
+    WebXMouse * getMouse() const {
+        return this->_mouse;
+    }
+
+    void updateMouseCursor();
+    void updateMousePosition(int x, int y);
+
     void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
     void sendKeyboard(int key, bool pressed);
     

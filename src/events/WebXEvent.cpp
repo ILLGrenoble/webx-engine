@@ -66,6 +66,12 @@ void WebXEvent::convert() {
         this->_x11Window = this->_xEvent.xcirculate.window;
         break;
 
+    case MotionNotify:
+        this->_type = WebXEventType::Motion;
+        this->_x = this->_xEvent.xmotion.x_root;
+        this->_y = this->_xEvent.xmotion.y_root;
+        break;
+
     default:
         if (this->_xEvent.type == this->_damageEventBase +  XDamageNotify) {
             this->_type = WebXEventType::Damaged;

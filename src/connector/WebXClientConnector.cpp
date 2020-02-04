@@ -14,7 +14,7 @@
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXController.h>
-#include <input/WebXMouseState.h>
+#include <input/WebXMouse.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <unistd.h>
 #include <string>

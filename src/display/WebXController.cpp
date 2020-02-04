@@ -3,11 +3,12 @@
 #include "WebXManager.h"
 #include "WebXConnection.h"
 #include <connector/instruction/WebXMouseInstruction.h>
+#include <connector/instruction/WebXKeyboardInstruction.h>
 #include <image/WebXSubImage.h>
+#include <input/WebXMouse.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
-#include <connector/instruction/WebXKeyboardInstruction.h>
 
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
@@ -15,6 +16,7 @@ unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
     _displayDirty(true),
+    _mouseDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::IMAGE_REFRESH_RATE),
     _thread(NULL),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
@@ -101,10 +103,9 @@ void WebXController::mainLoop() {
                 // Update necessary images
                 this->updateImages();
 
-                if (this->_mouseCursorDirty) {
-                    this->updateMouseCursor();
+                if (this->_mouseDirty) {
+                    this->updateMouse();
                 }
-
             }
 
             std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -225,20 +226,15 @@ void WebXController::updateFps(double fps) {
 }
 
 /**
- * Only called when the mouse cursor changes
+ * Called when the mouse cursor or position changes
  */
-void WebXController::updateMouseCursor() {
-    this->_mouseCursorDirty = false;
+void WebXController::updateMouse() {
+    this->_mouseDirty = false;
 
-    // Update mouse and check for changes
-    WebXMouse * mouse =  this->_display->getMouse();
-    mouse->updateCursor();
-    const WebXMouseState  * mouseState = mouse->getState();
-
-    if (mouseState->isCursorDifferent()) {
-        for (WebXConnection * connection : this->_connections) {
-            connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
-        }
+    const WebXMouseState  * mouseState = this->_display->getMouse()->getState();
+    for (WebXConnection * connection : this->_connections) {
+        connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     }
 }
+
 

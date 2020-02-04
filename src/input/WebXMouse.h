@@ -24,11 +24,13 @@ public:
     void sendClientInstruction(int x, int y, unsigned int buttonMask);
     
     WebXMouseState * getState() {
-        return this->_currentMouseState;
+        return this->_state;
     }
 
     void updateCursor();
     std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
+    void updatePosition(int x, int y);
+    void updatePosition();
 
 private:
     WebXMouseState * createDefaultMouseState();
@@ -40,7 +42,7 @@ private:
     Display * _x11Display;
     Window  _rootWindow;
     WebXMouseCursorFactory * _cursorFactory;
-    WebXMouseState  * _currentMouseState;
+    WebXMouseState  * _state;
 };
 
 #endif //WEBX_MOUSE_H

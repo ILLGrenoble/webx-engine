@@ -36,6 +36,16 @@ public:
     }
 
     /**
+     * Update the new mouse position
+     * @param x the x position relative to the root window
+     * @param y the y position relative to the root window
+     */
+    void setPosition(int x, int y) {
+        _x = x;
+        _y = y;
+    }
+
+    /**
      * Get the x position relative to the root window
      * @return the x position
      */

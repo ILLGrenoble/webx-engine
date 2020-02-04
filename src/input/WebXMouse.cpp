@@ -9,22 +9,22 @@ WebXMouse::WebXMouse(Display * x11Display, Window rootWindow) :
     _x11Display(x11Display),
     _rootWindow(rootWindow),
     _cursorFactory(new WebXMouseCursorFactory(x11Display)),
-    _currentMouseState(createDefaultMouseState()) {
+    _state(createDefaultMouseState()) {
 }
 
 WebXMouse::~WebXMouse() {
     delete _cursorFactory;
-    delete _currentMouseState;
+    delete _state;
 }
 
 void WebXMouse::sendClientInstruction(int x, int y, unsigned int buttonMask) {
     sendMouseMovement(x, y);
     sendMouseButtons(buttonMask);
-    _currentMouseState->setState(x, y, buttonMask);
+    _state->setState(x, y, buttonMask);
 }
 
 void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
-    int currentButtonMask = _currentMouseState->getButtonMask();
+    int currentButtonMask = _state->getButtonMask();
     int buttonMaskDelta = currentButtonMask ^newButtonMask;
     unsigned int buttonMasks[5] = {LeftButtonMask, MiddleButtonMask, RightButtonMask, ScrollUpButtonMask, ScrollDownButtonMask};
     unsigned int buttons[5] = {LeftButton, MiddleButton, RightButton, ScrollUpButton, ScrollDownButton};
@@ -36,7 +36,7 @@ void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
         }
     }
     // reset the mask
-    _currentMouseState->setButtonMask(0);
+    _state->setButtonMask(0);
 }
 
 void WebXMouse::sendMouseButton(unsigned int button, Bool isPressed) {
@@ -44,8 +44,8 @@ void WebXMouse::sendMouseButton(unsigned int button, Bool isPressed) {
 }
 
 void WebXMouse::sendMouseMovement(int newX, int newY) {
-    int currentX = _currentMouseState->getX();
-    int currentY = _currentMouseState->getY();
+    int currentX = _state->getX();
+    int currentY = _state->getY();
     if (newX != currentX || newY != currentY) {
         XWarpPointer(_x11Display, 0L, _rootWindow, 0, 0, 0, 0, newX, newY);
     }
@@ -54,16 +54,31 @@ void WebXMouse::sendMouseMovement(int newX, int newY) {
 void WebXMouse::updateCursor() {
     std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory->createCursor();
     if (cursor) {
-        _currentMouseState->setCursor(cursor);
+        _state->setCursor(cursor);
     }
 }
 
 std::shared_ptr<WebXMouseCursor> WebXMouse::getCursor(uint32_t cursorId) {
     if (cursorId == 0) {
-        return this->_currentMouseState->getCursor();
+        return this->_state->getCursor();
     } else {
         return this->_cursorFactory->getCursor(cursorId);
     }
+}
+
+void WebXMouse::updatePosition(int x, int y) {
+    this->_state->setPosition(x, y);
+}
+
+void WebXMouse::updatePosition() {
+    // Get the mouse cursor position
+    int win_x, win_y, root_x, root_y = 0;
+    unsigned int mask = 0;
+    Window child_win, root_win;
+    XQueryPointer(this->_x11Display, this->_rootWindow, &child_win, &root_win, &root_x, &root_y, &win_x, &win_y, &mask);
+    this->_state->setPosition(root_x, root_y);
+
+    // printf("Mouse positions = (%d, %d)\n", root_x, root_y);
 }
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {

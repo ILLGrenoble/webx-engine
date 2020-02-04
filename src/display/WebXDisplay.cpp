@@ -315,6 +315,27 @@ uint64_t WebXDisplay::getWindowChecksum(Window x11Window) {
     }
 }
 
+void WebXDisplay::updateMouseCursor() {
+    this->_mouse->updateCursor();
+}
+
+void WebXDisplay::updateMousePosition(int x, int y) {
+    this->_mouse->updatePosition(x, y);
+}
+
+void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
+    spdlog::debug("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
+    this->_mouse->sendClientInstruction(x, y, buttonMask);
+}
+
+void WebXDisplay::sendKeyboard(int key, bool pressed) {
+    spdlog::debug("Sending keyboard instruction key={}, pressed={}", key, pressed);
+    if (pressed) {
+        this->_keyboard->press(key);
+    } else {
+        this->_keyboard->release(key);
+    }
+}
 
 void WebXDisplay::updateManagedWindows() {
     Window root = this->_rootWindow->getX11Window();
@@ -346,20 +367,6 @@ void WebXDisplay::updateManagedWindows() {
     }
 
     XFree(windowIds);
-}
-
-void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
-    spdlog::debug("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
-    this->_mouse->sendClientInstruction(x, y, buttonMask);
-}
-
-void WebXDisplay::sendKeyboard(int key, bool pressed) {
-    spdlog::debug("Sending keyboard instruction key={}, pressed={}", key, pressed);
-    if (pressed) {
-        this->_keyboard->press(key);
-    } else {
-        this->_keyboard->release(key);
-    }
 }
 
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {

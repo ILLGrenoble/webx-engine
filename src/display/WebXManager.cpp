@@ -85,6 +85,7 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
+    this->_eventListener->addEventHandler(WebXEventType::Motion, std::bind(&WebXManager::handleMouseMovementEvent, this, _1));
     // this->_eventListener->run();
 }
 
@@ -159,12 +160,20 @@ void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
     this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 
+void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
+    spdlog::debug("Got new mouse cursor event");
+    this->_display->updateMouseCursor();
+    this->_controller->onMouseChanged();
+}
+
+void WebXManager::handleMouseMovementEvent(const WebXEvent & event) {
+    spdlog::debug("Got mouse movement event", event.getX11Window());
+    this->_display->updateMousePosition(event.getX(), event.getY());
+    this->_controller->onMouseChanged();
+}
+
 void WebXManager::updateDisplay() {
     this->_display->updateVisibleWindows();
     this->_controller->onDisplayChanged();
 }
 
-void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
-    spdlog::debug("Got new mouse cursor event");
-    this->_controller->onMouseCursorChanged();
-}

@@ -26,8 +26,8 @@ public:
         this->_displayDirty = true;
     }
 
-    void onMouseCursorChanged() {
-        this->_mouseCursorDirty = true;
+    void onMouseChanged() {
+        this->_mouseDirty = true;
     }
 
     void run();
@@ -62,7 +62,7 @@ private:
     void updateDisplay();
     void updateImages();
     void updateFps(double fps);
-    void updateMouseCursor();
+    void updateMouse();
 
 private:
     static unsigned int THREAD_RATE;
@@ -73,7 +73,7 @@ private:
     std::vector<WebXInstruction *> _instructions;
 
     bool _displayDirty;
-    bool _mouseCursorDirty;
+    bool _mouseDirty;
 
     long _imageRefreshUs;
 

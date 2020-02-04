@@ -43,6 +43,7 @@ private:
     void handleWindowCirculateEvent(const WebXEvent & event);
     void handleWindowDamageEvent(const WebXEvent & event);
     void handleMouseCursorEvent(const WebXEvent & event);
+    void handleMouseMovementEvent(const WebXEvent & event);
 
     void updateDisplay();
 
