@@ -77,8 +77,6 @@ void WebXMouse::updatePosition() {
     Window child_win, root_win;
     XQueryPointer(this->_x11Display, this->_rootWindow, &child_win, &root_win, &root_x, &root_y, &win_x, &win_y, &mask);
     this->_state->setPosition(root_x, root_y);
-
-    // printf("Mouse positions = (%d, %d)\n", root_x, root_y);
 }
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {

@@ -29,9 +29,6 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _isViewable(isViewable),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
-
-    // Enable mouse movement events
-    XSelectInput(this->_display, this->_x11Window, PointerMotionMask);
 }
 
 WebXWindow::~WebXWindow() {

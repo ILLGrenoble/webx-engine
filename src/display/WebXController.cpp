@@ -6,6 +6,7 @@
 #include <connector/instruction/WebXKeyboardInstruction.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
+#include <utils/WebXPosition.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
@@ -87,6 +88,11 @@ void WebXController::mainLoop() {
             double fps = 1000000 / delayUs.count();
             this->updateFps(fps);
 
+            // Handling of mouse events
+            WebXMouse * mouse = this->_display->getMouse();
+            WebXPosition initialMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
+            mouse->updatePosition();
+
             // Handle all client instructions
             this->handleClientInstructions();
 
@@ -97,14 +103,15 @@ void WebXController::mainLoop() {
 
                 if (this->_displayDirty) {
                     // Dispatch display event to connectors
-                    this->updateDisplay();
+                    this->notifyDisplayChanged();
                 }
 
                 // Update necessary images
-                this->updateImages();
+                this->notifyImagesChanged();
 
-                if (this->_mouseDirty) {
-                    this->updateMouse();
+                WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
+                if (this->_mouseDirty || finalMousePosition != initialMousePosition) {
+                    this->notifyMouseChanged();
                 }
             }
 
@@ -138,7 +145,7 @@ void WebXController::handleClientInstructions() {
     this->_instructions.clear();
 }
 
-void WebXController::updateDisplay() {
+void WebXController::notifyDisplayChanged() {
     tthread::lock_guard<tthread::mutex> windowsLock(this->_windowsMutex);
     this->_windows = this->_display->getVisibleWindowsProperties();
     this->_displayDirty = false;
@@ -149,7 +156,7 @@ void WebXController::updateDisplay() {
     }
 }
 
-void WebXController::updateImages() {
+void WebXController::notifyImagesChanged() {
     std::vector<WebXWindowDamageProperties> damagedWindows = this->_display->getDamagedWindows(this->_imageRefreshUs);
     if (damagedWindows.size() > 0) {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
@@ -210,6 +217,15 @@ void WebXController::updateImages() {
     }
 }
 
+void WebXController::notifyMouseChanged() {
+    this->_mouseDirty = false;
+
+    const WebXMouseState  * mouseState = this->_display->getMouse()->getState();
+    for (WebXConnection * connection : this->_connections) {
+        connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
+    }
+}
+
 void WebXController::updateFps(double fps) {
     this->_fpsStore[this->_fpsStoreIndex++] = fps;
     if (this->_fpsStoreIndex == WebXController::FPS_STORE_SIZE) {
@@ -225,16 +241,5 @@ void WebXController::updateFps(double fps) {
     }
 }
 
-/**
- * Called when the mouse cursor or position changes
- */
-void WebXController::updateMouse() {
-    this->_mouseDirty = false;
-
-    const WebXMouseState  * mouseState = this->_display->getMouse()->getState();
-    for (WebXConnection * connection : this->_connections) {
-        connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
-    }
-}
 
 

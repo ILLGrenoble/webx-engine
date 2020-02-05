@@ -13,7 +13,6 @@ enum WebXEventType {
     Configure,
     Gravity,
     Circulate,
-    Motion,
     Damaged,
     Other,
     MouseCursor

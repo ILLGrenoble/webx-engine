@@ -59,10 +59,10 @@ private:
     static void threadMain(void * arg);
     void mainLoop();
     void handleClientInstructions();
-    void updateDisplay();
-    void updateImages();
+    void notifyDisplayChanged();
+    void notifyImagesChanged();
+    void notifyMouseChanged();
     void updateFps(double fps);
-    void updateMouse();
 
 private:
     static unsigned int THREAD_RATE;
