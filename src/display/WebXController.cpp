@@ -13,6 +13,8 @@
 
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
+unsigned int WebXController::MOUSE_MAX_REFRESH_RATE = 60;
+unsigned int WebXController::MOUSE_MIN_REFRESH_RATE = 10;
 
 WebXController::WebXController(WebXDisplay * display) :
     _display(display),
@@ -75,7 +77,11 @@ void WebXController::threadMain(void * arg) {
 
 void WebXController::mainLoop() {
     long calculateThreadSleepUs = this->_threadSleepUs;
+    double mouseRefreshUs = WebXController::MOUSE_MAX_REFRESH_RATE;
     std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point lastMouseRefreshTime = lastTime;
+    WebXMouse * mouse = this->_display->getMouse();
+
     while (this->_state != WebXControllerState::Stopped) {
         if (calculateThreadSleepUs > 0) {
             std::this_thread::sleep_for(std::chrono::microseconds(calculateThreadSleepUs));
@@ -84,14 +90,21 @@ void WebXController::mainLoop() {
         if (this->_state != WebXControllerState::Stopped) {
             std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::micro> delayUs = start - lastTime;
+            std::chrono::duration<double, std::micro> timeSinceMouseRefreshUs = start - lastMouseRefreshTime;
             lastTime = start;
             double fps = 1000000 / delayUs.count();
             this->updateFps(fps);
 
-            // Handling of mouse events
-            WebXMouse * mouse = this->_display->getMouse();
+            // Handling of mouse movement
             WebXPosition initialMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
-            mouse->updatePosition();
+
+            // Manually get mouse position after given delay: increase delay until mouse has moved again 
+            if (timeSinceMouseRefreshUs.count() > mouseRefreshUs) {
+                mouse->updatePosition();
+                lastMouseRefreshTime = std::chrono::high_resolution_clock::now();
+                mouseRefreshUs *= 0.96;
+                mouseRefreshUs = mouseRefreshUs < WebXController::MOUSE_MIN_REFRESH_RATE ? WebXController::MOUSE_MIN_REFRESH_RATE : mouseRefreshUs;
+            }
 
             // Handle all client instructions
             this->handleClientInstructions();
@@ -112,6 +125,7 @@ void WebXController::mainLoop() {
                 WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
                 if (this->_mouseDirty || finalMousePosition != initialMousePosition) {
                     this->notifyMouseChanged();
+                    mouseRefreshUs = WebXController::MOUSE_MAX_REFRESH_RATE;
                 }
             }
 

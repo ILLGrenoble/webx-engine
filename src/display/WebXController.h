@@ -67,6 +67,8 @@ private:
 private:
     static unsigned int THREAD_RATE;
     static unsigned int IMAGE_REFRESH_RATE;
+    static unsigned int MOUSE_MIN_REFRESH_RATE;
+    static unsigned int MOUSE_MAX_REFRESH_RATE;
 
     WebXDisplay * _display;
     std::vector<WebXWindowProperties> _windows;
