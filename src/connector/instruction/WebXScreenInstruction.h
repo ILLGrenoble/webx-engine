@@ -6,7 +6,6 @@
 class WebXScreenInstruction : public WebXInstruction {
 
 public:
-
     WebXScreenInstruction(uint32_t id) :
         WebXInstruction(Type::Screen, id) {
     }

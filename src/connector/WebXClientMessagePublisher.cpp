@@ -56,7 +56,7 @@ void WebXClientMessagePublisher::onImageChanged(unsigned long windowId, std::sha
     this->_messageQueue->put(message);
 }
 
-void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages) {
+void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, const std::vector<WebXSubImage> & subImages) {
     WebXSubImagesMessage * message = new WebXSubImagesMessage(windowId, subImages);
     this->_messageQueue->put(message);
 }

@@ -1,6 +1,7 @@
 #ifndef WEBX_SERIALIZER_H
 #define WEBX_SERIALIZER_H
 
+#include <memory>
 #include <connector/message/WebXMessage.h>
 
 class WebXInstruction;
@@ -19,7 +20,7 @@ public:
         return this->_type;
     }
 
-    virtual WebXInstruction * deserialize(void * instructionData, size_t instructionDataSize) = 0;
+    virtual std::shared_ptr<WebXInstruction> deserialize(void * instructionData, size_t instructionDataSize) = 0;
     virtual zmq::message_t * serialize(WebXMessage * message) = 0;
 
 private:

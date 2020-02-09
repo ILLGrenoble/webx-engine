@@ -99,11 +99,11 @@ void WebXClientConnector::run() {
 
             } else {
                 // Deserialize instruction
-                WebXInstruction * instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
                 if (instruction != NULL) {
                     // Handle message and get message
-                    WebXMessage *message = this->handleInstruction(instruction);
-                    delete instruction;
+                    WebXMessage * message = this->handleInstruction(instruction);
+                    
                     // Send message
                     if (message != NULL) {
                         message->commandId = instruction->id;
@@ -162,7 +162,7 @@ void WebXClientConnector::shutdown() {
     WebXManager::instance()->shutdown();
 }
 
-WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instruction) {
+WebXMessage * WebXClientConnector::handleInstruction(std::shared_ptr<WebXInstruction> instruction) {
     if (instruction->type == WebXInstruction::Type::Connect) {
         return this->handleConnectionInstruction();
     
@@ -173,11 +173,11 @@ WebXMessage * WebXClientConnector::handleInstruction(WebXInstruction * instructi
         return this->handleWindowsInstruction();
     
     } else if (instruction->type == WebXInstruction::Type::Image) {
-        WebXImageInstruction * imageInstruction = (WebXImageInstruction *)instruction;
+        WebXImageInstruction * imageInstruction = (WebXImageInstruction *)instruction.get();
         return this->handleImageInstruction(imageInstruction->windowId);
     
     } else if (instruction->type == WebXInstruction::Type::Cursor) {
-        WebXCursorImageInstruction * cursorImageInstruction = (WebXCursorImageInstruction *)instruction;
+        WebXCursorImageInstruction * cursorImageInstruction = (WebXCursorImageInstruction *)instruction.get();
         return this->handleCursorInstruction(cursorImageInstruction->cursorId);
     }
 

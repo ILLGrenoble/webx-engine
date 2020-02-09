@@ -13,7 +13,7 @@ public:
 
     virtual void onDisplayChanged(const std::vector<WebXWindowProperties> & windows) = 0;
     virtual void onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image) = 0;
-    virtual void onSubImagesChanged(unsigned long windowId, std::vector<WebXSubImage> subImages) = 0;
+    virtual void onSubImagesChanged(unsigned long windowId, const std::vector<WebXSubImage> & subImages) = 0;
     virtual void onMouseChanged(int x, int y, uint32_t cursorId) = 0;
 };
 

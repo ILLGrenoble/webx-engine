@@ -5,12 +5,12 @@
 #include <set>
 #include <chrono>
 #include <tinythread/tinythread.h>
+#include <connector/instruction/WebXInstruction.h>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 
 class WebXDisplay;
 class WebXConnection;
-class WebXInstruction;
 
 class WebXController {
 public:
@@ -50,7 +50,7 @@ public:
         return this->_windows;
     }
 
-    void onClientInstruction(WebXInstruction * instruction) {
+    void onClientInstruction(std::shared_ptr<WebXInstruction> instruction) {
         tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
         this->_instructions.push_back(instruction);
     }
@@ -72,7 +72,7 @@ private:
 
     WebXDisplay * _display;
     std::vector<WebXWindowProperties> _windows;
-    std::vector<WebXInstruction *> _instructions;
+    std::vector<std::shared_ptr<WebXInstruction>> _instructions;
 
     bool _displayDirty;
     bool _mouseDirty;

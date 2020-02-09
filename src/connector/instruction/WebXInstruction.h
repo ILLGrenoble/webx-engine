@@ -17,7 +17,13 @@ public:
 
     WebXInstruction(Type type, uint32_t id) :
         type(type),
-        id(id) {}
+        id(id) {
+    }
+
+    WebXInstruction(Type type) :
+        type(type),
+        id(0) {
+    }
 
     virtual ~WebXInstruction() {}
 

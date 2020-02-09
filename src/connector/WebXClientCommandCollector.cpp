@@ -62,7 +62,7 @@ void WebXClientCommandCollector::mainLoop() {
         try {
             socket.recv(&instructionMessage);
             // Deserialize instruction
-            WebXInstruction * instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+            auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
             if (instruction != NULL) {
                 // Handle message
                 WebXManager::instance()->getController()->onClientInstruction(instruction);

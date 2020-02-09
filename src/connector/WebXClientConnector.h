@@ -2,6 +2,7 @@
 #define WEBX_ENTRY_H
 
 #include <csignal>
+#include <memory>
 #include "instruction/WebXInstruction.h"
 
 class WebXManager;
@@ -33,7 +34,7 @@ public:
     }
 
 private:
-    WebXMessage * handleInstruction(WebXInstruction * instruction);
+    WebXMessage * handleInstruction(std::shared_ptr<WebXInstruction> instruction);
     WebXMessage * handleConnectionInstruction();
     WebXMessage * handleScreenInstruction();
     WebXMessage * handleWindowsInstruction();

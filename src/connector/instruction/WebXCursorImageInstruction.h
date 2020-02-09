@@ -10,6 +10,7 @@ public:
         WebXInstruction(Type::Cursor, id),
         cursorId(cursorId) {
     }
+    
     virtual ~WebXCursorImageInstruction() {
     }
 

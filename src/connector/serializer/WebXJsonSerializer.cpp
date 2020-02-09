@@ -19,42 +19,54 @@
 #include <base64/base64.h>
 #include <spdlog/spdlog.h>
 
-WebXInstruction * WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
+std::shared_ptr<WebXInstruction> WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    spdlog::debug("Instruction: {}", instructionString.c_str());
+    spdlog::debug("instruction: {}", instructionString.c_str());
 
     // Convert to json
     nlohmann::json jInstruction = nlohmann::json::parse(instructionString);
     unsigned long type = jInstruction.at("type");
     unsigned long id = jInstruction.at("id");
-    // TODO use enum?
-    switch(type) {
-        case 1: return new WebXConnectInstruction(id);
-        case 2: return new WebXWindowsInstruction(id);
-        case 3: {
-            unsigned long windowId = jInstruction.at("windowId");
-            return new WebXImageInstruction(id, windowId);
-        }
-        case 4: return new WebXScreenInstruction(id);
-        case 5: {
-            int x = jInstruction.at("x");
-            int y = jInstruction.at("y");
-            unsigned int buttonMask = jInstruction.at("buttonMask");
-            return new WebXMouseInstruction(id, x, y, buttonMask);
-        }
-        case 6: {
-            int key = jInstruction.at("key");
-            bool pressed = jInstruction.at("pressed");
-            return new WebXKeyboardInstruction(id, key, pressed);
-        }
-        case 7: {
-            uint32_t cursorId = jInstruction.at("cursorId");
-            return new WebXCursorImageInstruction(id, cursorId);
-        }
-        default: return NULL;
-    }
+    if (type == 1) {
+        auto instruction = std::make_shared<WebXConnectInstruction>(id);
+        return instruction;
 
+    } else if (type == 2) {
+        auto instruction = std::make_shared<WebXWindowsInstruction>(id);
+        return instruction;
+
+    } else if (type == 3) {
+        unsigned long windowId = jInstruction.at("windowId");
+        auto instruction = std::make_shared<WebXImageInstruction>(id, windowId);
+        return instruction;
+
+    } else if (type == 4) {
+        auto instruction = std::make_shared<WebXScreenInstruction>(id);
+        return instruction;
+
+    } else if (type == 5) {
+        int x = jInstruction.at("x");
+        int y = jInstruction.at("y");
+        int buttonMask = jInstruction.at("buttonMask");
+        auto instruction = this->_webXMouseInstructionPool.get();
+        instruction->set(id, x, y, buttonMask);
+        return instruction;
+
+    } else if (type == 6) {
+        bool pressed = jInstruction.at("pressed");
+        int key = jInstruction.at("key");
+        auto instruction = std::make_shared<WebXKeyboardInstruction>(id, key, pressed);
+        return instruction;
+
+    } else if (type == 7) {
+        uint32_t cursorId = jInstruction.at("cursorId");
+        auto instruction = std::make_shared<WebXCursorImageInstruction>(id ,cursorId);
+        return instruction;
+    
+    } else {
+        return nullptr;
+    }
 }
 
 zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {

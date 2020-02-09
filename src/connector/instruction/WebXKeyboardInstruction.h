@@ -6,7 +6,6 @@
 class WebXKeyboardInstruction : public WebXInstruction {
 
 public:
-
     WebXKeyboardInstruction(uint32_t id, int key, bool pressed) :
         WebXInstruction(Type::Keyboard, id),
         key(key),

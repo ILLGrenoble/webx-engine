@@ -140,20 +140,18 @@ void WebXController::mainLoop() {
 void WebXController::handleClientInstructions() {
     tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
-        WebXInstruction * instruction = *it;
+        auto instruction = *it;
         if (instruction->type == WebXInstruction::Type::Mouse) {
-            WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction;
+            WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction.get();
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
 
         if (instruction->type == WebXInstruction::Type::Keyboard) {
-            WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction;
+            WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction.get();
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
         }
-
-        delete instruction;
     }
 
     this->_instructions.clear();
