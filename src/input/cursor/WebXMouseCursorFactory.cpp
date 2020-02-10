@@ -1,15 +1,12 @@
 #include "WebXMouseCursorFactory.h"
-#include <image/WebXPNGImageConverter.h>
 #include <crc32/Crc32.h>
 #include <spdlog/spdlog.h>
 
 WebXMouseCursorFactory::WebXMouseCursorFactory(Display * x11Display) :
-    _display(x11Display),
-    _imageConverter(new WebXPNGImageConverter()) {
+    _display(x11Display) {
 }
 
 WebXMouseCursorFactory::~WebXMouseCursorFactory() {
-    delete _imageConverter;
 }
 
 std::shared_ptr<WebXMouseCursor> WebXMouseCursorFactory::createCursor() {
@@ -82,7 +79,7 @@ std::shared_ptr<WebXImage> WebXMouseCursorFactory::convertCursorImage(XFixesCurs
         offset += 4;
     }
 
-    WebXImage * image = this->_imageConverter->convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32);
+    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32);
     free(imageData);
 
     return std::shared_ptr<WebXImage>(image);

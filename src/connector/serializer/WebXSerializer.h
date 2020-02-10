@@ -21,7 +21,7 @@ public:
     }
 
     virtual std::shared_ptr<WebXInstruction> deserialize(void * instructionData, size_t instructionDataSize) = 0;
-    virtual zmq::message_t * serialize(WebXMessage * message) = 0;
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXMessage> message) = 0;
 
 private:
     std::string _type;

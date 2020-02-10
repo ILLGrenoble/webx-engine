@@ -1,7 +1,7 @@
 #include "WebXMouseMessageBinarySerializer.h"
 #include <utils/WebXBinaryBuffer.h>
 
-zmq::message_t * WebXMouseMessageBinarySerializer::serialize(const WebXMouseMessage * message) {
+zmq::message_t * WebXMouseMessageBinarySerializer::serialize(std::shared_ptr<WebXMouseMessage> message) {
     size_t dataSize = 32;
     zmq::message_t * output= new zmq::message_t(dataSize);
 

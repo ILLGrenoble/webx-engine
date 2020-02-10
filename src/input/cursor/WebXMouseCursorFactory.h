@@ -7,9 +7,8 @@
 #include <memory>
 #include <tinythread/tinythread.h>
 #include <image/WebXImage.h>
+#include <image/WebXPNGImageConverter.h>
 #include "WebXMouseCursor.h"
-
-class WebXImageConverter;
 
 class WebXMouseCursorFactory {
 public:
@@ -27,7 +26,7 @@ private:
 
 private:
     Display * _display;
-    WebXImageConverter * _imageConverter;
+    WebXPNGImageConverter _imageConverter;
 
     std::map<uint32_t, uint32_t> _checksumLookup;
     std::map<uint32_t, std::shared_ptr<WebXMouseCursor>> _catalogue;

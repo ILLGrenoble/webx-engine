@@ -2,8 +2,8 @@
 #define WEBX_COMBINED_IMAGE_CONVERTER_H
 
 #include "WebXImageConverter.h"
-class WebXPNGImageConverter;
-class WebXJPGImageConverter;
+#include "WebXPNGImageConverter.h"
+#include "WebXJPGImageConverter.h"
 
 class WebXCombinedImageConverter : public WebXImageConverter {
 public:
@@ -14,8 +14,8 @@ public:
     virtual WebXImage * convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const;
 
 private:
-    WebXPNGImageConverter * _pngImageConverter;
-    WebXJPGImageConverter * _jpgImageConverter;
+    WebXPNGImageConverter _pngImageConverter;
+    WebXJPGImageConverter _jpgImageConverter;
 };
 
 

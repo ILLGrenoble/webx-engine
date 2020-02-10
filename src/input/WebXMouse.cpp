@@ -1,6 +1,5 @@
 #include "WebXMouse.h"
 #include "WebXMouseState.h"
-#include "cursor/WebXMouseCursorFactory.h"
 #include <X11/X.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/XTest.h>
@@ -8,12 +7,11 @@
 WebXMouse::WebXMouse(Display * x11Display, Window rootWindow) :
     _x11Display(x11Display),
     _rootWindow(rootWindow),
-    _cursorFactory(new WebXMouseCursorFactory(x11Display)),
+    _cursorFactory(x11Display),
     _state(createDefaultMouseState()) {
 }
 
 WebXMouse::~WebXMouse() {
-    delete _cursorFactory;
     delete _state;
 }
 
@@ -52,7 +50,7 @@ void WebXMouse::sendMouseMovement(int newX, int newY) {
 }
 
 void WebXMouse::updateCursor() {
-    std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory->createCursor();
+    std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory.createCursor();
     if (cursor) {
         _state->setCursor(cursor);
     }
@@ -62,7 +60,7 @@ std::shared_ptr<WebXMouseCursor> WebXMouse::getCursor(uint32_t cursorId) {
     if (cursorId == 0) {
         return this->_state->getCursor();
     } else {
-        return this->_cursorFactory->getCursor(cursorId);
+        return this->_cursorFactory.getCursor(cursorId);
     }
 }
 
@@ -80,7 +78,7 @@ void WebXMouse::updatePosition() {
 }
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {
-    std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory->createCursor();
+    std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory.createCursor();
     return new WebXMouseState(cursor);
 }
 

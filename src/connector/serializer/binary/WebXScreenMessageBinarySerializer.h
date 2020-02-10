@@ -19,7 +19,7 @@ public:
     //   commandId: 4 bytes
     //   screenWidth: 4 bytes
     //   screenHeight: 4 bytes
-    virtual zmq::message_t * serialize(const WebXScreenMessage * message);
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXScreenMessage> message);
 };
 
 

@@ -24,7 +24,7 @@ public:
     //   id: 4 bytes
     //   imageDataLength: 4 bytes
     //   imageData: n bytes
-    virtual zmq::message_t * serialize(const WebXCursorImageMessage * message);
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXCursorImageMessage> message);
 };
 
 

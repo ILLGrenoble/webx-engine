@@ -89,34 +89,34 @@ std::shared_ptr<WebXInstruction> WebXBinarySerializer::deserialize(void * instru
     }
 }
 
-zmq::message_t * WebXBinarySerializer::serialize(WebXMessage * message) {
+zmq::message_t * WebXBinarySerializer::serialize(std::shared_ptr<WebXMessage> message) {
     switch (message->type) {
         case WebXMessage::Connection: {
-            auto connectionMessage = (WebXConnectionMessage *) message;
+            auto connectionMessage = std::static_pointer_cast<WebXConnectionMessage>(message);
             return this->_connectionMessageSerializer->serialize(connectionMessage);
         }
         case WebXMessage::Windows: {
-            auto windowsMessage = (WebXWindowsMessage *) message;
+            auto windowsMessage = std::static_pointer_cast<WebXWindowsMessage>(message);
             return this->_windowsMessageSerializer->serialize(windowsMessage);
         }
         case WebXMessage::Image: {
-            auto imageMessage = (WebXImageMessage *) message;
+            auto imageMessage = std::static_pointer_cast<WebXImageMessage>(message);
             return this->_imageMessageSerializer->serialize(imageMessage);
         }
         case WebXMessage::Screen: {
-            auto screenMessage = (WebXScreenMessage *) message;
+            auto screenMessage = std::static_pointer_cast<WebXScreenMessage>(message);
             return this->_screenMessageSerializer->serialize(screenMessage);
         }
         case WebXMessage::Subimages: {
-            auto subImagesMessage = (WebXSubImagesMessage *) message;
+            auto subImagesMessage = std::static_pointer_cast<WebXSubImagesMessage>(message);
             return this->_subImagesMessageSerializer->serialize(subImagesMessage);
         }
         case WebXMessage::Mouse: {
-            auto mouseMessage = (WebXMouseMessage *) message;
+            auto mouseMessage = std::static_pointer_cast<WebXMouseMessage>(message);
             return this->_mouseMessageSerializer->serialize(mouseMessage);
         }
         case WebXMessage::CursorImage: {
-            auto cursorImageMessage = (WebXCursorImageMessage *) message;
+            auto cursorImageMessage = std::static_pointer_cast<WebXCursorImageMessage>(message);
             return this->_cursorImageMessageSerializer->serialize(cursorImageMessage);
         }
 

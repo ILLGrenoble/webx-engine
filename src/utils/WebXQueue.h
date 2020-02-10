@@ -36,13 +36,13 @@ public:
 	 * Puts the item in the correct postion corresponding to its priority. Is blocking when the queue is full. Waits for the queue to be not full. 
 	 * throw UnavailableException.
 	 */
-	void put(ItemType* item, int priority = 0);
+	void put(ItemType item, int priority = 0);
 
 	/**
 	 * Gets the item. Is blocking when the queue is empty. Waits for the queue to be not empty.
 	 * throw UnavailableException.
 	 */
-	ItemType* get();
+	ItemType get();
 
 	/**
 	 * Gets the size.
@@ -57,7 +57,7 @@ public:
 private:
 
 	struct Item {
-		ItemType* content;
+		ItemType content;
 		int priority;
 	};
 
@@ -81,15 +81,11 @@ WebXQueue<ItemType>::WebXQueue(long size) :
 
 template<typename ItemType> 
 WebXQueue<ItemType>::~WebXQueue() {
-	
-	for (typename std::deque<Item>::iterator i = _queue.begin(); i != _queue.end(); i++) {
-		delete i->content;
-	}
 }
 
 
 template<typename ItemType> 
-void WebXQueue<ItemType>::put(ItemType* item, int priority) {
+void WebXQueue<ItemType>::put(ItemType item, int priority) {
 	
 	tthread::lock_guard<tthread::mutex> lock(_queueMutex);
 	  
@@ -127,7 +123,7 @@ void WebXQueue<ItemType>::put(ItemType* item, int priority) {
 }
 
 template<typename ItemType> 
-ItemType* WebXQueue<ItemType>::get() {
+ItemType WebXQueue<ItemType>::get() {
 	
 	tthread::lock_guard<tthread::mutex> lock(_queueMutex);
 	

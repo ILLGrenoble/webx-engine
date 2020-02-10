@@ -13,7 +13,7 @@ public:
     virtual ~WebXJsonSerializer() {}
 
     virtual std::shared_ptr<WebXInstruction> deserialize(void * instructionData, size_t instructionDataSize);
-    virtual zmq::message_t * serialize(WebXMessage * message);
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXMessage> message);
 
 private:
     WebXObjectPool<WebXMouseInstruction> _webXMouseInstructionPool;

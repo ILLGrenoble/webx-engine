@@ -69,10 +69,10 @@ std::shared_ptr<WebXInstruction> WebXJsonSerializer::deserialize(void * instruct
     }
 }
 
-zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
+zmq::message_t * WebXJsonSerializer::serialize(std::shared_ptr<WebXMessage> message) {
     nlohmann::json j;
     if (message->type == WebXMessage::Type::Windows) {
-        WebXWindowsMessage * windowsMessage = (WebXWindowsMessage *)message;
+        auto windowsMessage = std::static_pointer_cast<WebXWindowsMessage>(message);
 
         j = nlohmann::json{
             {"type", "windows"},
@@ -91,7 +91,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         }
 
     } else if (message->type == WebXMessage::Type::Connection) {
-        WebXConnectionMessage * connectionMessage = (WebXConnectionMessage *)message;
+        auto connectionMessage = std::static_pointer_cast<WebXConnectionMessage>(message);
 
         j = nlohmann::json{
             {"type", "connection"},
@@ -101,7 +101,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         };
 
     } else if (message->type == WebXMessage::Type::Screen) {
-        WebXScreenMessage * screenMessage = (WebXScreenMessage *)message;
+        auto screenMessage = std::static_pointer_cast<WebXScreenMessage>(message);
 
         j = nlohmann::json{
             {"type", "screen"},
@@ -113,7 +113,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         };
 
     } else if (message->type == WebXMessage::Type::Image) {
-        WebXImageMessage * imageMessage = (WebXImageMessage *)message;
+        auto imageMessage = std::static_pointer_cast<WebXImageMessage>(message);
 
         j = nlohmann::json{
             {"type", "image"},
@@ -124,7 +124,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         };
 
     } else if (message->type == WebXMessage::Type::Subimages) {
-        WebXSubImagesMessage * subImagesMessage = (WebXSubImagesMessage *) message;
+        auto subImagesMessage = std::static_pointer_cast<WebXSubImagesMessage>(message);
 
         j = nlohmann::json{
             {"type",      "subimages"},
@@ -146,7 +146,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         }
         
     } else if (message->type == WebXMessage::Type::Mouse) {
-        WebXMouseMessage * cursorMessage = (WebXMouseMessage *) message;
+        auto cursorMessage = std::static_pointer_cast<WebXMouseMessage>(message);
 
         j = nlohmann::json{
             {"type", "mouse"},
@@ -157,7 +157,7 @@ zmq::message_t * WebXJsonSerializer::serialize(WebXMessage * message) {
         };
 
     } else if (message->type == WebXMessage::Type::CursorImage) {
-        WebXCursorImageMessage * cursorMessage = (WebXCursorImageMessage *) message;
+        auto cursorMessage = std::static_pointer_cast<WebXCursorImageMessage>(message);
         auto cursorImage  = cursorMessage->mouseCursorImage;
 
         j = nlohmann::json{

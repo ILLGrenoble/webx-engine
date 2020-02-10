@@ -2,12 +2,13 @@
 #define WEBX_BINARY_MESSAGE_SERIALIZER_H
 
 #include <zmq.hpp>
+#include <memory>
 
 template <typename T>
 class WebXBinaryMessageSerializer {
 public:
     virtual ~WebXBinaryMessageSerializer() {}
-    virtual zmq::message_t * serialize(const T * message) = 0;
+    virtual zmq::message_t * serialize(std::shared_ptr<T> message) = 0;
 };
 
 

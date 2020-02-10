@@ -142,13 +142,13 @@ void WebXController::handleClientInstructions() {
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         auto instruction = *it;
         if (instruction->type == WebXInstruction::Type::Mouse) {
-            WebXMouseInstruction * mouseInstruction = (WebXMouseInstruction *)instruction.get();
+            auto mouseInstruction = std::static_pointer_cast<WebXMouseInstruction>(instruction);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         }
 
         if (instruction->type == WebXInstruction::Type::Keyboard) {
-            WebXKeyboardInstruction * keyboardInstruction = (WebXKeyboardInstruction *)instruction.get();
+           auto keyboardInstruction = std::static_pointer_cast<WebXKeyboardInstruction>(instruction);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
         }

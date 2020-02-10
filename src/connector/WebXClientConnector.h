@@ -4,6 +4,7 @@
 #include <csignal>
 #include <memory>
 #include "instruction/WebXInstruction.h"
+#include "message/WebXMessage.h"
 
 class WebXManager;
 class WebXClientMessagePublisher;
@@ -34,12 +35,12 @@ public:
     }
 
 private:
-    WebXMessage * handleInstruction(std::shared_ptr<WebXInstruction> instruction);
-    WebXMessage * handleConnectionInstruction();
-    WebXMessage * handleScreenInstruction();
-    WebXMessage * handleWindowsInstruction();
-    WebXMessage * handleImageInstruction(long windowId);
-    WebXMessage * handleCursorInstruction(uint32_t cursorId);
+    std::shared_ptr<WebXMessage> handleInstruction(std::shared_ptr<WebXInstruction> instruction);
+    std::shared_ptr<WebXMessage> handleConnectionInstruction();
+    std::shared_ptr<WebXMessage> handleScreenInstruction();
+    std::shared_ptr<WebXMessage> handleWindowsInstruction();
+    std::shared_ptr<WebXMessage> handleImageInstruction(long windowId);
+    std::shared_ptr<WebXMessage> handleCursorInstruction(uint32_t cursorId);
 
 private:
     static WebXClientConnector * _instance;

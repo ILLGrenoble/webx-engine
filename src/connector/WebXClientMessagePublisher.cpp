@@ -10,7 +10,7 @@
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
     _thread(NULL),
     _running(false),
-    _messageQueue(new WebXQueue<WebXMessage>(1024)),
+    _messageQueue(1024),
     _context(NULL),
     _port(0)  {
 }
@@ -38,7 +38,7 @@ void WebXClientMessagePublisher::stop() {
     if (this->_thread != NULL) {
         // Join thread and cleanup
         spdlog::info("Stopping client message publisher...");
-        this->_messageQueue->stop();
+        this->_messageQueue.stop();
         this->_thread->join();
         spdlog::info("Stopped client message publisher");
         delete this->_thread;
@@ -47,23 +47,23 @@ void WebXClientMessagePublisher::stop() {
 }
 
 void WebXClientMessagePublisher::onDisplayChanged(const std::vector<WebXWindowProperties> & windows) {
-    WebXWindowsMessage * message = new WebXWindowsMessage(windows);
-    this->_messageQueue->put(message);
+    auto message = std::make_shared<WebXWindowsMessage>(windows);
+    this->_messageQueue.put(message);
 }
 
 void WebXClientMessagePublisher::onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image) {
-    WebXImageMessage * message = new WebXImageMessage(windowId, image);
-    this->_messageQueue->put(message);
+    auto message = std::make_shared<WebXImageMessage>(windowId, image);
+    this->_messageQueue.put(message);
 }
 
 void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, const std::vector<WebXSubImage> & subImages) {
-    WebXSubImagesMessage * message = new WebXSubImagesMessage(windowId, subImages);
-    this->_messageQueue->put(message);
+    auto message = std::make_shared<WebXSubImagesMessage>(windowId, subImages);
+    this->_messageQueue.put(message);
 }
 
 void WebXClientMessagePublisher::onMouseChanged(int x, int y, uint32_t cursorId) {
-    WebXMouseMessage * message = new WebXMouseMessage(x, y, cursorId);
-    this->_messageQueue->put(message);
+    auto message = std::make_shared<WebXMouseMessage>(x, y, cursorId);
+    this->_messageQueue.put(message);
 }
 
 void WebXClientMessagePublisher::threadMain(void * arg) {
@@ -84,13 +84,12 @@ void WebXClientMessagePublisher::mainLoop() {
 
     while (this->_running) {
         try {
-            WebXMessage * message = this->_messageQueue->get();
+           auto message = this->_messageQueue.get();
             if (message != NULL && this->_running) {
 
                 zmq::message_t * replyMessage = this->_serializer->serialize(message);
                 socket.send(*replyMessage);
 
-                delete message;
                 delete replyMessage;
             }
 

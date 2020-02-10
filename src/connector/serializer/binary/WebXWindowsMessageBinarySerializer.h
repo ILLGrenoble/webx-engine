@@ -24,7 +24,7 @@ public:
     //      y: 4 bytes
     //      width: 4 bytes
     //      height: 4 bytes
-    virtual zmq::message_t * serialize(const WebXWindowsMessage * message);
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXWindowsMessage> message);
 };
 
 

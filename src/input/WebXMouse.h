@@ -13,8 +13,7 @@
 #define ScrollDownButton Button5
 
 #include "WebXMouseState.h"
-
-class WebXMouseCursorFactory;
+#include "cursor/WebXMouseCursorFactory.h"
 
 class WebXMouse {
 public:
@@ -41,7 +40,7 @@ private:
 private:
     Display * _x11Display;
     Window  _rootWindow;
-    WebXMouseCursorFactory * _cursorFactory;
+    WebXMouseCursorFactory _cursorFactory;
     WebXMouseState  * _state;
 };
 

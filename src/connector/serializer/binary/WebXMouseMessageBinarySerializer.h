@@ -21,7 +21,7 @@ public:
     //   x: 4 bytes
     //   y: 4 bytes
     //   cursorId: 4 bytes
-    virtual zmq::message_t * serialize(const WebXMouseMessage * message);
+    virtual zmq::message_t * serialize(std::shared_ptr<WebXMouseMessage> message);
 };
 
 

@@ -1,7 +1,7 @@
 #include "WebXConnectionMessageBinarySerializer.h"
 #include <utils/WebXBinaryBuffer.h>
 
-zmq::message_t * WebXConnectionMessageBinarySerializer::serialize(const WebXConnectionMessage * message) {
+zmq::message_t * WebXConnectionMessageBinarySerializer::serialize(std::shared_ptr<WebXConnectionMessage> message) {
     size_t dataSize = 16 + 12;
     zmq::message_t * output= new zmq::message_t(dataSize);
 

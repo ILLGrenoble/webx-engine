@@ -34,7 +34,7 @@ private:
     tthread::thread * _thread;
     tthread::mutex _mutex;
     bool _running;
-    WebXQueue<WebXMessage> * _messageQueue;
+    WebXQueue<std::shared_ptr<WebXMessage>> _messageQueue;
 
     WebXSerializer * _serializer;
     zmq::context_t * _context;

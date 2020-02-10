@@ -2,7 +2,7 @@
 #include <utils/WebXBinaryBuffer.h>
 #include <image/WebXImage.h>
 
-zmq::message_t * WebXImageMessageBinarySerializer::serialize(const WebXImageMessage * message) {
+zmq::message_t * WebXImageMessageBinarySerializer::serialize(std::shared_ptr<WebXImageMessage> message) {
     std::shared_ptr<WebXImage> image = message->image;
     size_t imageDataSize = 0;
     unsigned int depth = 0;

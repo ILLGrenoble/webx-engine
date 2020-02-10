@@ -1,7 +1,7 @@
 #include "WebXCursorImageMessageBinarySerializer.h"
 #include <utils/WebXBinaryBuffer.h>
 
-zmq::message_t * WebXCursorImageMessageBinarySerializer::serialize(const WebXCursorImageMessage * message) {
+zmq::message_t * WebXCursorImageMessageBinarySerializer::serialize(std::shared_ptr<WebXCursorImageMessage> message) {
     std::shared_ptr<WebXImage> mouseCursorImage = message->mouseCursorImage;
 
     size_t dataSize = 16 + 28 + mouseCursorImage->getRawDataSize();

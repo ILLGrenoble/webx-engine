@@ -35,6 +35,13 @@ public:
         }); 
     }
 
+    // std::shared_ptr<T> getWithValues(_Args args...) {
+    //     auto object = this->get();
+    //     object->setValues(args);
+
+    //     return object;
+    // }
+
 private:
     void init(long size) {
         tthread::lock_guard<tthread::mutex> lock(_poolMutex);
