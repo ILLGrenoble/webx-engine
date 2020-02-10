@@ -49,8 +49,7 @@ std::shared_ptr<WebXInstruction> WebXJsonSerializer::deserialize(void * instruct
         int x = jInstruction.at("x");
         int y = jInstruction.at("y");
         int buttonMask = jInstruction.at("buttonMask");
-        auto instruction = this->_webXMouseInstructionPool.get();
-        instruction->set(id, x, y, buttonMask);
+        auto instruction = this->_webXMouseInstructionPool.getWithValues(id, x, y, buttonMask);
         return instruction;
 
     } else if (type == 6) {

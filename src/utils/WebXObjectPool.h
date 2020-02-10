@@ -35,12 +35,13 @@ public:
         }); 
     }
 
-    // std::shared_ptr<T> getWithValues(_Args args...) {
-    //     auto object = this->get();
-    //     object->setValues(args);
+    template<typename ...Params>
+    std::shared_ptr<T> getWithValues(Params&&... params) {
+        auto object = this->get();
+        object->setValues(std::forward<Params>(params)...);
 
-    //     return object;
-    // }
+        return object;
+    }
 
 private:
     void init(long size) {

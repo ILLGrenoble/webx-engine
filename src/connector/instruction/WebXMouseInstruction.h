@@ -23,7 +23,7 @@ public:
     virtual ~WebXMouseInstruction() {
     }
 
-    void set(uint32_t id, int x, int y, unsigned int buttonMask) {
+    void setValues(uint32_t id, int x, int y, unsigned int buttonMask) {
         this->id = id;
         this->x = x;
         this->y = y;
