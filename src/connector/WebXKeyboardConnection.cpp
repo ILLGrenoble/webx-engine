@@ -4,6 +4,7 @@
 #include <display/WebXWindow.h>
 #include <events/WebXEventListener.h>
 #include <image/WebXImage.h>
+#include <connector/WebXClientConnector.h>
 #include <fort/fort.h>
 #include <stdlib.h>
 #include <iostream>
@@ -52,6 +53,9 @@ void WebXKeyboardConnection::mainLoop() {
             this->printWindows();
 
             this->exportWindowImages();
+        
+        } else if (key == 'q') {
+            WebXClientConnector::shutdown();
         }
     }
 }

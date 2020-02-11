@@ -25,7 +25,7 @@ public:
     }
     static void shutdown();
 
-    void run();
+    void run(int socketTimoutMs);
     void stop();
 
     static void signalHandler(int signal) {

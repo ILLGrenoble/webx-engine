@@ -70,12 +70,13 @@ void WebXClientConnector::init() {
     this->_collector = new WebXClientCommandCollector();
 }
 
-void WebXClientConnector::run() {
+void WebXClientConnector::run(int socketTimoutMs) {
     //  Prepare our context and socket
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_REP);
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+    socket.setsockopt(ZMQ_RCVTIMEO, &socketTimoutMs, sizeof(socketTimoutMs));
 
     char address[16];
     snprintf(address, sizeof(address) - 1, "tcp://*:%4d", WebXClientConnector::CONNECTOR_PORT);
@@ -90,32 +91,35 @@ void WebXClientConnector::run() {
 
         //  Wait for next message from client
         try {
-            socket.recv(&instructionMessage);
-            const char * instructionData = (const char *)instructionMessage.data();
-            if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
-                const std::string & serializerType = this->_serializer->getType();
-                zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
-                socket.send(replyMessage);
+            bool retVal = socket.recv(&instructionMessage);
+            if (retVal) {
+                const char * instructionData = (const char *)instructionMessage.data();
+                if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
+                    const std::string & serializerType = this->_serializer->getType();
+                    zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
+                    socket.send(replyMessage);
 
-            } else {
-                // Deserialize instruction
-                auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
-                if (instruction != NULL) {
-                    // Handle message and get message
-                    std::shared_ptr<WebXMessage> message = this->handleInstruction(instruction);
-                    
-                    // Send message
-                    if (message != NULL) {
-                        message->commandId = instruction->id;
-                        zmq::message_t *replyMessage = this->_serializer->serialize(message);
-                        socket.send(*replyMessage);
+                } else {
+                    // Deserialize instruction
+                    auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                    if (instruction != NULL) {
+                        // Handle message and get message
+                        std::shared_ptr<WebXMessage> message = this->handleInstruction(instruction);
+                        
+                        // Send message
+                        if (message != NULL) {
+                            message->commandId = instruction->id;
+                            zmq::message_t *replyMessage = this->_serializer->serialize(message);
+                            socket.send(*replyMessage);
 
-                        delete replyMessage;
+                            delete replyMessage;
 
-                    } else {
-                        zmq::message_t replyMessage(0);
-                        socket.send(replyMessage);
+                        } else {
+                            zmq::message_t replyMessage(0);
+                            socket.send(replyMessage);
+                        }
                     }
+
                 }
 
             }
