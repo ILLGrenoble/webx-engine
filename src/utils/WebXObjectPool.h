@@ -30,9 +30,7 @@ public:
         }
 
         // Automatically collect object
-        return std::shared_ptr<T>(object.get(), [=](T*){
-            this->put(object);
-        }); 
+        return std::shared_ptr<T>(object.get(), [=](T*) { this->put(object); }); 
     }
 
     template<typename ...Params>
@@ -53,6 +51,7 @@ private:
 
     void put(std::shared_ptr<T> object) {
         tthread::lock_guard<tthread::mutex> lock(_poolMutex);
+        this->_pool.push_back(object);
     }
 
 private:

@@ -21,6 +21,14 @@ public:
         return this->_size;
     }
 
+    size_t getCapacity() const {
+        return this->_capacity;
+    }
+
+    void reset() {
+        this->_size = 0;
+    }
+
     uint32_t calculateChecksum() const;
 
 private:
