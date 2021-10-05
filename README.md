@@ -21,8 +21,14 @@ apt install cmake build-essential libzmq3-dev libpng-dev libxdamage-dev libxrend
 Compiling:
 
 ```bash
-cmake
-make .
+cmake .
+make
+```
+
+This will compile the WebX server using a single core. To parallel build the project run the following, for example, to build using 4 cores:
+
+```bash
+make -j 4
 ```
 
 Running WebX:
@@ -30,8 +36,17 @@ Running WebX:
 > WebX will connect to the XDisplay defined by the DISPLAY variable. Make sure this is set correctly beforing executing
 
 ```
-./bin/webx
+./bin/webx <options>
 ```
+
+The following options are available:
+
+|Option | Description|
+|---|---|
+|-l <debug|trace> | increases the logging level |
+|-t json | uses json transport rather than binary |
+|-k | Adds WebX keyboard connector to assist in debugging the server|
+
 WebX will expose three zeromq ports
 
 > For the moment these ports are not configurable. Please make sure you open these ports on your firewall

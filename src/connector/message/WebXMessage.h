@@ -12,7 +12,8 @@ public:
         Screen,
         Subimages,
         Mouse,
-        CursorImage
+        CursorImage,
+        Void
     };
 
     WebXMessage(Type type) :

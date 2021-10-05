@@ -13,6 +13,7 @@ class WebXImageMessageBinarySerializer;
 class WebXConnectionMessageBinarySerializer;
 class WebXMouseMessageBinarySerializer;
 class WebXCursorImageMessageBinarySerializer;
+class WebXVoidMessageBinarySerializer;
 
 class WebXBinarySerializer : public WebXSerializer {
 public:
@@ -32,6 +33,7 @@ private:
     WebXConnectionMessageBinarySerializer * _connectionMessageSerializer;
     WebXMouseMessageBinarySerializer * _mouseMessageSerializer;
     WebXCursorImageMessageBinarySerializer * _cursorImageMessageSerializer;
+    WebXVoidMessageBinarySerializer * _voidMessageSerializer;
 };
 
 void from_json(const nlohmann::json& j, WebXInstruction & request);

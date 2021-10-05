@@ -1,13 +1,12 @@
-#include "WebXConnectionMessageBinarySerializer.h"
+#include "WebXVoidMessageBinarySerializer.h"
 #include <utils/WebXBinaryBuffer.h>
 
-zmq::message_t * WebXConnectionMessageBinarySerializer::serialize(std::shared_ptr<WebXConnectionMessage> message) {
-    size_t dataSize = 16 + 8;
+zmq::message_t * WebXVoidMessageBinarySerializer::serialize(std::shared_ptr<WebXVoidMessage> message) {
+    size_t dataSize = 16 + 4;
     zmq::message_t * output= new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, (uint32_t)message->type);
     buffer.write<uint32_t>(message->commandId);
-    buffer.write<int32_t>(message->publisherPort);
 
     return output;
 }

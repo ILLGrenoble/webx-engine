@@ -15,6 +15,7 @@
 #include <connector/message/WebXMouseMessage.h>
 #include <connector/message/WebXCursorImageMessage.h>
 #include <connector/message/WebXConnectionMessage.h>
+#include <connector/message/WebXVoidMessage.h>
 #include "binary/WebXScreenMessageBinarySerializer.h"
 #include "binary/WebXWindowsMessageBinarySerializer.h"
 #include "binary/WebXSubImagesMessageBinarySerializer.h"
@@ -22,6 +23,7 @@
 #include "binary/WebXConnectionMessageBinarySerializer.h"
 #include "binary/WebXMouseMessageBinarySerializer.h"
 #include "binary/WebXCursorImageMessageBinarySerializer.h"
+#include "binary/WebXVoidMessageBinarySerializer.h"
 
 
 WebXBinarySerializer::WebXBinarySerializer() :
@@ -31,6 +33,7 @@ WebXBinarySerializer::WebXBinarySerializer() :
      _subImagesMessageSerializer(new WebXSubImagesMessageBinarySerializer()),
      _imageMessageSerializer(new WebXImageMessageBinarySerializer()),
      _connectionMessageSerializer(new WebXConnectionMessageBinarySerializer()),
+     _voidMessageSerializer(new WebXVoidMessageBinarySerializer()),
      _mouseMessageSerializer(new WebXMouseMessageBinarySerializer()),
      _cursorImageMessageSerializer(new WebXCursorImageMessageBinarySerializer()) {
 }
@@ -117,6 +120,10 @@ zmq::message_t * WebXBinarySerializer::serialize(std::shared_ptr<WebXMessage> me
         case WebXMessage::CursorImage: {
             auto cursorImageMessage = std::static_pointer_cast<WebXCursorImageMessage>(message);
             return this->_cursorImageMessageSerializer->serialize(cursorImageMessage);
+        }
+        case WebXMessage::Void: {
+            auto voidMessage = std::static_pointer_cast<WebXVoidMessage>(message);
+            return this->_voidMessageSerializer->serialize(voidMessage);
         }
 
         default:

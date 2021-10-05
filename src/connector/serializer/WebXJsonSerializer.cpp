@@ -6,6 +6,7 @@
 #include <connector/message/WebXSubImagesMessage.h>
 #include <connector/message/WebXMouseMessage.h>
 #include <connector/message/WebXCursorImageMessage.h>
+#include <connector/message/WebXVoidMessage.h>
 #include <connector/instruction/WebXConnectInstruction.h>
 #include <connector/instruction/WebXImageInstruction.h>
 #include <connector/instruction/WebXScreenInstruction.h>
@@ -95,8 +96,7 @@ zmq::message_t * WebXJsonSerializer::serialize(std::shared_ptr<WebXMessage> mess
         j = nlohmann::json{
             {"type", "connection"},
             {"commandId", connectionMessage->commandId},
-            {"publisherPort", connectionMessage->publisherPort}, 
-            {"collectorPort", connectionMessage->collectorPort}
+            {"publisherPort", connectionMessage->publisherPort}
         };
 
     } else if (message->type == WebXMessage::Type::Screen) {
@@ -168,6 +168,14 @@ zmq::message_t * WebXJsonSerializer::serialize(std::shared_ptr<WebXMessage> mess
             {"yHot", cursorMessage->yhot},
             {"cursorId", cursorMessage->cursorId},
             {"data",   "data:image/" + cursorImage->getFileExtension() + ";base64," + base64_encode(cursorImage->getRawData(), cursorImage->getRawDataSize())}
+        };
+
+    } else if (message->type == WebXMessage::Type::Void) {
+        auto voidMessage = std::static_pointer_cast<WebXVoidMessage>(message);
+
+        j = nlohmann::json{
+            {"type", "void"},
+            {"commandId", voidMessage->commandId}
         };
 
     } else {
