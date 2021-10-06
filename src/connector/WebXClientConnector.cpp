@@ -80,16 +80,19 @@ void WebXClientConnector::run(int socketTimoutMs) {
     this->_running = true;
     while (this->_running) {
         zmq::message_t instructionMessage;
+        bool sendRequired = false;
 
         //  Wait for next message from client
         try {
             bool retVal = socket.recv(&instructionMessage);
+            bool sendRequired = true;
             if (retVal) {
                 const char * instructionData = (const char *)instructionMessage.data();
                 if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
                     const std::string & serializerType = this->_serializer->getType();
                     zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
                     socket.send(replyMessage);
+                    sendRequired = false;
 
                 } else {
                     // Deserialize instruction
@@ -103,17 +106,12 @@ void WebXClientConnector::run(int socketTimoutMs) {
                             message->commandId = instruction->id;
                             zmq::message_t *replyMessage = this->_serializer->serialize(message);
                             socket.send(*replyMessage);
+                            sendRequired = false;
 
                             delete replyMessage;
-
-                        } else {
-                            zmq::message_t replyMessage(0);
-                            socket.send(replyMessage);
                         }
                     }
-
                 }
-
             }
         
         } catch(zmq::error_t& e) {
@@ -126,6 +124,12 @@ void WebXClientConnector::run(int socketTimoutMs) {
             spdlog::error("WebXClientConnector caught std::string: {:s}", e.c_str());
         // } catch (const WebXBinaryBuffer::OverflowException & e) {
         //     spdlog::error("WebXClientConnector caught WebXBinaryBuffer::OverflowException: offset: {:d}, dataLength: {:d}, bufferLength: {:d}", e.offset, e.dataSize, e.bufferLength);
+        }
+
+        if (sendRequired) {
+            spdlog::info("Sending empty message");
+            zmq::message_t replyMessage(0);
+            socket.send(replyMessage);
         }
     }
 
