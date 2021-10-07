@@ -5,6 +5,7 @@
 #include <memory>
 #include "instruction/WebXInstruction.h"
 #include "message/WebXMessage.h"
+#include "WebXZMQ.h"
 
 class WebXManager;
 class WebXClientMessagePublisher;
@@ -34,6 +35,8 @@ public:
     }
 
 private:
+    void sendMessage(zmq::socket_t & socket, zmq::message_t & message);
+
     std::shared_ptr<WebXMessage> handleInstruction(std::shared_ptr<WebXInstruction> instruction);
     std::shared_ptr<WebXMessage> handleConnectionInstruction();
     std::shared_ptr<WebXMessage> handleScreenInstruction();

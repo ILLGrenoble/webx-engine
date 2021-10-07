@@ -4,7 +4,7 @@
 #include "message/WebXSubImagesMessage.h"
 #include "message/WebXMouseMessage.h"
 #include "serializer/WebXSerializer.h"
-#include <zmq.hpp>
+#include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
@@ -88,8 +88,11 @@ void WebXClientMessagePublisher::mainLoop() {
             if (message != NULL && this->_running) {
 
                 zmq::message_t * replyMessage = this->_serializer->serialize(message);
+#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
                 socket.send(*replyMessage);
-
+#else
+                socket.send(*replyMessage, zmq::send_flags::none);
+#endif
                 delete replyMessage;
             }
 

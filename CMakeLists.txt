@@ -118,3 +118,22 @@ target_link_libraries(
     -lpng
 )
 
+
+file(GLOB_RECURSE TEST_PUSH_SOURCES test/testPush.cpp)
+
+add_executable(testPush ${TEST_PUSH_SOURCES})
+
+target_link_libraries(
+    testPush
+    -lzmq
+)
+
+file(GLOB_RECURSE TEST_PUSH_PULL_SOURCES test/testPushPull.cpp lib/tinythread/*.cpp)
+
+add_executable(testPushPull ${TEST_PUSH_PULL_SOURCES})
+
+target_link_libraries(
+    testPushPull
+    ${CMAKE_THREAD_LIBS_INIT}
+    -lzmq
+)

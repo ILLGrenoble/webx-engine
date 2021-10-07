@@ -18,7 +18,6 @@
 #include <utils/WebXBinaryBuffer.h>
 #include <unistd.h>
 #include <string>
-#include <zmq.hpp>
 #include <spdlog/spdlog.h>
 #include <X11/Xlib.h>
 
@@ -84,14 +83,23 @@ void WebXClientConnector::run(int socketTimoutMs) {
 
         //  Wait for next message from client
         try {
+#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
             bool retVal = socket.recv(&instructionMessage);
+#else
+            auto retVal = socket.recv(instructionMessage);
+#endif
             bool sendRequired = true;
             if (retVal) {
                 const char * instructionData = (const char *)instructionMessage.data();
+
+                // std::string instructionString;
+                // instructionString.assign(instructionData, instructionMessage.size());
+                // spdlog::debug("Received instruction {:s}", instructionString.c_str());
+
                 if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
                     const std::string & serializerType = this->_serializer->getType();
                     zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
-                    socket.send(replyMessage);
+                    this->sendMessage(socket, replyMessage);
                     sendRequired = false;
 
                 } else {
@@ -105,7 +113,7 @@ void WebXClientConnector::run(int socketTimoutMs) {
                         if (message != NULL) {
                             message->commandId = instruction->id;
                             zmq::message_t *replyMessage = this->_serializer->serialize(message);
-                            socket.send(*replyMessage);
+                            this->sendMessage(socket, *replyMessage);
                             sendRequired = false;
 
                             delete replyMessage;
@@ -127,9 +135,8 @@ void WebXClientConnector::run(int socketTimoutMs) {
         }
 
         if (sendRequired) {
-            spdlog::info("Sending empty message");
             zmq::message_t replyMessage(0);
-            socket.send(replyMessage);
+            this->sendMessage(socket, replyMessage);
         }
     }
 
@@ -137,6 +144,14 @@ void WebXClientConnector::run(int socketTimoutMs) {
     delete this;
 
     spdlog::info("Stopped client connector");
+}
+
+void WebXClientConnector::sendMessage(zmq::socket_t & socket, zmq::message_t & message) {
+#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
+    socket.send(message);
+#else
+    socket.send(message, zmq::send_flags::none);
+#endif
 }
 
 void WebXClientConnector::stop() {
