@@ -92,7 +92,7 @@ void WebXClientConnector::run(int socketTimoutMs) {
 
         //  Wait for next message from client
         try {
-#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
             bool retVal = socket.recv(&instructionMessage);
 #else
             auto retVal = socket.recv(instructionMessage);
@@ -156,7 +156,7 @@ void WebXClientConnector::run(int socketTimoutMs) {
 }
 
 void WebXClientConnector::sendMessage(zmq::socket_t & socket, zmq::message_t & message) {
-#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
     socket.send(message);
 #else
     socket.send(message, zmq::send_flags::none);

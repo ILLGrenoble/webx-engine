@@ -60,7 +60,7 @@ void WebXClientCommandCollector::mainLoop() {
         zmq::message_t instructionMessage;
 
         try {
-#ifdef COMPILE_FOR_ZMQ_BEFORE_4_3_1
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
             bool retVal = socket.recv(&instructionMessage);
 #else
             auto retVal = socket.recv(instructionMessage);
