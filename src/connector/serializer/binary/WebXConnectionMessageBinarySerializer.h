@@ -18,6 +18,7 @@ public:
     // Content:
     //   commandId: 4 bytes
     //   publisherPort: 4 bytes
+    //   collectorPort: 4 bytes
     virtual zmq::message_t * serialize(std::shared_ptr<WebXConnectionMessage> message);
 };
 

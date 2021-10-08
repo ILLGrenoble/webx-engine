@@ -7,13 +7,15 @@
 
 class WebXConnectionMessage : public WebXMessage {
 public:
-    WebXConnectionMessage(int32_t publisherPort) :
+    WebXConnectionMessage(int32_t publisherPort, int32_t collectorPort) :
         WebXMessage(Type::Connection),
-        publisherPort(publisherPort) {}
+        publisherPort(publisherPort),
+        collectorPort(collectorPort) {}
     
     virtual ~WebXConnectionMessage() {}
 
     int32_t publisherPort;
+    int32_t collectorPort;
 };
 
 

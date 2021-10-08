@@ -11,6 +11,7 @@
 #include "serializer/WebXJsonSerializer.h"
 #include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
+#include "WebXClientCommandCollector.h"
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXController.h>
@@ -23,10 +24,12 @@
 
 WebXClientConnector * WebXClientConnector::_instance = NULL;
 int WebXClientConnector::CONNECTOR_PORT = 5555;
-int WebXClientConnector::PUBLISHER_PORT = 5556;
+int WebXClientConnector::COLLECTOR_PORT = 5556;
+int WebXClientConnector::PUBLISHER_PORT = 5557;
 
 WebXClientConnector::WebXClientConnector(std::string &transport) :
     _publisher(NULL),
+    _collector(NULL),
     _serializer(NULL),
     _running(false) {
     spdlog::info("Using {} for the transport", transport);
@@ -42,6 +45,9 @@ WebXClientConnector::~WebXClientConnector() {
     if (this->_publisher) {
         delete _publisher;
         _publisher = NULL;
+    }
+    if (this->_collector) {
+        _collector = NULL;
     }
     if (this->_serializer) {
         delete _serializer;
@@ -60,6 +66,8 @@ WebXClientConnector * WebXClientConnector::initInstance(std::string &transport) 
 void WebXClientConnector::init() {
     this->_publisher = new WebXClientMessagePublisher();
     WebXManager::instance()->getController()->addConnection(this->_publisher);
+
+    this->_collector = new WebXClientCommandCollector();
 }
 
 void WebXClientConnector::run(int socketTimoutMs) {
@@ -75,6 +83,7 @@ void WebXClientConnector::run(int socketTimoutMs) {
     socket.bind(address);
 
     this->_publisher->run(this->_serializer, &context, WebXClientConnector::PUBLISHER_PORT);
+    this->_collector->run(this->_serializer, &context, WebXClientConnector::COLLECTOR_PORT);
 
     this->_running = true;
     while (this->_running) {
@@ -159,6 +168,10 @@ void WebXClientConnector::stop() {
     WebXManager::instance()->getController()->removeConnection(this->_publisher);
 
     this->_running = false;
+
+    if (this->_collector) {
+        this->_collector->stop();
+    }
 }
 
 void WebXClientConnector::shutdown() {
@@ -189,21 +202,13 @@ std::shared_ptr<WebXMessage> WebXClientConnector::handleInstruction(std::shared_
     } else if (instruction->type == WebXInstruction::Type::Cursor) {
         auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
         return this->handleCursorInstruction(cursorImageInstruction->cursorId);
-    
-    } else if (instruction->type == WebXInstruction::Type::Mouse) {
-        WebXManager::instance()->getController()->onClientInstruction(instruction);
-        return std::make_shared<WebXVoidMessage>();
-
-    } else if (instruction->type == WebXInstruction::Type::Keyboard) {
-        WebXManager::instance()->getController()->onClientInstruction(instruction);
-        return std::make_shared<WebXVoidMessage>();
     }
 
     return nullptr;
 }
 
 std::shared_ptr<WebXMessage> WebXClientConnector::handleConnectionInstruction() {
-    return std::make_shared<WebXConnectionMessage>(WebXClientConnector::PUBLISHER_PORT);
+    return std::make_shared<WebXConnectionMessage>(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);
 }
 
 std::shared_ptr<WebXMessage> WebXClientConnector::handleScreenInstruction() {

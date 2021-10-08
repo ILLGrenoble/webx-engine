@@ -9,6 +9,7 @@
 
 class WebXManager;
 class WebXClientMessagePublisher;
+class WebXClientCommandCollector;
 class WebXMessage;
 class WebXSerializer;
 
@@ -47,9 +48,11 @@ private:
 private:
     static WebXClientConnector * _instance;
     static int CONNECTOR_PORT;
+    static int COLLECTOR_PORT;
     static int PUBLISHER_PORT;
 
     WebXClientMessagePublisher * _publisher;
+    WebXClientCommandCollector * _collector;
 
     WebXSerializer * _serializer;
     bool _running;
