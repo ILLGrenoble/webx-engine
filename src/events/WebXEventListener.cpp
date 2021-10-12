@@ -1,5 +1,6 @@
 #include "WebXEventListener.h"
 #include "WebXEvent.h"
+#include "WebXDamageOverride.h"
 #include <display/WebXWindow.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
@@ -8,7 +9,7 @@
 #include <spdlog/spdlog.h>
 
 
-WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow) :
+WebXEventListener::WebXEventListener(Display * display, Window rootWindow) :
     _x11Display(display),
     _rootWindow(rootWindow),
     _damageEventBase(0),
@@ -16,21 +17,30 @@ WebXEventListener::WebXEventListener(Display * display, WebXWindow * rootWindow)
     _xfixesEventBase(0),
     _xfixesErrorBase(0) {
 
-    XSelectInput(this->_x11Display, this->_rootWindow->getX11Window(), SubstructureNotifyMask);
+    XSelectInput(this->_x11Display, this->_rootWindow, SubstructureNotifyMask);
 
     if (!XDamageQueryExtension(this->_x11Display, &this->_damageEventBase, &this->_damageErrorBase)) {
         spdlog::error("No damage extension");
         exit(1);
     }
     if (XFixesQueryExtension(this->_x11Display, &this->_xfixesEventBase, &this->_xfixesErrorBase)) {
-        XFixesSelectCursorInput(this->_x11Display,  this->_rootWindow->getX11Window(), XFixesDisplayCursorNotifyMask);
+        XFixesSelectCursorInput(this->_x11Display,  this->_rootWindow, XFixesDisplayCursorNotifyMask);
     } else {
         spdlog::error("No xfixes extension");
         exit(1);
     }
+
+    // Create and enable the damage overrider
+    this->_damageOverride = new WebXDamageOverride(display, this->_damageEventBase);
+    this->_damageOverride->enable();
 }
 
 WebXEventListener::~WebXEventListener() {
+    if (this->_damageOverride) {
+        this->_damageOverride->disable();
+        delete this->_damageOverride;
+        this->_damageOverride = 0;
+    }
 }
 
 void WebXEventListener::flushQueuedEvents() {

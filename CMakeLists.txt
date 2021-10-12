@@ -138,3 +138,15 @@ target_link_libraries(
     ${CMAKE_THREAD_LIBS_INIT}
     -lzmq
 )
+
+
+file(GLOB_RECURSE TEST_DAMAGE_SOURCES test/testDamage.cpp src/events/* src/display/WebX11Lib.cpp)
+
+add_executable(testDamage ${TEST_DAMAGE_SOURCES})
+
+target_link_libraries(
+    testDamage
+    -lX11
+    -lXfixes
+    -lXdamage
+)

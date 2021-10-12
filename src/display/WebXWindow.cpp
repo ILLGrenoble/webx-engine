@@ -1,6 +1,7 @@
 #include "WebXWindow.h"
 #include <image/WebXImage.h>
 #include <image/WebXImageAlphaConverter.h>
+#include <events/WebXDamageOverride.h>
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
@@ -41,8 +42,20 @@ WebXWindow::~WebXWindow() {
 void WebXWindow::enableDamage() {
     tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
     if (this->_damage == 0) {
-        // Raw damage
+        // Flush all pending events
+        XSync(this->_display, false);
+
+        // Set the damage override to ignore this window
+        WebXDamageOverride::setWindowToIgnore(this->_x11Window);
+
+        // Enable damage for this window (generates a lot of useless events)
         this->_damage = XDamageCreate(this->_display, this->_x11Window, XDamageReportRawRectangles);
+
+        // Flush all events again (this time ignorred via the override)
+        XSync(this->_display, false);
+
+        // Disable the damage override
+        WebXDamageOverride::setWindowToIgnore(0);
     }
 }
 
@@ -57,13 +70,8 @@ void WebXWindow::disableDamage() {
 void WebXWindow::updateAttributes() {
     XWindowAttributes attr;
     Status status = XGetWindowAttributes(this->_display, this->_x11Window, &attr);
-    if (status != BadWindow) {
-        this->_rectangle = WebXRectangle(attr.x, attr.y, attr.width, attr.height);
-        this->_isViewable = (attr.map_state == IsViewable && attr.c_class == InputOutput);
-    } else {
-        this->_rectangle = WebXRectangle(0, 0, -1, -1);
-        this->_isViewable = false;
-    }
+    this->_rectangle = WebXRectangle(attr.x, attr.y, attr.width, attr.height);
+    this->_isViewable = (attr.map_state == IsViewable && attr.c_class == InputOutput);
 }
 
 void WebXWindow::printInfo() const {
@@ -103,10 +111,17 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     } else {
         rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
     }
-    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d}x{:d})", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
+    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d}", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
+
+    // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
+    this->disableDamage();
+    
     XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
+    // Fix for Ubuntu 20.04
+    this->enableDamage();
+    
     if (image) {
         bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));

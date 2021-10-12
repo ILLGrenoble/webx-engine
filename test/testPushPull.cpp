@@ -3,6 +3,11 @@
 #include <unistd.h>
 #include <tinythread/tinythread.h>
 
+
+#if !defined(CPPZMQ_VERSION) || (CPPZMQ_VERSION < ZMQ_MAKE_VERSION(4, 3, 1))
+#define COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+#endif
+
 void pusher(void * arg) {
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_PUSH);
@@ -19,7 +24,11 @@ void pusher(void * arg) {
         std::string message = "{\"type\":5,\"id\":257,\"x\":821.691368788143,\"y\":203.50043591979076,\"buttonMask\":0}";
         zmq::message_t zmqMessage(message.c_str(), message.size());
         printf("%d Sending %s\n", i, (const char *)zmqMessage.data());
-        auto retVal = socket.send(zmqMessage);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+        socket.send(zmqMessage);
+#else
+        socket.send(zmqMessage, zmq::send_flags::none);
+#endif
 
         usleep(10000);
     }
@@ -44,7 +53,11 @@ int main() {
 
     while (true) {
         zmq::message_t instructionMessage;
-        auto recvResult = socket.recv(&instructionMessage);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+        bool retVal = socket.recv(&instructionMessage);
+#else
+        auto recvResult = socket.recv(instructionMessage);
+#endif
         if (recvResult) {
             const char * instructionData = (const char *)instructionMessage.data();
             std::string instructionString;

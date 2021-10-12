@@ -34,13 +34,11 @@ public:
 
 	/**
 	 * Puts the item in the correct postion corresponding to its priority. Is blocking when the queue is full. Waits for the queue to be not full. 
-	 * throw UnavailableException.
 	 */
 	void put(ItemType item, int priority = 0);
 
 	/**
 	 * Gets the item. Is blocking when the queue is empty. Waits for the queue to be not empty.
-	 * throw UnavailableException.
 	 */
 	ItemType get();
 

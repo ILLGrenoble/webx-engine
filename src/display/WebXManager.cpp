@@ -15,6 +15,11 @@ int WebXManager::ERROR_HANDLER(Display *display, XErrorEvent *err) {
     return 0;
 }
 
+int WebXManager::IO_ERROR_HANDLER(Display *display) {
+    fprintf(stderr, "X11 quit unexpectedly\n");
+    return 0;
+}
+
 WebXManager::WebXManager() :
     _x11Display(NULL),
     _display(NULL),
@@ -66,6 +71,7 @@ void WebXManager::init() {
     }
 
     XSetErrorHandler(WebXManager::ERROR_HANDLER);
+    XSetIOErrorHandler(WebXManager::IO_ERROR_HANDLER);
     XSynchronize(this->_x11Display, True);
 
     this->_display = new WebXDisplay(this->_x11Display);
@@ -74,7 +80,7 @@ void WebXManager::init() {
     this->_controller = new WebXController(this->_display);
     this->_controller->run();
 
-    this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow());
+    this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
     this->_eventListener->addEventHandler(WebXEventType::Create, std::bind(&WebXManager::handleWindowCreateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Destroy, std::bind(&WebXManager::handleWindowDestroyEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Map, std::bind(&WebXManager::handleWindowMapEvent, this, _1));
@@ -100,38 +106,38 @@ void WebXManager::flushEventListener() {
 }
 
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
-    spdlog::debug("Got Create Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Create Event for window 0x{:x}", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowDestroyEvent(const WebXEvent & event) {
-    spdlog::debug("Got Destroy Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Destroy Event for window 0x{:x", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowMapEvent(const WebXEvent & event) {
-    spdlog::debug("Got Map Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Map Event for window 0x{:x}", event.getX11Window());
 
     this->_display->createWindowInTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowUnmapEvent(const WebXEvent & event) {
-    spdlog::debug("Got Unmap Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Unmap Event for window 0x{:x}", event.getX11Window());
 
     this->_display->removeWindowFromTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
-    spdlog::debug("Got Reparent Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Reparent Event for window 0x{:x}", event.getX11Window());
 
     this->_display->reparentWindow(event.getX11Window(), event.getParent());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
-    spdlog::debug("Got Configure Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Configure Event for window 0x{:x}", event.getX11Window());
 
     WebXWindow * window = this->_display->getWindow(event.getX11Window());
     if (window != NULL) {
@@ -147,15 +153,15 @@ void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
-    spdlog::debug("Got Gravity Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Gravity Event for window 0x{:x}", event.getX11Window());
 }
 
 void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
-    spdlog::debug("Got Window Circulate Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got Window Circulate Event for window 0x{:x}", event.getX11Window());
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
-    spdlog::debug("Got damage Event for window 0x{}", event.getX11Window());
+    spdlog::debug("Got damage Event for window 0x{:x}: ({:d}, {:d}) {:d} x {:d}", event.getX11Window(), event.getRectangle().x, event.getRectangle().y, event.getRectangle().size.width, event.getRectangle().size.height);
     this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 

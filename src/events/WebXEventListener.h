@@ -6,11 +6,11 @@
 #include <functional>
 #include "WebXEvent.h"
 
-class WebXWindow;
+class WebXDamageOverride;
 
 class WebXEventListener {
 public:
-    WebXEventListener(Display * display, WebXWindow * rootWindow);
+    WebXEventListener(Display * display, Window rootWindow);
     virtual ~WebXEventListener();
 
     void flushQueuedEvents();
@@ -18,28 +18,19 @@ public:
     void addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler);
     void removeEventHandler(WebXEventType eventType);
 
-    bool getDamageAvailable() const {
-        return this->_damageAvailable;
-    }
-
-    bool getXFixesAvailable() const {
-        return this->_xfixesAvailable;
-    }
-
 private:
     void handleEvent(const WebXEvent & event);
 
 private:
     Display * _x11Display;
-    WebXWindow * _rootWindow;
+    Window _rootWindow;
     std::map<WebXEventType, std::function<void(const WebXEvent &)>> _eventHandlers;
+    WebXDamageOverride * _damageOverride;
 
     int _damageEventBase;
     int _damageErrorBase;
-    bool _damageAvailable;
     int _xfixesEventBase;
     int _xfixesErrorBase;
-    bool _xfixesAvailable;
 };
 
 
