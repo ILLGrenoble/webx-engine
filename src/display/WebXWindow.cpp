@@ -108,21 +108,21 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     this->updateAttributes();
 
-    // Determine rectangle to grab
-    WebXRectangle rectangle;
+    // Initialise rectangle as full window
+    WebXRectangle rectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
     bool isFull = true;
-    if (imageRectangle != NULL) {
-        rectangle = *imageRectangle;
-        isFull = false;
 
+    // If image rectangle is specified, validate its size
+    if (imageRectangle != NULL) {
         // Validate sub rectangle:
-        if (!this->_rectangle.contains(rectangle)) {
+        if (!rectangle.contains(*imageRectangle)) {
             spdlog::debug("Image rectangle for WebXWindow 0x{:x} is outside window bounds", this->_x11Window);
             return nullptr;
-        }
 
-    } else {
-        rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+        } else {
+            rectangle = *imageRectangle;
+            isFull = false;
+        }
     }
 
     // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
@@ -149,7 +149,10 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     } else {
         // Update attributes to check rectangles and visibility to help in debugging the error
         this->updateAttributes();
-        if (!this->_rectangle.contains(rectangle)) {
+
+        WebXRectangle windowRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+
+        if (!windowRectangle.contains(rectangle)) {
             spdlog::error("Failed to get image for window 0x{:x}: requested rectangle is outside window bounds", this->_x11Window);
             return nullptr;
     

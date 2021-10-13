@@ -211,18 +211,20 @@ void WebXController::notifyImagesChanged() {
                     }
                 }
 
-                tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                spdlog::debug("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
-                for (auto it = subImages.begin(); it != subImages.end(); it++) {
-                    const WebXSubImage & subImage = *it;
-                    if (subImage.image->getRawDataSize() > 1024) {
-                        spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
-                    } else {
-                        spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                if (subImages.size() > 0) {
+                    tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                    spdlog::debug("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
+                    for (auto it = subImages.begin(); it != subImages.end(); it++) {
+                        const WebXSubImage & subImage = *it;
+                        if (subImage.image->getRawDataSize() > 1024) {
+                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                        } else {
+                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                        }
                     }
-                }
-                for (WebXConnection * connection : this->_connections) {
-                    connection->onSubImagesChanged(windowDamage.windowId, subImages);
+                    for (WebXConnection * connection : this->_connections) {
+                        connection->onSubImagesChanged(windowDamage.windowId, subImages);
+                    }
                 }
             }
         }
