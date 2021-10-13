@@ -16,7 +16,6 @@ private:
     virtual ~WebXManager();
 
 public:
-    static int ERROR_HANDLER(Display *disp, XErrorEvent *err);
     static int IO_ERROR_HANDLER(Display *disp);
 
     static WebXManager * instance();

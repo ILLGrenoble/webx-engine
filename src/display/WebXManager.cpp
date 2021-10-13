@@ -2,6 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXController.h"
+#include "WebXErrorHandler.h"
 #include <events/WebXEventListener.h>
 #include <X11/extensions/Xfixes.h>
 
@@ -9,11 +10,6 @@
 #include <spdlog/spdlog.h>
 
 WebXManager * WebXManager::_instance = NULL;
-
-int WebXManager::ERROR_HANDLER(Display *display, XErrorEvent *err) {
-    spdlog::error("X11 error for window with id 0x{:x}, error 0x{:02x}", err->resourceid, err->error_code);
-    return 0;
-}
 
 int WebXManager::IO_ERROR_HANDLER(Display *display) {
     spdlog::error("X11 quit unexpectedly");
@@ -70,7 +66,7 @@ void WebXManager::init() {
         exit(EXIT_FAILURE);
     }
 
-    XSetErrorHandler(WebXManager::ERROR_HANDLER);
+    XSetErrorHandler(WebXErrorHandler::setLastError);
     XSetIOErrorHandler(WebXManager::IO_ERROR_HANDLER);
     XSynchronize(this->_x11Display, True);
 

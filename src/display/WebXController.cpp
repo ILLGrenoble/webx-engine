@@ -200,7 +200,6 @@ void WebXController::notifyImagesChanged() {
 
             } else {
                 // Get sub image changes
-
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;

@@ -90,6 +90,9 @@ WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
     return window;
 }
 
+/**
+ * Window has been removed from the X11 tree (the window is no longer valid and will generate errors if X calls are made on it) 
+ */
 void WebXDisplay::removeWindowFromTree(Window x11Window) {
     WebXWindow * window = this->getWindow(x11Window);
     if (window != NULL) {
@@ -99,10 +102,12 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
         // Delete from visible windows
         tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
 
+        // Set manually the isViewable attribute (cannot call XGetWindowAttributes as window is no longer valid)
+        window->setIsViewable(false);
+
         std::vector<WebXWindow *>::iterator it = std::find(this->_visibleWindows.begin(), this->_visibleWindows.end(), window);
         if (it != this->_visibleWindows.end()) {
             // Remove window
-            window->disableDamage();
             this->_visibleWindows.erase(it);
         }
 
@@ -159,6 +164,7 @@ void WebXDisplay::updateVisibleWindows() {
 
     // Make a copy of current visible windows
     std::vector<WebXWindow *> oldVisibleWindows = this->_visibleWindows;
+    std::vector<Window> allX11Windows;
 
     // Clear current list
     this->_visibleWindows.clear();
@@ -168,10 +174,13 @@ void WebXDisplay::updateVisibleWindows() {
     if (queryTree(this->_x11Display, this->_rootWindow->getX11Window(), tree)) {
         for (unsigned int i = 0; i < tree.numberOfChildren; i++) {
             Window childX11Window = tree.children[i];
+            
+            allX11Windows.push_back(childX11Window);
+            
             WebXWindow * child = this->getWindow(childX11Window);
             if (child != NULL) {
-                child->updateAttributes();
-                if (child->isVisible(this->_rootWindow->getRectangle().size)) {
+                Status status = child->updateAttributes();
+                if (status && child->isVisible(this->_rootWindow->getRectangle().size)) {
 
                     child->enableDamage();
                     this->_visibleWindows.push_back(child);
@@ -187,7 +196,13 @@ void WebXDisplay::updateVisibleWindows() {
     for (auto it = oldVisibleWindows.begin(); it != oldVisibleWindows.end(); it++) {
         WebXWindow * oldVisibleWindow = *it;
         if (find(this->_visibleWindows.begin(), this->_visibleWindows.end(), oldVisibleWindow) == this->_visibleWindows.end()) {
-            oldVisibleWindow->disableDamage();
+            // Check that child still exists
+            if (find(allX11Windows.begin(), allX11Windows.end(), oldVisibleWindow->getX11Window()) != allX11Windows.end()) {
+                oldVisibleWindow->disableDamage();
+            
+            } else {
+                oldVisibleWindow->setIsViewable(false);
+            }
         }
     }
 }

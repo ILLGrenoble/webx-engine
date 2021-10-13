@@ -1,4 +1,5 @@
 #include "WebXWindow.h"
+#include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
 #include <image/WebXImageAlphaConverter.h>
 #include <events/WebXDamageOverride.h>
@@ -33,10 +34,13 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
 }
 
 WebXWindow::~WebXWindow() {
-    this->disableDamage();
-
-    //Disable all events from the window
-    XSelectInput(this->_display, this->_x11Window, 0);
+    if (this->_isViewable) {
+        // Disable damage events for the window
+        this->disableDamage();
+    
+        //Disable all events from the window
+        XSelectInput(this->_display, this->_x11Window, 0);
+    }
 }
 
 void WebXWindow::enableDamage() {
@@ -61,17 +65,19 @@ void WebXWindow::enableDamage() {
 
 void WebXWindow::disableDamage() {
     tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
-    if (this->_damage != 0) {
+    if (this->_damage != 0 && this->_isViewable) {
         XDamageDestroy(this->_display, this->_damage);
         this->_damage = 0;
     }
 }
 
-void WebXWindow::updateAttributes() {
+Status WebXWindow::updateAttributes() {
     XWindowAttributes attr;
     Status status = XGetWindowAttributes(this->_display, this->_x11Window, &attr);
     this->_rectangle = WebXRectangle(attr.x, attr.y, attr.width, attr.height);
     this->_isViewable = (attr.map_state == IsViewable && attr.c_class == InputOutput);
+
+    return status;
 }
 
 void WebXWindow::printInfo() const {
@@ -106,7 +112,11 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
 std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
-    this->updateAttributes();
+    Status status = this->updateAttributes();
+    if (status == False) {
+        spdlog::trace("WebXWindow 0x{:x} has been removed before getting an image", this->_x11Window);
+        return nullptr;
+    }
 
     // Initialise rectangle as full window
     WebXRectangle rectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
@@ -145,21 +155,23 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         }
 
         XDestroyImage(image);
-    
+
     } else {
-        // Update attributes to check rectangles and visibility to help in debugging the error
-        this->updateAttributes();
+        // See if ErrorHandler has this window as it's last error source and determine exact error
+        if (WebXErrorHandler::getLastErrorWindow()) {
+            unsigned char lastError = WebXErrorHandler::getLastErrorCode();
+            if (lastError == BadWindow || lastError == BadDrawable) {
+                spdlog::warn("WebXWindow 0x{:x} has been removed while getting an image", this->_x11Window);
+                return nullptr;
 
-        WebXRectangle windowRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+            } else if (lastError == BadMatch) {
+                spdlog::warn("Failed to get image for window 0x{:x}: requested rectangle is outside window bounds", this->_x11Window);
+                return nullptr;
 
-        if (!windowRectangle.contains(rectangle)) {
-            spdlog::error("Failed to get image for window 0x{:x}: requested rectangle is outside window bounds", this->_x11Window);
-            return nullptr;
-    
-        } else {
-            spdlog::error("Failed to get image for window 0x{:x}", this->_x11Window);
+            } else {
+                spdlog::warn("Failed to get image for window 0x{:x}: error 0x{:02x}", this->_x11Window, lastError);
+            }
         }
-
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 

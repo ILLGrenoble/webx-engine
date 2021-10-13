@@ -34,7 +34,7 @@ public:
         this->_rectangle = rectangle;
     }
 
-    void updateAttributes();
+    Status updateAttributes();
 
     void printInfo() const;
 
@@ -68,6 +68,10 @@ public:
 
     bool isVisible(const WebXSize & viewport) const {
         return this->_isViewable && this->_rectangle.isVisible(viewport);
+    }
+
+    void setIsViewable(bool isViewable) {
+        this->_isViewable = isViewable;
     }
 
     void enableDamage();
