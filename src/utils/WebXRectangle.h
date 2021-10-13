@@ -52,7 +52,7 @@ public:
             this->_top > 0;
     }
 
-    bool overlapOrTouhcing(const WebXRectangle & rectangle) const {
+    bool overlapOrTouching(const WebXRectangle & rectangle) const {
         return (
             this->_left < (rectangle._right + 1) &&
             this->_right > (rectangle._left - 1) &&

@@ -238,7 +238,7 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, WebXRectangle
     }
 }
 
-void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool isFullWindow) {
+void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh) {
     tthread::lock_guard<tthread::mutex> damageLock(this->_damagedWindowsMutex);
     tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
 
@@ -260,16 +260,22 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
 
         // Modify or add window damage
         if (it != this->_damagedWindows.end()) {
-            // Add to existing damage
-            WebXWindowDamageProperties & existingDamagedWindow = *it;
-            existingDamagedWindow += damagedArea;
-            if (isFullWindow) {
-                existingDamagedWindow.fullWindow = true;
+            if (fullWindowRefresh) {
+                // Delete previous window damage (window size has changed)
+                this->_damagedWindows.erase(it);
+
+                // Create new window damage
+                this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, fullWindowRefresh));
+            
+            } else {
+                // Add to existing damage
+                WebXWindowDamageProperties & existingDamagedWindow = *it;
+                existingDamagedWindow += damagedArea;
             }
         
         } else {
             // Create new window damage
-            this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, isFullWindow));
+            this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, fullWindowRefresh));
         }
     }
 }

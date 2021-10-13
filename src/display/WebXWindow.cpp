@@ -104,12 +104,22 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
 }
 
 std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter) {
-    
+
+    // Update window attributes to ensure we can grab the pixels and the size is coherent
+    this->updateAttributes();
+
+    // Determine rectangle to grab
     WebXRectangle rectangle;
     bool isFull = true;
     if (imageRectangle != NULL) {
         rectangle = *imageRectangle;
         isFull = false;
+
+        // Validate sub rectangle:
+        if (!this->_rectangle.contains(rectangle)) {
+            spdlog::debug("Image rectangle for WebXWindow 0x{:x} is outside window bounds", this->_x11Window);
+            return nullptr;
+        }
 
     } else {
         rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
@@ -137,7 +147,16 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         XDestroyImage(image);
     
     } else {
-        spdlog::error("Failed to get image for window 0x{:x}", this->_x11Window);
+        // Update attributes to check rectangles and visibility to help in debugging the error
+        this->updateAttributes();
+        if (!this->_rectangle.contains(rectangle)) {
+            spdlog::error("Failed to get image for window 0x{:x}: requested rectangle is outside window bounds", this->_x11Window);
+            return nullptr;
+    
+        } else {
+            spdlog::error("Failed to get image for window 0x{:x}", this->_x11Window);
+        }
+
     }
     this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 
