@@ -60,6 +60,14 @@ public:
             this->_bottom < (rectangle._top + 1));
     }
 
+    bool overlap(const WebXRectangle & rectangle) const {
+        return (
+            this->_left < rectangle._right &&
+            this->_right > rectangle._left &&
+            this->_top > rectangle._bottom &&
+            this->_bottom < rectangle._top);
+    }
+
     bool contains(const WebXRectangle & rectangle) const {
         return (
             this->_left <= rectangle._left &&
