@@ -103,7 +103,7 @@ void WebXClientConnector::run(int socketTimoutMs) {
 
                 // std::string instructionString;
                 // instructionString.assign(instructionData, instructionMessage.size());
-                // spdlog::debug("Received instruction {:s}", instructionString.c_str());
+                // spdlog::trace("Received instruction {:s}", instructionString.c_str());
 
                 if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
                     const std::string & serializerType = this->_serializer->getType();

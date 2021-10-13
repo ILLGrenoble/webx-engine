@@ -106,38 +106,38 @@ void WebXManager::flushEventListener() {
 }
 
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
-    spdlog::debug("Got Create Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Create Event for window 0x{:x}", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowDestroyEvent(const WebXEvent & event) {
-    spdlog::debug("Got Destroy Event for window 0x{:x", event.getX11Window());
+    spdlog::trace("Got Destroy Event for window 0x{:x", event.getX11Window());
 
 }
 
 void WebXManager::handleWindowMapEvent(const WebXEvent & event) {
-    spdlog::debug("Got Map Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Map Event for window 0x{:x}", event.getX11Window());
 
     this->_display->createWindowInTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowUnmapEvent(const WebXEvent & event) {
-    spdlog::debug("Got Unmap Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Unmap Event for window 0x{:x}", event.getX11Window());
 
     this->_display->removeWindowFromTree(event.getX11Window());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
-    spdlog::debug("Got Reparent Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Reparent Event for window 0x{:x}", event.getX11Window());
 
     this->_display->reparentWindow(event.getX11Window(), event.getParent());
     this->updateDisplay();
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
-    spdlog::debug("Got Configure Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Configure Event for window 0x{:x}", event.getX11Window());
 
     WebXWindow * window = this->_display->getWindow(event.getX11Window());
     if (window != NULL) {
@@ -153,20 +153,20 @@ void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
-    spdlog::debug("Got Gravity Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Gravity Event for window 0x{:x}", event.getX11Window());
 }
 
 void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
-    spdlog::debug("Got Window Circulate Event for window 0x{:x}", event.getX11Window());
+    spdlog::trace("Got Window Circulate Event for window 0x{:x}", event.getX11Window());
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
-    spdlog::debug("Got damage Event for window 0x{:x}: ({:d}, {:d}) {:d} x {:d}", event.getX11Window(), event.getRectangle().x, event.getRectangle().y, event.getRectangle().size.width, event.getRectangle().size.height);
+    spdlog::trace("Got damage Event for window 0x{:x}: ({:d}, {:d}) {:d} x {:d}", event.getX11Window(), event.getRectangle().x, event.getRectangle().y, event.getRectangle().size.width, event.getRectangle().size.height);
     this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
 }
 
 void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
-    spdlog::debug("Got new mouse cursor event");
+    spdlog::trace("Got new mouse cursor event");
     this->_display->updateMouseCursor();
     this->_controller->onMouseChanged();
 }

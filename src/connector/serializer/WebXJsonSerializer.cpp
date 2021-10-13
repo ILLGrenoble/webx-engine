@@ -23,7 +23,7 @@
 std::shared_ptr<WebXInstruction> WebXJsonSerializer::deserialize(void * instructionData, size_t instructionDataSize) {
 
     std::string instructionString = std::string(static_cast<char*>(instructionData), instructionDataSize);
-    spdlog::debug("instruction: {}", instructionString.c_str());
+    spdlog::trace("instruction: {}", instructionString.c_str());
 
     // Convert to json
     nlohmann::json jInstruction = nlohmann::json::parse(instructionString);

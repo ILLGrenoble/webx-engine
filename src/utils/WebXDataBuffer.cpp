@@ -81,14 +81,14 @@ unsigned long WebXDataBuffer::upperPowerOfTwo(unsigned long v) {
 }
 
 uint32_t WebXDataBuffer::calculateChecksum() const {
-    spdlog::debug("Calculating checksum of WebXDataBuffer");
+    spdlog::trace("Calculating checksum of WebXDataBuffer");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint32_t checksum = crc32_16bytes(this->_buffer, this->_size);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::debug("Checksum for {:d} bytes in {:f}us", this->_size, duration.count());
+    spdlog::trace("Checksum for {:d} bytes in {:f}us", this->_size, duration.count());
     return checksum;
 }
 

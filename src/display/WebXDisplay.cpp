@@ -79,7 +79,7 @@ WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
 
         // Create ascendants if they aren't already in the main tree
         if (parent != NULL) {
-            spdlog::debug("Added child 0x{:01x} to parent 0x{:01x}", x11Window, parent->getX11Window());
+            spdlog::trace("Added child 0x{:01x} to parent 0x{:01x}", x11Window, parent->getX11Window());
             parent->addChild(window);
 
         } else {
@@ -324,12 +324,12 @@ void WebXDisplay::updateMousePosition(int x, int y) {
 }
 
 void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
-    spdlog::debug("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
+    spdlog::trace("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
     this->_mouse->sendClientInstruction(x, y, buttonMask);
 }
 
 void WebXDisplay::sendKeyboard(int key, bool pressed) {
-    spdlog::debug("Sending keyboard instruction key={}, pressed={}", key, pressed);
+    spdlog::trace("Sending keyboard instruction key={}, pressed={}", key, pressed);
     if (pressed) {
         this->_keyboard->press(key);
     } else {

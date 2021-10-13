@@ -106,16 +106,19 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
 std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter) {
     
     WebXRectangle rectangle;
+    bool isFull = true;
     if (imageRectangle != NULL) {
         rectangle = *imageRectangle;
+        isFull = false;
+
     } else {
         rectangle = WebXRectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
     }
-    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d}", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height);
 
     // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
     this->disableDamage();
     
+    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s})", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, isFull ? "full window" : "sub window");
     XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
@@ -159,14 +162,14 @@ void WebXWindow::removeChild(WebXWindow * child) {
 }
 
 uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
-    spdlog::debug("Calculating window image checksum");
+    spdlog::trace("Calculating window image checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint32_t checksum = image->getChecksum();
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::debug("Checksum for window image {:d} x {:d} in {:f}us", image->getWidth(), image->getHeight(), duration.count());
+    spdlog::trace("Checksum for window image {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getRawDataSize(), duration.count());
     return checksum;
 }
 

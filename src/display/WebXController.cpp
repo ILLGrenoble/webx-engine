@@ -187,9 +187,9 @@ void WebXController::notifyImagesChanged() {
                         spdlog::debug("Sending image event for window 0x{:01x}", windowDamage.windowId);
 
                         if (image->getRawDataSize() > 1024) {
-                            spdlog::debug("[{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
                         } else {
-                            spdlog::debug("[{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
+                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
                         }
 
                         for (WebXConnection * connection : this->_connections) {
@@ -216,9 +216,9 @@ void WebXController::notifyImagesChanged() {
                 for (auto it = subImages.begin(); it != subImages.end(); it++) {
                     const WebXSubImage & subImage = *it;
                     if (subImage.image->getRawDataSize() > 1024) {
-                        spdlog::debug("[{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                        spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     } else {
-                        spdlog::debug("[{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
+                        spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
                     }
                 }
                 for (WebXConnection * connection : this->_connections) {
