@@ -27,57 +27,31 @@ find_package(Threads REQUIRED)
 pkg_check_modules(LIBPNG libpng)
 pkg_check_modules(WEBP REQUIRED libwebp )
 
-if (APPLE)
-    include_directories("/usr/local/include" "/usr/X11/include" src lib)
-    link_directories("/usr/local/lib" "/usr/X11/lib")
-else()
-    pkg_check_modules(X11 REQUIRED x11)
-    include_directories(src lib)
-endif()
+pkg_check_modules(X11 REQUIRED x11)
+include_directories(src lib)
 
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-if (APPLE)
-    target_link_libraries(
-        ${PROJECT_NAME} 
-        ${LIBPNG_LIBRARIES}
-        -ljpeg
-        -lwebp
-        ${CMAKE_THREAD_LIBS_INIT}
-        -lzmq
-        -lX11
-        -lXdamage
-        -lXtst
-    )
+target_link_libraries(
+    ${PROJECT_NAME}
+    ${LIBPNG_LIBRARIES}
+    -ljpeg
+    -lwebp
+    ${X11_LIBRARIES}
+    -lXdamage
+    ${CMAKE_THREAD_LIBS_INIT}
+    -lzmq
+    -lXtst
+    -lXfixes
+)
 
-    target_include_directories(
-        ${PROJECT_NAME} 
-        PUBLIC
-        ${LIBPNG_INCLUDEDIR}
-    )
-
-else()
-    target_link_libraries(
-        ${PROJECT_NAME}
-        ${LIBPNG_LIBRARIES}
-        -ljpeg
-        -lwebp
-        ${X11_LIBRARIES}
-        -lXdamage
-        ${CMAKE_THREAD_LIBS_INIT}
-        -lzmq
-        -lXtst
-        -lXfixes
-    )
-
-    target_include_directories(
-        ${PROJECT_NAME} 
-        PUBLIC
-        ${LIBPNG_INCLUDEDIR}
-        ${ZeroMQ_INCLUDE_DIR}
-    )
-endif()
+target_include_directories(
+    ${PROJECT_NAME} 
+    PUBLIC
+    ${LIBPNG_INCLUDEDIR}
+    ${ZeroMQ_INCLUDE_DIR}
+)
 
 file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
 add_executable(testImageEncoder ${TEST_IMAGE_SOURCES})
@@ -91,6 +65,17 @@ target_link_libraries(
     -lwebp
     -lXtst
     -lX11
+)
+
+file(GLOB_RECURSE TEST_SQUISH_SOURCES test/testSquish.cpp)
+add_executable(testSquish ${TEST_SQUISH_SOURCES})
+
+target_link_libraries(
+    testSquish
+    ${LIBPNG_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    -lpng
+    -lsquish
 )
 
 
