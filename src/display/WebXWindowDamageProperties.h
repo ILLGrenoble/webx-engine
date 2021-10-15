@@ -42,7 +42,7 @@ public:
         auto it = this->damageAreas.begin();
         while (it != this->damageAreas.end()) {
             WebXRectangle & existingDamageArea = *it;
-            if (existingDamageArea.overlap(combinedDamageArea)) {
+            if (existingDamageArea.overlapOrTouching(combinedDamageArea)) {
                 combinedDamageArea += existingDamageArea;
                 it = this->damageAreas.erase(it);
             
