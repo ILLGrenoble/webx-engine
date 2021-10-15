@@ -68,6 +68,16 @@ Vagrant.configure("2") do |config|
     focal.vm.network "private_network", ip: "10.50.0.122"
   end
 
+  config.vm.define :hippo, autostart: false do |hippo|
+    hippo.vm.box = "bento/ubuntu-21.04"
+    hippo.vm.hostname = "webx-hippo"
+    hippo.vm.provider "virtualbox" do |hippo_virtual_box|
+      hippo_virtual_box.name = "webx-hippo-box"
+    end
+    # give the box a static ip address
+    hippo.vm.network "private_network", ip: "10.50.0.123"
+  end
+
   # apply proxy settings to all boxes if the variables are defined in the host
   if ENV["http_proxy"]
     config.proxy.http = ENV["http_proxy"]
