@@ -21,7 +21,9 @@ public:
     //   depth: 4 bytes
     //   imageType: 4 bytes (chars)
     //   imageDataLength: 4 bytes
+    //   alphaDataLength: 4 bytes (0 if doesn't exit)
     //   imageData: n bytes
+    //   alphaData: n bytes (optional)
     virtual zmq::message_t * serialize(std::shared_ptr<WebXImageMessage> message);
 };
 

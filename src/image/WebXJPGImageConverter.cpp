@@ -15,9 +15,43 @@ WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel)
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
 }
 
-WebXImage * WebXJPGImageConverter::convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    WebXImage * webXImage = nullptr;
+
+    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, imageDepth);
+    WebXDataBuffer * alphaData = nullptr;
+    WebXImageType type = WebXImageTypeJPG;
+
+    if (imageDepth == 32) {
+        type = WebXImageTypeJPGA;
+        unsigned int imageSize = width * height;
+
+        // Generate alphaMap (reuse original data)
+        unsigned char * srcPtr = data + 3; // alpha channel
+        unsigned char * destPtr = data;
+        for (int i = 0; i < imageSize; i++) {
+            *(destPtr) = 0;
+            *(destPtr + 1) = *srcPtr;
+            *(destPtr + 2) = 0;
+            srcPtr += 4;
+            destPtr += 4;
+        }
+
+        alphaData = this->_convert(data, width, height, bytesPerLine, imageDepth);
+    }
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> duration = end - start;
+
+    webXImage = new WebXImage(type, width, height, rawData, alphaData, imageDepth, duration.count());
+
+    return webXImage;
+}
+
+WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -60,10 +94,5 @@ WebXImage * WebXJPGImageConverter::convert(const unsigned char * data, int width
     jpeg_destroy_compress(&cinfo);
 
     WebXDataBuffer * rawData = new WebXDataBuffer(jpegData, jpegDataSize);
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-
-    WebXImage * webXImage = new WebXImage(WebXImageTypeJPG, width, height, rawData, imageDepth, duration.count());
-    return webXImage;
+    return rawData;
 }

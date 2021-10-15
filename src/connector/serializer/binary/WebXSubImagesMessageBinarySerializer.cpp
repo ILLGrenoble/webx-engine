@@ -6,16 +6,19 @@
 zmq::message_t * WebXSubImagesMessageBinarySerializer::serialize(std::shared_ptr<WebXSubImagesMessage> message) {
     unsigned int nImages = message->images.size();
     size_t imageDataSize = 0;
+    size_t alphaDataSize = 0;
     for (auto it = message->images.begin(); it != message->images.end(); it++) {
         const WebXSubImage & subImage = *it;
-        imageDataSize += subImage.image->getRawDataSize();
-        size_t alignmentOverflow = subImage.image->getRawDataSize() % 4;
+        size_t rawDataSize = subImage.image->getRawDataSize();
+        size_t alphaDataSize = subImage.image->getAlphaDataSize();
+        imageDataSize += rawDataSize + alphaDataSize;
+        size_t alignmentOverflow = (rawDataSize + alphaDataSize) % 4;
         if (alignmentOverflow != 0) {
             size_t padding = 4 - alignmentOverflow;
             imageDataSize += padding;
         }
     }
-    size_t dataSize = 16 + 12 + nImages * 28 + imageDataSize;
+    size_t dataSize = 16 + 12 + nImages * 32 + imageDataSize + alphaDataSize;
     zmq::message_t * output = new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, (uint32_t)message->type);
@@ -37,7 +40,11 @@ zmq::message_t * WebXSubImagesMessageBinarySerializer::serialize(std::shared_ptr
         buffer.append((unsigned char *)imageType, 4);
 
         buffer.write<uint32_t>(subImage.image->getRawDataSize());
+        buffer.write<uint32_t>(subImage.image->getAlphaDataSize());
         buffer.append(subImage.image->getRawData(), subImage.image->getRawDataSize());
+        if (subImage.image->getAlphaDataSize()) {
+            buffer.append(subImage.image->getAlphaData(), subImage.image->getAlphaDataSize());
+        }
     }
 
     return output;

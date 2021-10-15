@@ -78,6 +78,17 @@ target_link_libraries(
     -lsquish
 )
 
+file(GLOB_RECURSE TEST_ALPHA_SOURCES test/testAlpha.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
+add_executable(testAlpha ${TEST_ALPHA_SOURCES})
+
+target_link_libraries(
+    testAlpha
+    ${LIBPNG_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    -ljpeg
+    -lwebp
+)
+
 
 
 file(GLOB_RECURSE TEST_MOUSE_SOURCES test/testMouse.cpp)

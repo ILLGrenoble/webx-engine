@@ -146,8 +146,9 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     this->enableDamage();
     
     if (image) {
-        bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
-        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
+        // bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
+        // webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
+        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, false));
 
         if (imageRectangle == NULL) {
             uint32_t checksum = this->calculateImageChecksum(webXImage);

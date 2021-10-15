@@ -14,7 +14,7 @@ WebXImage * WebXWebPImageConverter::convert(XImage * image, bool hasAlphaChannel
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
 }
 
-WebXImage * WebXWebPImageConverter::convert(const unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+WebXImage * WebXWebPImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 

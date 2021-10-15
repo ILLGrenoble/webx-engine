@@ -10,12 +10,14 @@ class WebXDataBuffer;
 typedef enum {
     WebXImageTypePNG = 0,
     WebXImageTypeJPG,
-    WebXImageTypeWebP
+    WebXImageTypeWebP,
+    WebXImageTypeJPGA
 } WebXImageType;
 
 class WebXImage {
 public:
     WebXImage(WebXImageType type, unsigned int width, unsigned int height, WebXDataBuffer * rawData, unsigned int depth, double encodingTimeUs);
+    WebXImage(WebXImageType type, unsigned int width, unsigned int height, WebXDataBuffer * rawData, WebXDataBuffer * alphaData, unsigned int depth, double encodingTimeUs);
     virtual ~WebXImage();
 
     WebXImageType getType() const {
@@ -42,6 +44,14 @@ public:
         return this->_rawData ? this->_rawData->getBufferSize() : 0;
     }
 
+    unsigned char * getAlphaData() const {
+        return this->_rawData ? this->_alphaData->getBuffer() : NULL;
+    }
+
+    size_t getAlphaDataSize() const {
+        return this->_alphaData ? this->_alphaData->getBufferSize() : 0;
+    }
+
     double getEncodingTimeUs() const {
         return this->_encodingTimeUs;
     }
@@ -55,6 +65,8 @@ public:
             return "jpg";
         } else if (this->_type == WebXImageTypeWebP) {
             return "webp";    
+        } else if (this->_type == WebXImageTypeJPGA) {
+            return "jpga";    
         }else {
             return "img";
         }
@@ -73,6 +85,7 @@ private:
     unsigned int _height;
 
     WebXDataBuffer * _rawData;
+    WebXDataBuffer * _alphaData;
     uint32_t _checksum;
 
     unsigned int _depth;
