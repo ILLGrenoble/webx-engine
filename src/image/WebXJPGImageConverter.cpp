@@ -23,10 +23,8 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
     WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, imageDepth);
     WebXDataBuffer * alphaData = nullptr;
-    WebXImageType type = WebXImageTypeJPG;
 
     if (imageDepth == 32) {
-        type = WebXImageTypeJPGA;
         unsigned int imageSize = width * height;
 
         // Generate alphaMap (reuse original data)
@@ -46,7 +44,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    webXImage = new WebXImage(type, width, height, rawData, alphaData, imageDepth, duration.count());
+    webXImage = new WebXImage(WebXImageTypeJPG, width, height, rawData, alphaData, imageDepth, duration.count());
 
     return webXImage;
 }
