@@ -28,6 +28,7 @@ public:
     }
 
     WebXWindow * getWindow(Window window) const;
+    WebXWindow * getVisibleWindow(Window window);
     WebXWindow * createWindowInTree(Window x11Window);
 
     void removeWindowFromTree(Window x11Window);
@@ -62,7 +63,6 @@ public:
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh = false);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
-    uint64_t getWindowChecksum(Window x11Window);
     
     WebXMouse * getMouse() const {
         return this->_mouse;

@@ -152,14 +152,14 @@ int main() {
         
         if (i == 0) {
             fileSize = image->getRawDataSize();
-            std::string outputFilename = "test/output/screenshotOut+alpha." + image->getFileExtension();
+            std::string outputFilename = "test/output/screenshotOut+alpha";
             if (image->save(outputFilename)) {
                 printf("Output image saved to %s\n", outputFilename.c_str());
             } else {
                 printf("Failed to save image\n");
             }
 
-            std::string alphaMapFilename = "test/output/screenshotOut+alpha-alphamap." + alphaImage->getFileExtension();
+            std::string alphaMapFilename = "test/output/screenshotOut+alpha-alphamap";
             if (alphaImage->save(alphaMapFilename)) {
                 printf("Output alphaMap saved to %s\n", alphaMapFilename.c_str());
             } else {

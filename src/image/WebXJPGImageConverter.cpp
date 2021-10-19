@@ -71,21 +71,14 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
 	cinfo.dct_method = JDCT_IFAST;
 
-    jpeg_set_quality(&cinfo, 90, TRUE);
+    jpeg_set_quality(&cinfo, 70, TRUE);
 
     jpeg_start_compress(&cinfo, TRUE);
 
-    unsigned char * imageData = (unsigned char *)data;
-    unsigned char row_buf[4096];
-
-    unsigned long offset;
-    row_pointer[0] = row_buf;
-    unsigned int i;
-    unsigned int j;
+    unsigned char * imageData = data;
     while (cinfo.next_scanline < cinfo.image_height) {
-        offset = cinfo.next_scanline * bytesPerLine;
-        row_pointer[0] = &imageData[offset];
-        (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
+        jpeg_write_scanlines(&cinfo, &imageData, 1);
+        imageData += bytesPerLine;
     }
 
     jpeg_finish_compress(&cinfo);

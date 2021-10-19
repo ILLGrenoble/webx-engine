@@ -63,7 +63,7 @@ void WebXKeyboardConnection::mainLoop() {
 void WebXKeyboardConnection::printWindows() {
     ft_table_t * table = ft_create_table();
     ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
-    ft_write_ln(table, "ID", "Managed ID", "Title", "x", "y", "Width", "Height");
+    ft_write_ln(table, "ID", "Managed ID", "x", "y", "Width", "Height");
 
     const std::vector<WebXWindow *> windows = WebXManager::instance()->getDisplay()->getVisibleWindows();
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
@@ -95,7 +95,7 @@ void WebXKeyboardConnection::exportWindowImages() {
         std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(window->getX11Window());
         if (image) {
             char filename[64];
-            snprintf(filename, sizeof(filename) - 1, "images/window-0x%08lx.png", window->getX11Window());
+            snprintf(filename, sizeof(filename) - 1, "images/window-0x%08lx", window->getX11Window());
             
             if (!image->save(filename)) {
                 printf("Failed to write image for window 0X%08lx\n", window->getX11Window());

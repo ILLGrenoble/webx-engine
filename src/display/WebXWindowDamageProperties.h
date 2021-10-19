@@ -4,6 +4,7 @@
 #include "WebXWindow.h"
 #include <utils/WebXSize.h>
 #include <utils/WebXRectangle.h>
+#include <algorithm>
 
 class WebXWindowDamageProperties {
 public:
@@ -65,6 +66,15 @@ public:
         }
         const WebXRectangle & damageArea = this->damageAreas[0];
         return damageArea.size.width == windowSize.width && damageArea.size.height == windowSize.height;
+    }
+
+    float getDamageAreaRatio() const {
+        int area = 0;
+        for (const WebXRectangle & damageArea : damageAreas) {
+            area += damageArea.area();
+        }
+        float areaRatio = (1.0) * area / windowSize.area(); 
+        return areaRatio;
     }
 
     unsigned long windowId;

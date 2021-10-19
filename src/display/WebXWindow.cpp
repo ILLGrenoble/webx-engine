@@ -150,9 +150,9 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         // webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, false));
 
-        if (imageRectangle == NULL) {
-            uint32_t checksum = this->calculateImageChecksum(webXImage);
-            this->_windowChecksum = checksum;
+        if (isFull) {
+            this->_windowChecksum = this->calculateImageChecksum(webXImage);
+            this->_windowAlphaChecksum = this->calculateAlphaChecksum(webXImage);
         }
 
         XDestroyImage(image);
@@ -200,11 +200,23 @@ uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
     spdlog::trace("Calculating window image checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-    uint32_t checksum = image->getChecksum();
+    uint32_t checksum = image->getRawChecksum();
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
     spdlog::trace("Checksum for window image {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getRawDataSize(), duration.count());
+    return checksum;
+}
+
+uint32_t WebXWindow::calculateAlphaChecksum(std::shared_ptr<WebXImage> image) {
+    spdlog::trace("Calculating window alpha checksum");
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    uint32_t checksum = image->getAlphaChecksum();
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> duration = end - start;
+    spdlog::trace("Checksum for window alpha {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getAlphaDataSize(), duration.count());
     return checksum;
 }
 

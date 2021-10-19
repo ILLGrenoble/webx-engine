@@ -11,6 +11,10 @@ public:
         height(height) {}
     virtual ~WebXSize() {}
 
+    int area() const {
+        return this->width * this->height;
+    }
+
     int width;
     int height;
 };

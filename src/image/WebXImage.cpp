@@ -6,7 +6,8 @@ WebXImage::WebXImage(WebXImageType type, unsigned int width, unsigned int height
     _height(height),
     _rawData(rawData),
     _alphaData(0),
-    _checksum(0),
+    _rawChecksum(0),
+    _alphaChecksum(0),
     _depth(depth),
     _encodingTimeUs(encodingTimeUs) {
 }
@@ -17,7 +18,8 @@ WebXImage::WebXImage(WebXImageType type, unsigned int width, unsigned int height
     _height(height),
     _rawData(rawData),
     _alphaData(alphaData),
-    _checksum(0),
+    _rawChecksum(0),
+    _alphaChecksum(0),
     _depth(depth),
     _encodingTimeUs(encodingTimeUs) {
 }
@@ -33,15 +35,37 @@ WebXImage::~WebXImage() {
     }
 }
 
+void WebXImage::removeAlpha() {
+    if (this->_alphaData) {
+        delete this->_alphaData;
+        this->_alphaData = NULL;
+    }
+}
+
 bool WebXImage::save(const std::string & fileName) {
-    if (this->getRawData() != NULL) {
-        FILE * fp = fopen(fileName.c_str(), "wb");
+    bool allOk = false;
+    if (_rawData != NULL) {
+         allOk = this->saveDataBuffer(this->_rawData, fileName);
+
+        if (_alphaData != NULL) {
+            allOk &= this->saveDataBuffer(this->_alphaData, fileName + "+alpha");
+        }
+    }
+
+    return allOk;
+}
+
+bool WebXImage::saveDataBuffer(WebXDataBuffer * dataBuffer, const std::string & fileName) {
+    if (dataBuffer->getBuffer() != NULL) {
+        std::string fullFileName = fileName + "." + this->getFileExtension();
+
+        FILE * fp = fopen(fullFileName.c_str(), "wb");
 
         if (!fp) {
             return false;
         }
 
-        fwrite(this->getRawData(), this->getRawDataSize(), 1, fp);
+        fwrite(dataBuffer->getBuffer(), dataBuffer->getBufferSize(), 1, fp);
 
         fclose(fp);
 

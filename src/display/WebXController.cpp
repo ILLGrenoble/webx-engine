@@ -174,26 +174,38 @@ void WebXController::notifyImagesChanged() {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
 
-            if (windowDamage.isFullWindow()) {
-                // Get checksums before and after updating the window image
-                uint64_t oldChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
-                std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId);
-                if (image) {
-                    uint64_t newChecksum = this->_display->getWindowChecksum(windowDamage.windowId);
+            if (windowDamage.isFullWindow() || windowDamage.getDamageAreaRatio() > 0.9) {
+                WebXWindow * window = this->_display->getVisibleWindow(windowDamage.windowId);
+                if (window) {
+                    // Get checksums before and after updating the window image
+                    uint64_t oldChecksum = window->getWindowChecksum();
+                    uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
+                    std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId);
+                    if (image) {
+                        uint64_t newChecksum = window->getWindowChecksum();
+                        uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
 
-                    // Send event if checksum has changed
-                    if (newChecksum != oldChecksum) {
-                        tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                        spdlog::debug("Sending image event for window 0x{:01x}", windowDamage.windowId);
+                        // Send event if checksum has changed
+                        if (newChecksum != oldChecksum) {
 
-                        if (image->getRawDataSize() > 1024) {
-                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
-                        } else {
-                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
-                        }
+                            tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                            spdlog::debug("Sending image event for window 0x{:01x}", windowDamage.windowId);
 
-                        for (WebXConnection * connection : this->_connections) {
-                            connection->onImageChanged(windowDamage.windowId, image);
+                            // Compare alpha checksums
+                            if (newAlphaChecksum == oldAlphaChecksum) {
+                                spdlog::debug("Removing alpha from image for window 0x{:01x}", windowDamage.windowId);
+                                image->removeAlpha();
+                            }
+
+                            if (image->getRawDataSize() > 1024) {
+                                spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                            } else {
+                                spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
+                            }
+
+                            for (WebXConnection * connection : this->_connections) {
+                                connection->onImageChanged(windowDamage.windowId, image);
+                            }
                         }
                     }
                 }

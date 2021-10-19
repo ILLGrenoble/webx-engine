@@ -69,6 +69,24 @@ WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
     return NULL;
 }
 
+WebXWindow * WebXDisplay::getVisibleWindow(Window x11Window) {
+    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
+    
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    // Return 0 if window is not visible
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+        return window;
+    }
+
+    return NULL;
+}
+
 WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
     WebXWindow * window = this->createWindow(x11Window);
     if (window != NULL) {
@@ -287,7 +305,7 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
                 WebXWindowDamageProperties & existingDamagedWindow = *it;
                 existingDamagedWindow += damagedArea;
             }
-        
+
         } else {
             // Create new window damage
             this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, fullWindowRefresh));
@@ -315,25 +333,6 @@ std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imag
     }
 
     return windowDamageToRepair;
-}
-
-uint64_t WebXDisplay::getWindowChecksum(Window x11Window) {
-    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
-    
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    // Ignore damage if window is not visible
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
-        return window->getWindowChecksum();
-    
-    } else {
-        return 0;
-    }
 }
 
 void WebXDisplay::updateMouseCursor() {
@@ -471,7 +470,7 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
         }
 
     } else {
-        fprintf(stderr, "Can't query window tree for window 0x%08lx\n", window->getX11Window());
+        spdlog::error("Can't query window tree for window 0x{:08x}", window->getX11Window());
     }
 
     return parent;

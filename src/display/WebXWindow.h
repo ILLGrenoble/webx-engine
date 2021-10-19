@@ -81,8 +81,13 @@ public:
         return this->_windowChecksum;
     }
 
+    uint32_t getWindowAlphaChecksum() const {
+        return this->_windowAlphaChecksum;
+    }
+
 private:
     uint32_t calculateImageChecksum(std::shared_ptr<WebXImage> image);
+    uint32_t calculateAlphaChecksum(std::shared_ptr<WebXImage> image);
     uint32_t getHashValue(const char * data, int len);
 
 private:
@@ -102,6 +107,7 @@ private:
     tthread::mutex _damageMutex;
 
     unsigned long _windowChecksum;
+    unsigned long _windowAlphaChecksum;
 
 };
 

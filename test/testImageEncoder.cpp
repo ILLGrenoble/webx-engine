@@ -124,7 +124,7 @@ int main() {
 
         if (i == 0) {
             fileSize = image->getRawDataSize();
-            std::string outputFilename = "test/output/screenshotOut." + image->getFileExtension();
+            std::string outputFilename = "test/output/screenshotOut";
             if (image->save(outputFilename)) {
                 printf("Output image saved to %s\n", outputFilename.c_str());
             } else {

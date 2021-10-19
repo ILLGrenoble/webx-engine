@@ -69,12 +69,24 @@ public:
         }
     }
 
-    uint32_t getChecksum() {
-        if (this->_checksum == 0) {
-            this->_checksum = this->_rawData->calculateChecksum();
+    uint32_t getRawChecksum() {
+        if (this->_rawChecksum == 0 && this->_rawData != nullptr) {
+            this->_rawChecksum = this->_rawData->calculateChecksum();
         }
-        return this->_checksum;
+        return this->_rawChecksum;
     }
+
+    uint32_t getAlphaChecksum() {
+        if (this->_alphaChecksum == 0 && this->_alphaData != nullptr) {
+            this->_alphaChecksum = this->_alphaData->calculateChecksum();
+        }
+        return this->_alphaChecksum;
+    }
+
+    void removeAlpha();
+
+private:
+    bool saveDataBuffer(WebXDataBuffer * dataBuffer, const std::string & fileName);
 
 private:
     WebXImageType _type;
@@ -83,7 +95,8 @@ private:
 
     WebXDataBuffer * _rawData;
     WebXDataBuffer * _alphaData;
-    uint32_t _checksum;
+    uint32_t _rawChecksum;
+    uint32_t _alphaChecksum;
 
     unsigned int _depth;
 

@@ -86,6 +86,10 @@ public:
         this->_bottom = 0;
     }
 
+    int area() const {
+        return this->size.area();
+    }
+
     WebXRectangle & operator+=(const WebXRectangle & rectangle) {
 
         int left = rectangle._left < this->_left ? rectangle._left : this->_left;
