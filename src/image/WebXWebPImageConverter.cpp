@@ -10,7 +10,7 @@ WebXWebPImageConverter::WebXWebPImageConverter() {
 WebXWebPImageConverter::~WebXWebPImageConverter() {
 }
 
-WebXImage * WebXWebPImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
+WebXImage * WebXWebPImageConverter::convert(XImage * image) const {
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
 }
 

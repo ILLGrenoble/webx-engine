@@ -15,11 +15,8 @@ WebXPNGImageConverter::WebXPNGImageConverter() {
 WebXPNGImageConverter::~WebXPNGImageConverter() {
 }
 
-WebXImage * WebXPNGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
-    // Determine bit depth and if we need to convert alpha
-    int imageDepth = hasAlphaChannel ? 32 : image->depth;
-
-    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, imageDepth);
+WebXImage * WebXPNGImageConverter::convert(XImage * image) const {
+    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth);
 }
 
 WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {

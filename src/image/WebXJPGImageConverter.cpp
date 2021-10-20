@@ -3,6 +3,7 @@
 #include <jpeglib.h>
 #include <cstring>
 #include <chrono>
+#include <spdlog/spdlog.h>
 
 WebXJPGImageConverter::WebXJPGImageConverter() {
 }
@@ -11,7 +12,7 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 
 }
 
-WebXImage * WebXJPGImageConverter::convert(XImage * image, bool hasAlphaChannel) const {
+WebXImage * WebXJPGImageConverter::convert(XImage * image) const {
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
 }
 
@@ -21,24 +22,27 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
     WebXImage * webXImage = nullptr;
 
-    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, imageDepth);
+    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine);
     WebXDataBuffer * alphaData = nullptr;
+
 
     if (imageDepth == 32) {
         unsigned int imageSize = width * height;
 
-        // Generate alphaMap (reuse original data)
-        unsigned char * srcPtr = data + 3; // alpha channel
-        unsigned char * destPtr = data;
+        std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    
+        // Generate alphaMap (reuse original data): put alpha component into green component and remove the others (green used by three.js in alphaMap)
+        u_int32_t * pixel = (u_int32_t *)data;
         for (int i = 0; i < imageSize; i++) {
-            *(destPtr) = 0;
-            *(destPtr + 1) = *srcPtr;
-            *(destPtr + 2) = 0;
-            srcPtr += 4;
-            destPtr += 4;
+            *pixel = (*pixel & 0xFF000000) >> 16;
+            pixel++;
         }
 
-        alphaData = this->_convert(data, width, height, bytesPerLine, imageDepth);
+        std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::micro> duration = end - start;
+        spdlog::trace("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
+
+        alphaData = this->_convert(data, width, height, bytesPerLine);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -49,7 +53,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     return webXImage;
 }
 
-WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine) const {
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;

@@ -1,6 +1,6 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
-#include <image/WebXCombinedImageConverter.h>
+#include <image/WebXJPGImageConverter.h>
 #include <algorithm>
 #include <X11/Xatom.h>
 #include <spdlog/spdlog.h>
@@ -42,7 +42,7 @@ WebXDisplay::~WebXDisplay() {
 }
 
 void WebXDisplay::init() {
-    this->_imageConverter = new WebXCombinedImageConverter();
+    this->_imageConverter = new WebXJPGImageConverter();
 
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
     this->_rootWindow = this->createWindow(rootX11Window, true);

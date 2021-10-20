@@ -122,7 +122,7 @@ int main() {
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        WebXImage * image = converter.convert(&xImage, false);
+        WebXImage * image = converter.convert(&xImage);
 
         unsigned char * alphaMap = (unsigned char *)malloc(width * height * 4);
         unsigned char * srcPtr = imageData + 3; // alpha channel
@@ -143,7 +143,7 @@ int main() {
         xAlphaMap.bytes_per_line = bytes_per_line;
         xAlphaMap.depth = 24;
 
-        WebXImage * alphaImage = converter.convert(&xAlphaMap, false);
+        WebXImage * alphaImage = converter.convert(&xAlphaMap);
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;

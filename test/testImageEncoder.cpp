@@ -119,7 +119,7 @@ int main() {
     double cummulativeTimeUs = 0;
     size_t fileSize = 0;
     for (int i = 0; i < nIter; i++) {
-        WebXImage * image = converter.convert(&xImage, false);
+        WebXImage * image = converter.convert(&xImage);
         cummulativeTimeUs += image->getEncodingTimeUs();
 
         if (i == 0) {

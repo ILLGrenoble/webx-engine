@@ -12,11 +12,11 @@ public:
     WebXJPGImageConverter();
     virtual ~WebXJPGImageConverter();
 
-    virtual WebXImage * convert(XImage * image, bool hasAlphaChannel) const;
+    virtual WebXImage * convert(XImage * image) const;
     virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const;
 
 private:
-    WebXDataBuffer * _convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const;
+    WebXDataBuffer * _convert(unsigned char * data, int width, int height, int bytesPerLine) const;
 };
 
 

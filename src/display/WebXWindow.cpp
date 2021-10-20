@@ -1,7 +1,7 @@
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
-#include <image/WebXImageAlphaConverter.h>
+#include <image/WebXImageAlphaUtils.h>
 #include <events/WebXDamageOverride.h>
 #include <algorithm>
 #include <X11/Xutil.h>
@@ -146,9 +146,13 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
     this->enableDamage();
     
     if (image) {
-        // bool hasConvertedAlpha = WebXImageAlphaConverter::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
+        // Check if image has transparency and modify image depth accordingly
+        bool hasTransparency = WebXImageAlphaUtils::hasAlpha(image, rectangle);
+        image->depth = hasTransparency ? 32 : 24;
+
+        // bool hasConvertedAlpha = WebXImageAlphaUtils::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
         // webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
-        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, false));
+        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image));
 
         if (isFull) {
             this->_windowChecksum = this->calculateImageChecksum(webXImage);
@@ -197,7 +201,6 @@ void WebXWindow::removeChild(WebXWindow * child) {
 }
 
 uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
-    spdlog::trace("Calculating window image checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint32_t checksum = image->getRawChecksum();
@@ -209,7 +212,6 @@ uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
 }
 
 uint32_t WebXWindow::calculateAlphaChecksum(std::shared_ptr<WebXImage> image) {
-    spdlog::trace("Calculating window alpha checksum");
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint32_t checksum = image->getAlphaChecksum();
