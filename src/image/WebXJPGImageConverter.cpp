@@ -25,16 +25,15 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine);
     WebXDataBuffer * alphaData = nullptr;
 
-
     if (imageDepth == 32) {
         unsigned int imageSize = width * height;
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-    
-        // Generate alphaMap (reuse original data): put alpha component into green component and remove the others (green used by three.js in alphaMap)
+
+        // Generate alphaMap (reuse original data): remove all other components (keep only alpha)
         u_int32_t * pixel = (u_int32_t *)data;
         for (int i = 0; i < imageSize; i++) {
-            *pixel = (*pixel & 0xFF000000) >> 16;
+            *pixel = (*pixel & 0xFF000000);
             pixel++;
         }
 
@@ -42,7 +41,8 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
         std::chrono::duration<double, std::micro> duration = end - start;
         spdlog::trace("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
 
-        alphaData = this->_convert(data, width, height, bytesPerLine);
+        // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
+        alphaData = this->_convert(data + 2, width, height, bytesPerLine);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -57,7 +57,6 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
-    JSAMPROW row_pointer[1];
     cinfo.err = jpeg_std_error(&jerr);
     jpeg_create_compress(&cinfo);
     
@@ -77,16 +76,20 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
     jpeg_set_quality(&cinfo, 70, TRUE);
 
-    jpeg_start_compress(&cinfo, TRUE);
-
-    unsigned char * imageData = data;
-    while (cinfo.next_scanline < cinfo.image_height) {
-        jpeg_write_scanlines(&cinfo, &imageData, 1);
-        imageData += bytesPerLine;
+    JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
+    for (int i = 0; i < height; i++) {
+        row_pointer[i] = (JSAMPROW)&data[i * bytesPerLine];
     }
 
+    jpeg_start_compress(&cinfo, TRUE);
+    while (cinfo.next_scanline < cinfo.image_height) {
+        jpeg_write_scanlines(&cinfo, &row_pointer[cinfo.next_scanline], cinfo.image_height - cinfo.next_scanline);
+    }
     jpeg_finish_compress(&cinfo);
+
     jpeg_destroy_compress(&cinfo);
+
+    free(row_pointer);
 
     WebXDataBuffer * rawData = new WebXDataBuffer(jpegData, jpegDataSize);
     return rawData;
