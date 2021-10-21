@@ -15,12 +15,12 @@ class WebXSerializer;
 
 class WebXClientConnector {
 private:
-    WebXClientConnector(std::string &transport);
+    WebXClientConnector();
     virtual ~WebXClientConnector();
     void init();
 
 public:
-    static WebXClientConnector * initInstance(std::string &transport);
+    static WebXClientConnector * initInstance();
     static WebXClientConnector * instance() {
         return _instance;
     }

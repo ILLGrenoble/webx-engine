@@ -67,7 +67,7 @@ void WebXClientCommandCollector::mainLoop() {
 #endif
             if (retVal) {
                 // Deserialize instruction
-                auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                auto instruction = this->_serializer->deserialize((const unsigned char *)instructionMessage.data(), instructionMessage.size());
                 if (instruction != NULL) {
                     // Handle message
                     WebXManager::instance()->getController()->onClientInstruction(instruction);

@@ -42,9 +42,10 @@ public:
 		char unused[4];
 	} MessageHeader;
 
+
 	/**
 	 * Full composition of the message. An endFlag is used at the developers discretion - this is placed at the end of a message
-	 * as it is the last sequence of bytes of the message to be transfered. This can be used to indicate if a message has been
+	 * as it is the last sequence of bytes of the message to be transferred. This can be used to indicate if a message has been
 	 * handled or not.
 	 */
 	typedef struct {
@@ -65,6 +66,14 @@ public:
 		messageHeader->messageId = _messageCounter;
 		messageHeader->bufferLength = bufferLength;
 	}
+
+    WebXBinaryBuffer(unsigned char * buffer, size_t bufferLength) :
+            _bufferContent(buffer),
+            _bufferLength(bufferLength),
+            _writeOffset(0),
+            _readOffset(0) {
+    }
+
 	virtual ~WebXBinaryBuffer() {}
 
 	/**
@@ -182,6 +191,10 @@ public:
 	inline void resetReadOffset() {
 		_readOffset = sizeof(MessageHeader);
 	}
+
+    inline void advanceReadOffset(unsigned int increment) {
+        _readOffset += increment;
+    }
 
 
 private:

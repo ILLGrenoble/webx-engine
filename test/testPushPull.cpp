@@ -54,7 +54,7 @@ int main() {
     while (true) {
         zmq::message_t instructionMessage;
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
-        bool retVal = socket.recv(&instructionMessage);
+        bool recvResult = socket.recv(&instructionMessage);
 #else
         auto recvResult = socket.recv(instructionMessage);
 #endif

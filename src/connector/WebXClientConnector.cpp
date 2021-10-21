@@ -8,7 +8,6 @@
 #include "instruction/WebXImageInstruction.h"
 #include "instruction/WebXMouseInstruction.h"
 #include "instruction/WebXCursorImageInstruction.h"
-#include "serializer/WebXJsonSerializer.h"
 #include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
@@ -27,17 +26,11 @@ int WebXClientConnector::CONNECTOR_PORT = 5555;
 int WebXClientConnector::COLLECTOR_PORT = 5556;
 int WebXClientConnector::PUBLISHER_PORT = 5557;
 
-WebXClientConnector::WebXClientConnector(std::string &transport) :
+WebXClientConnector::WebXClientConnector() :
     _publisher(NULL),
     _collector(NULL),
-    _serializer(NULL),
+    _serializer(new WebXBinarySerializer()),
     _running(false) {
-    spdlog::info("Using {} for the transport", transport);
-    if (transport == "json") {
-        _serializer = new WebXJsonSerializer();
-    } else {
-        _serializer = new WebXBinarySerializer();
-    }
     std::signal(SIGINT, WebXClientConnector::signalHandler);
 }
 
@@ -55,9 +48,9 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-WebXClientConnector * WebXClientConnector::initInstance(std::string &transport) {
+WebXClientConnector * WebXClientConnector::initInstance() {
     if (_instance == NULL) {
-        _instance = new WebXClientConnector(transport);
+        _instance = new WebXClientConnector();
         _instance->init();
     }
     return _instance;
@@ -99,21 +92,21 @@ void WebXClientConnector::run(int socketTimoutMs) {
 #endif
             bool sendRequired = true;
             if (retVal) {
-                const char * instructionData = (const char *)instructionMessage.data();
+                const unsigned char * instructionData = (const unsigned char *)instructionMessage.data();
 
                 // std::string instructionString;
                 // instructionString.assign(instructionData, instructionMessage.size());
                 // spdlog::trace("Received instruction {:s}", instructionString.c_str());
 
-                if (instructionMessage.size() == 4 && strncmp(instructionData, "comm", 4) == 0) {
-                    const std::string & serializerType = this->_serializer->getType();
-                    zmq::message_t replyMessage(serializerType.c_str(), serializerType.size());
+                if (instructionMessage.size() == 4 && strncmp((const char *) instructionData, "comm", 4) == 0) {
+                    const std::string ports = fmt::format("{},{}", WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);
+                    zmq::message_t replyMessage(ports.c_str(), ports.size());
                     this->sendMessage(socket, replyMessage);
                     sendRequired = false;
 
                 } else {
                     // Deserialize instruction
-                    auto instruction = this->_serializer->deserialize(instructionMessage.data(), instructionMessage.size());
+                    auto instruction = this->_serializer->deserialize(instructionData, instructionMessage.size());
                     if (instruction != NULL) {
                         // Handle instruction and get message (response)
                         std::shared_ptr<WebXMessage> message = this->handleInstruction(instruction);

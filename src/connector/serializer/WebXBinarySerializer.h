@@ -2,7 +2,7 @@
 #define WEBX_BINARY_SERIALIZER_H
 
 #include "WebXSerializer.h"
-#include <nlohmann/json.hpp>
+#include "WebXInstructionDecoder.h"
 #include <utils/WebXObjectPool.h>
 #include <connector/instruction/WebXMouseInstruction.h>
 
@@ -20,7 +20,7 @@ public:
     WebXBinarySerializer();
     virtual ~WebXBinarySerializer();
 
-    virtual std::shared_ptr<WebXInstruction> deserialize(void * instructionData, size_t instructionDataSize);
+    virtual std::shared_ptr<WebXInstruction> deserialize(const unsigned char * instructionData, size_t instructionDataSize);
     virtual zmq::message_t * serialize(std::shared_ptr<WebXMessage> message);
 
 private:
@@ -34,8 +34,8 @@ private:
     WebXMouseMessageBinarySerializer * _mouseMessageSerializer;
     WebXCursorImageMessageBinarySerializer * _cursorImageMessageSerializer;
     WebXVoidMessageBinarySerializer * _voidMessageSerializer;
+    WebXInstructionDecoder * _instructionDecoder;
 };
 
-void from_json(const nlohmann::json& j, WebXInstruction & request);
 
 #endif /* WEBX_BINARY_SERIALIZER_H */
