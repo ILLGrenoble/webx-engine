@@ -2,9 +2,11 @@
 #ifndef WEBX_MESSAGE_ENCODER_H
 #define WEBX_MESSAGE_ENCODER_H
 
-
 #include <memory>
-#include <zmq.hpp>
+
+namespace zmq {
+class message_t;
+}
 
 class WebXMessage;
 class WebXConnectionMessage;

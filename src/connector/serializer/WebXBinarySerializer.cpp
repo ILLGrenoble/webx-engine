@@ -1,4 +1,6 @@
 #include "WebXBinarySerializer.h"
+#include "WebXInstructionDecoder.h"
+#include "WebXMessageEncoder.h"
 
 WebXBinarySerializer::WebXBinarySerializer() :
      _messageEncoder(new WebXMessageEncoder()),
@@ -6,7 +8,8 @@ WebXBinarySerializer::WebXBinarySerializer() :
 }
 
 WebXBinarySerializer::~WebXBinarySerializer() {
-
+    delete _messageEncoder;
+    delete _instructionDecoder;
 }
 
 std::shared_ptr<WebXInstruction> WebXBinarySerializer::deserialize(const unsigned char * instructionData, size_t instructionDataSize) {

@@ -10,6 +10,7 @@
 #include <connector/message/WebXVoidMessage.h>
 #include <connector/message/WebXWindowsMessage.h>
 #include <utils/WebXBinaryBuffer.h>
+#include <zmq.hpp>
 
 zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message) {
     switch (message->type) {

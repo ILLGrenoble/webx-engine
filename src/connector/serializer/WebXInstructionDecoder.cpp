@@ -10,7 +10,6 @@
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <utils/WebXObjectPool.h>
 #include <utils/WebXBinaryBuffer.h>
-#include <spdlog/spdlog.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() :
     _webXMouseInstructionPool(new WebXObjectPool<WebXMouseInstruction>()) {   

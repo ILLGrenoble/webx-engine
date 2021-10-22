@@ -1,9 +1,16 @@
 #ifndef WEBX_BINARY_SERIALIZER_H
 #define WEBX_BINARY_SERIALIZER_H
 
-#include "WebXInstructionDecoder.h"
-#include "WebXMessageEncoder.h"
+#include <memory>
 
+class WebXMessageEncoder;
+class WebXInstructionDecoder;
+class WebXInstruction;
+class WebXMessage;
+
+namespace zmq {
+class message_t;
+}
 
 class WebXBinarySerializer {
 public:
