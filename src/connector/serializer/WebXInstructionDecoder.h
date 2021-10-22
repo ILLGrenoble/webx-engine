@@ -1,0 +1,117 @@
+
+#ifndef WEBX_INSTRUCTION_DECODER_H
+#define WEBX_INSTRUCTION_DECODER_H
+
+#include <memory>
+
+class WebXBinaryBuffer;
+class WebXInstruction;
+class WebXMouseInstruction;
+template<typename WebXMouseInstruction>
+class WebXObjectPool;
+
+class WebXInstructionDecoder {
+public:
+    WebXInstructionDecoder();
+    ~WebXInstructionDecoder();
+
+    std::shared_ptr<WebXInstruction> decode(const unsigned char * instructionData, size_t instructionDataSize);
+
+private:
+    /**
+     * Create a new mouse instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    x: 4 bytes
+     *    y: 4 bytes
+     *    buttonMask: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createMouseInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a new cursor image instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    cursorId: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createCursorImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a new image instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    windowId: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a keyboard instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 8 bytes
+     *    key (the keyboard key code): 4 bytes
+     *    pressed: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createKeyboardInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a screen instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createScreenInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a windows instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a connect instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     */
+
+    std::shared_ptr<WebXInstruction> createConnectInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
+
+private:
+
+    WebXObjectPool<WebXMouseInstruction> * _webXMouseInstructionPool;
+
+};
+
+
+#endif //WEBX_INSTRUCTION_DECODER_H

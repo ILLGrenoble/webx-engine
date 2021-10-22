@@ -4,7 +4,8 @@
 Vagrant.configure("2") do |config|
   
   # these plugins will be automativally installed
-  config.vagrant.plugins = ["vagrant-vbguest", "vagrant-proxyconf"]
+  config.vagrant.plugins = ["vagrant-vbguest", "vagrant-proxyconf", "vagrant-timezone"]
+  config.timezone.value = "Europe/Paris"
 
   # Configure the ports for webx
   config.vm.network "forwarded_port", guest: 5555, host: 5555, host_ip: "127.0.0.1"
@@ -45,7 +46,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, privileged: true, name: "Permitting anyone to start an X11 session", inline: "sed -i 's/allowed_users=.*$/allowed_users=anybody/' /etc/X11/Xwrapper.config"
 
-  config.vm.provision :shell, privileged: true, name: "Installing webx server dependencies", inline: "apt install -y cmake pkg-config gdb valgrind build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev libxtst-dev"
+  config.vm.provision :shell, privileged: true, name: "Installing webx server dependencies", inline: "apt install -y cmake pkg-config gdb valgrind build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev libxtst-dev libsquish-dev libxcomposite-dev libbrotli-dev"
 
   config.vm.provision :shell, privileged: true, name: "Installing XRDP", path: "vagrant-files/install-xrdp.sh"
 

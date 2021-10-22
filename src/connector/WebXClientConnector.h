@@ -11,16 +11,16 @@ class WebXManager;
 class WebXClientMessagePublisher;
 class WebXClientCommandCollector;
 class WebXMessage;
-class WebXSerializer;
+class WebXBinarySerializer;
 
 class WebXClientConnector {
 private:
-    WebXClientConnector(std::string &transport);
+    WebXClientConnector();
     virtual ~WebXClientConnector();
     void init();
 
 public:
-    static WebXClientConnector * initInstance(std::string &transport);
+    static WebXClientConnector * initInstance();
     static WebXClientConnector * instance() {
         return _instance;
     }
@@ -54,7 +54,7 @@ private:
     WebXClientMessagePublisher * _publisher;
     WebXClientCommandCollector * _collector;
 
-    WebXSerializer * _serializer;
+    WebXBinarySerializer * _serializer;
     bool _running;
 };
 

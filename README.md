@@ -44,7 +44,6 @@ The following options are available:
 |Option | Description|
 |---|---|
 |-l <debug|trace> | increases the logging level |
-|-t json | uses json transport rather than binary |
 |-k | Adds WebX keyboard connector to assist in debugging the server|
 
 WebX will expose three zeromq ports

@@ -3,7 +3,7 @@
 #include "message/WebXImageMessage.h"
 #include "message/WebXSubImagesMessage.h"
 #include "message/WebXMouseMessage.h"
-#include "serializer/WebXSerializer.h"
+#include "serializer/WebXBinarySerializer.h"
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
@@ -19,7 +19,7 @@ WebXClientMessagePublisher::~WebXClientMessagePublisher() {
     this->stop();
 }
 
-void WebXClientMessagePublisher::run(WebXSerializer * serializer, zmq::context_t * context, int port) {
+void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::context_t * context, int port) {
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
     this->_serializer = serializer;
     this->_context = context;
