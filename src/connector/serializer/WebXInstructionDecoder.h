@@ -2,20 +2,20 @@
 #ifndef WEBX_INSTRUCTION_DECODER_H
 #define WEBX_INSTRUCTION_DECODER_H
 
-#include <utils/WebXObjectPool.h>
-
 #include <memory>
 
+class WebXBinaryBuffer;
 class WebXInstruction;
 class WebXMouseInstruction;
-class WebXBinaryBuffer;
+template<typename WebXMouseInstruction>
+class WebXObjectPool;
 
 class WebXInstructionDecoder {
 public:
-    WebXInstructionDecoder() {}
-    virtual ~WebXInstructionDecoder() {}
+    WebXInstructionDecoder();
+    ~WebXInstructionDecoder();
 
-    std::shared_ptr<WebXInstruction> deserialize(const unsigned char * instructionData, size_t instructionDataSize);
+    std::shared_ptr<WebXInstruction> decode(const unsigned char * instructionData, size_t instructionDataSize);
 
 private:
     /**
@@ -109,7 +109,7 @@ private:
 
 private:
 
-    WebXObjectPool<WebXMouseInstruction> _webXMouseInstructionPool;
+    WebXObjectPool<WebXMouseInstruction> * _webXMouseInstructionPool;
 
 };
 

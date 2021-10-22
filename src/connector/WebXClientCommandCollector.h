@@ -4,7 +4,7 @@
 #include <tinythread/tinythread.h>
 
 class WebXInstruction;
-class WebXSerializer;
+class WebXBinarySerializer;
 namespace zmq {
 class context_t;
 }
@@ -14,7 +14,7 @@ public:
     WebXClientCommandCollector();
     virtual ~WebXClientCommandCollector();
 
-    void run(WebXSerializer * serializer, zmq::context_t * context, int port);
+    void run(WebXBinarySerializer * serializer, zmq::context_t * context, int port);
     void stop();
 
 private:
@@ -26,7 +26,7 @@ private:
     tthread::mutex _mutex;
     bool _running;
 
-    WebXSerializer * _serializer;
+    WebXBinarySerializer * _serializer;
     zmq::context_t * _context;
     int _port;
 };

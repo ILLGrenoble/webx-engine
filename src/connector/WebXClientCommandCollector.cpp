@@ -1,7 +1,6 @@
 #include "WebXClientCommandCollector.h"
 #include "instruction/WebXInstruction.h"
-#include "serializer/WebXSerializer.h"
-#include "serializer/WebXSerializer.h"
+#include "serializer/WebXBinarySerializer.h"
 #include <display/WebXManager.h>
 #include <display/WebXController.h>
 #include "WebXZMQ.h"
@@ -23,7 +22,7 @@ WebXClientCommandCollector::~WebXClientCommandCollector() {
     }
 }
 
-void WebXClientCommandCollector::run(WebXSerializer * serializer, zmq::context_t * context, int port) {
+void WebXClientCommandCollector::run(WebXBinarySerializer * serializer, zmq::context_t * context, int port) {
     tthread::lock_guard<tthread::mutex> lock(this->_mutex);
     this->_serializer = serializer;
     this->_context = context;

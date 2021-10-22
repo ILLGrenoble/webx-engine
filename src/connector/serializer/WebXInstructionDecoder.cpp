@@ -7,12 +7,20 @@
 #include <connector/instruction/WebXWindowsInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
 #include <connector/instruction/WebXCursorImageInstruction.h>
+#include <connector/instruction/WebXMouseInstruction.h>
+#include <utils/WebXObjectPool.h>
 #include <utils/WebXBinaryBuffer.h>
-
 #include <spdlog/spdlog.h>
 
+WebXInstructionDecoder::WebXInstructionDecoder() :
+    _webXMouseInstructionPool(new WebXObjectPool<WebXMouseInstruction>()) {   
+}
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::deserialize(const unsigned char * instructionData, size_t instructionDataSize) {
+WebXInstructionDecoder::~WebXInstructionDecoder() {
+    delete _webXMouseInstructionPool;
+}
+
+std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned char * instructionData, size_t instructionDataSize) {
     WebXBinaryBuffer buffer((unsigned char *)instructionData, instructionDataSize);
 
     uint32_t details = buffer.read<uint32_t>();
@@ -42,7 +50,7 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createMouseInstruction(
     int32_t x = buffer.read<int32_t>();
     int32_t y = buffer.read<int32_t>();
     uint32_t buttonMask = buffer.read<uint32_t>();
-    return this->_webXMouseInstructionPool.getWithValues(instructionId, x, y, buttonMask);
+    return this->_webXMouseInstructionPool->getWithValues(instructionId, x, y, buttonMask);
 }
 
 std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createCursorImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) {
