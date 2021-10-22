@@ -47,6 +47,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, privileged: true, name: "Installing webx server dependencies", inline: "apt install -y cmake pkg-config gdb valgrind build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev libxtst-dev"
 
+  config.vm.provision :shell, privileged: true, name: "Installing XRDP", path: "vagrant-files/install-xrdp.sh"
+
+  config.vm.provision :shell, privileged: true, name: "Installing Guacamole", path: "vagrant-files/install-guacamole.sh"
+
   # define our two boxes for the bionic and focal ubuntu distributions (everything else should be generic)
   config.vm.define :bionic, autostart: false do |bionic|
     bionic.vm.box = "bento/ubuntu-18.04"
