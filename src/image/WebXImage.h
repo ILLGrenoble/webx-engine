@@ -51,6 +51,10 @@ public:
         return this->_alphaData ? this->_alphaData->getBufferSize() : 0;
     }
 
+    size_t getFullDataSize() const {
+        return this->getRawDataSize() + this->getAlphaDataSize();
+    }
+
     double getEncodingTimeUs() const {
         return this->_encodingTimeUs;
     }
@@ -83,7 +87,14 @@ public:
         return this->_alphaChecksum;
     }
 
-    void removeAlpha();
+    bool removeAlpha() {
+        if (this->_alphaData) {
+            delete this->_alphaData;
+            this->_alphaData = NULL;
+        return true;
+        }
+        return false;
+    }
 
 private:
     bool saveDataBuffer(WebXDataBuffer * dataBuffer, const std::string & fileName);

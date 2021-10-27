@@ -86,11 +86,6 @@ public:
     }
 
 private:
-    uint32_t calculateImageChecksum(std::shared_ptr<WebXImage> image);
-    uint32_t calculateAlphaChecksum(std::shared_ptr<WebXImage> image);
-    uint32_t getHashValue(const char * data, int len);
-
-private:
     Display * _display;
     Window _x11Window;
     Damage _damage;

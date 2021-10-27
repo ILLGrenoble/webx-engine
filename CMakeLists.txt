@@ -8,7 +8,7 @@ endif()
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -pg")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -mavx")
 set(CMAKE_CXX_STANDARD 11)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -55,7 +55,6 @@ target_include_directories(
 
 file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
 add_executable(testImageEncoder ${TEST_IMAGE_SOURCES})
-
 target_link_libraries(
     testImageEncoder
     ${LIBPNG_LIBRARIES}
@@ -69,7 +68,6 @@ target_link_libraries(
 
 file(GLOB_RECURSE TEST_SQUISH_SOURCES test/testSquish.cpp)
 add_executable(testSquish ${TEST_SQUISH_SOURCES})
-
 target_link_libraries(
     testSquish
     ${LIBPNG_LIBRARIES}
@@ -80,7 +78,6 @@ target_link_libraries(
 
 file(GLOB_RECURSE TEST_ALPHA_SOURCES test/testAlpha.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
 add_executable(testAlpha ${TEST_ALPHA_SOURCES})
-
 target_link_libraries(
     testAlpha
     ${LIBPNG_LIBRARIES}
@@ -89,12 +86,8 @@ target_link_libraries(
     -lwebp
 )
 
-
-
 file(GLOB_RECURSE TEST_MOUSE_SOURCES test/testMouse.cpp)
-
 add_executable(testMouse ${TEST_MOUSE_SOURCES})
-
 target_link_libraries(
     testMouse
     -lXtst
@@ -102,9 +95,7 @@ target_link_libraries(
 )
 
 file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/image/* lib/crc32/*)
-
 add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
-
 target_link_libraries(
     testCursorImageEncoder
     -lXtst
@@ -115,34 +106,38 @@ target_link_libraries(
     -lpng
 )
 
-
 file(GLOB_RECURSE TEST_PUSH_SOURCES test/testPush.cpp)
-
 add_executable(testPush ${TEST_PUSH_SOURCES})
-
 target_link_libraries(
     testPush
     -lzmq
 )
 
 file(GLOB_RECURSE TEST_PUSH_PULL_SOURCES test/testPushPull.cpp lib/tinythread/*.cpp)
-
 add_executable(testPushPull ${TEST_PUSH_PULL_SOURCES})
-
 target_link_libraries(
     testPushPull
     ${CMAKE_THREAD_LIBS_INIT}
     -lzmq
 )
 
-
-file(GLOB_RECURSE TEST_DAMAGE_SOURCES test/testDamage.cpp src/events/* src/display/WebX11Lib.cpp)
-
+file(GLOB_RECURSE TEST_DAMAGE_SOURCES test/testDamage.cpp src/events/*)
 add_executable(testDamage ${TEST_DAMAGE_SOURCES})
-
 target_link_libraries(
     testDamage
     -lX11
     -lXfixes
     -lXdamage
+)
+
+file(GLOB_RECURSE TEST_ALPHA_CHECK_SOURCES test/testAlphaCheck.cpp)
+add_executable(testAlphaCheck ${TEST_ALPHA_CHECK_SOURCES})
+target_link_libraries(
+    testAlphaCheck
+)
+
+file(GLOB_RECURSE TEST_IMAGE_COMPARE_SOURCES test/testImageCompare.cpp)
+add_executable(testImageCompare ${TEST_IMAGE_COMPARE_SOURCES})
+target_link_libraries(
+    testImageCompare
 )

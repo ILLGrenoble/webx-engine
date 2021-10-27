@@ -35,13 +35,6 @@ WebXImage::~WebXImage() {
     }
 }
 
-void WebXImage::removeAlpha() {
-    if (this->_alphaData) {
-        delete this->_alphaData;
-        this->_alphaData = NULL;
-    }
-}
-
 bool WebXImage::save(const std::string & fileName) {
     bool allOk = false;
     if (_rawData != NULL) {

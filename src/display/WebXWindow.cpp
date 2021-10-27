@@ -1,25 +1,11 @@
 #include "WebXWindow.h"
+#include "WebXWindowImageUtils.h"
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
-#include <image/WebXImageAlphaUtils.h>
 #include <events/WebXDamageOverride.h>
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
-
-/* CRC-32C (iSCSI) polynomial in reversed bit order. */
-#define POLY 0x82f63b78
-
-#undef get16bits
-#if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
-  || defined(_MSC_VER) || defined (__BORLANDC__) || defined (__TURBOC__)
-#define get16bits(d) (*((const uint16_t *) (d)))
-#endif
-
-#if !defined (get16bits)
-#define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
-                       +(uint32_t)(((const uint8_t *)(d))[0]) )
-#endif
 
 WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
@@ -135,19 +121,23 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         }
     }
 
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
     // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
     this->disableDamage();
     
-    spdlog::debug("Grabbing WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s})", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, isFull ? "full window" : "sub window");
     XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
     // Fix for Ubuntu 20.04
     this->enableDamage();
+
+    std::chrono::high_resolution_clock::time_point grab = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> grabDuration = grab - start;
     
     if (image) {
         // Check if image has transparency and modify image depth accordingly
-        bool hasTransparency = WebXImageAlphaUtils::hasAlpha(image, rectangle);
+        bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
         // bool hasConvertedAlpha = WebXImageAlphaUtils::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
@@ -155,11 +145,17 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image));
 
         if (isFull) {
-            this->_windowChecksum = this->calculateImageChecksum(webXImage);
-            this->_windowAlphaChecksum = this->calculateAlphaChecksum(webXImage);
+            this->_windowChecksum = calculateImageChecksum(webXImage);
+            this->_windowAlphaChecksum = calculateAlphaChecksum(webXImage);
         }
 
         XDestroyImage(image);
+
+        std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> encodeDuration = end - grab;
+        std::chrono::duration<double, std::milli> duration = end - start;
+
+        spdlog::debug("Grabbed WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s}) in {:.2f}ms (grab = {:.2f}ms, encoding = {:.2f}ms)", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, (isFull ? "full window" : "sub window"), duration.count(), grabDuration.count(), encodeDuration.count());
 
     } else {
         // See if ErrorHandler has this window as it's last error source and determine exact error
@@ -200,26 +196,5 @@ void WebXWindow::removeChild(WebXWindow * child) {
     }
 }
 
-uint32_t WebXWindow::calculateImageChecksum(std::shared_ptr<WebXImage> image) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-    uint32_t checksum = image->getRawChecksum();
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::trace("Checksum for window image {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getRawDataSize(), duration.count());
-    return checksum;
-}
-
-uint32_t WebXWindow::calculateAlphaChecksum(std::shared_ptr<WebXImage> image) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-    uint32_t checksum = image->getAlphaChecksum();
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::trace("Checksum for window alpha {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getAlphaDataSize(), duration.count());
-    return checksum;
-}
 
 

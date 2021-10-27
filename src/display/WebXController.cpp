@@ -189,19 +189,16 @@ void WebXController::notifyImagesChanged() {
                         if (newChecksum != oldChecksum) {
 
                             tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                            spdlog::debug("Sending image event for window 0x{:01x}", windowDamage.windowId);
 
                             // Compare alpha checksums
                             if (newAlphaChecksum == oldAlphaChecksum) {
-                                spdlog::debug("Removing alpha from image for window 0x{:01x}", windowDamage.windowId);
-                                image->removeAlpha();
+                                bool removed = image->removeAlpha();
+                                if (removed) {
+                                    spdlog::debug("Removing alpha from image for window 0x{:01x}", windowDamage.windowId);
+                                }
                             }
 
-                            if (image->getRawDataSize() > 1024) {
-                                spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getRawDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
-                            } else {
-                                spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", image->getWidth(), image->getHeight(), image->getDepth(), (1.0 * image->getRawDataSize()) / 1024, (int)(image->getEncodingTimeUs()));
-                            }
+                            spdlog::debug("Sending encoded image {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
                             for (WebXConnection * connection : this->_connections) {
                                 connection->onImageChanged(windowDamage.windowId, image);
@@ -224,14 +221,9 @@ void WebXController::notifyImagesChanged() {
 
                 if (subImages.size() > 0) {
                     tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
-                    spdlog::debug("Sending subimage event for window 0x{:01x}", windowDamage.windowId);
                     for (auto it = subImages.begin(); it != subImages.end(); it++) {
                         const WebXSubImage & subImage = *it;
-                        if (subImage.image->getRawDataSize() > 1024) {
-                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:d}KB ({:d}ms)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
-                        } else {
-                            spdlog::debug("Encoded image [{:d} x {:d} x {:d} @ {:f}KB ({:d}us)]", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (1.0 * subImage.image->getRawDataSize()) / 1024, (int)(subImage.image->getEncodingTimeUs()));
-                        }
+                        spdlog::debug("Sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     }
                     for (WebXConnection * connection : this->_connections) {
                         connection->onSubImagesChanged(windowDamage.windowId, subImages);
