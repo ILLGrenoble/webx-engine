@@ -136,8 +136,8 @@ target_link_libraries(
     testAlphaCheck
 )
 
-file(GLOB_RECURSE TEST_IMAGE_COMPARE_SOURCES test/testImageCompare.cpp)
-add_executable(testImageCompare ${TEST_IMAGE_COMPARE_SOURCES})
+file(GLOB_RECURSE TEST_ALPHA_CREATE_SOURCES test/testAlphaCreate.cpp)
+add_executable(testAlphaCreate ${TEST_ALPHA_CREATE_SOURCES})
 target_link_libraries(
-    testImageCompare
+    testAlphaCreate
 )

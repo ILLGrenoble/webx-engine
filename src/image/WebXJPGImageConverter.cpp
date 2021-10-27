@@ -1,5 +1,6 @@
 #include "WebXJPGImageConverter.h"
 #include "WebXImage.h"
+#include <utils/WebXImageUtils.h>
 #include <jpeglib.h>
 #include <cstring>
 #include <chrono>
@@ -30,16 +31,14 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        // Generate alphaMap (reuse original data): remove all other components (keep only alpha)
-        u_int32_t * pixel = (u_int32_t *)data;
-        for (int i = 0; i < imageSize; i++) {
-            *pixel = (*pixel & 0xFF000000);
-            pixel++;
+        // // Generate alphaMap (reuse original data): remove all other components (keep only alpha)
+        for (int i = 0; i < 10; i++) {
+            webx_convertToAlpha((u_int32_t *)data, imageSize);
         }
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;
-        spdlog::trace("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
+        spdlog::info("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
         alphaData = this->_convert(data + 2, width, height, bytesPerLine);

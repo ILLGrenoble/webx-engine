@@ -110,7 +110,7 @@ int main() {
     start = std::chrono::high_resolution_clock::now();
     hasAlpha = 0;
     for (int it = 0; it < nIter; it++) {
-        hasAlpha += countTransparentPixels((const u_int32_t *)data, length);
+        hasAlpha += webx_countTransparentPixels((const u_int32_t *)data, length);
     }
 
     end = std::chrono::high_resolution_clock::now();

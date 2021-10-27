@@ -21,7 +21,7 @@ inline bool checkTransparent(XImage * image) {
     const size_t height = image->height;
     const size_t length = width * height;
 
-    int transparencyCount = countTransparentPixels(data, length);
+    int transparencyCount = webx_countTransparentPixels(data, length);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
@@ -40,7 +40,7 @@ inline uint32_t compareWindowImages(XImage * image1, XImage * image2) {
     const size_t height = image1->height;
     const size_t length = width * height;
 
-    int nChanges = comparePixels(data1, data2, length);
+    int nChanges = webx_comparePixels(data1, data2, length);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;

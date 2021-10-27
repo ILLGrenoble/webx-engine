@@ -1,3 +1,6 @@
+#ifndef CRC32_CRC32_H
+#define CRC32_CRC32_H
+
 // //////////////////////////////////////////////////////////
 // Crc32.h
 // Copyright (c) 2011-2016 Stephan Brumme. All rights reserved.
@@ -64,3 +67,6 @@ uint32_t crc32_16bytes (const void* data, size_t length, uint32_t previousCrc32 
 /// compute CRC32 (Slicing-by-16 algorithm, prefetch upcoming data blocks)
 uint32_t crc32_16bytes_prefetch(const void* data, size_t length, uint32_t previousCrc32 = 0, size_t prefetchAhead = 256);
 #endif
+
+
+#endif /* CRC32_CRC32_H */

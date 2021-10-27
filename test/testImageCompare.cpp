@@ -167,6 +167,26 @@ int main() {
     printf("Difference count = %d in %d iterations\n", diffCount / nIter, nIter);
     printf("Memcmp test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
 
+
+    start = std::chrono::high_resolution_clock::now();
+
+    diffCount = 0;
+    for (int it = 0; it < nIter; it++) {
+        for (int j = 0; j < height; j++) {
+            const u_int32_t * line1 = (const u_int32_t *)data1 + j * width;
+            const u_int32_t * line2 = (const u_int32_t *)data2 + j * width;
+            diffCount += comparePixels2(line1, line2, width);
+        }
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = end - start;
+    cummulativeTimeUs = duration.count();
+
+    printf("Difference count = %d in %d iterations\n", diffCount / nIter, nIter);
+    printf("Fast test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+
+
     free(data1);
     free(data2);
 }

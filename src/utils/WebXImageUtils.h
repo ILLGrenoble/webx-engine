@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-inline int countTransparentPixels(const u_int32_t * data, size_t length) {
+inline int webx_countTransparentPixels(const u_int32_t * data, size_t length) {
 
     int alphaCount = 0;
 
@@ -43,8 +43,17 @@ inline int countTransparentPixels(const u_int32_t * data, size_t length) {
     return alphaCount;
 }
 
+inline void webx_convertToAlpha(u_int32_t * data, size_t length) {
 
-inline int comparePixels(const u_int32_t * data1, const u_int32_t * data2, size_t length) {
+    u_int32_t * pixel = (u_int32_t *)data;
+    for (int i = 0; i < length; i++) {
+        *pixel = (*pixel & 0xFF000000);
+        pixel++;
+    }
+
+}
+
+inline int webx_comparePixels(const u_int32_t * data1, const u_int32_t * data2, size_t length) {
 
     int diffCount = 0;
 
