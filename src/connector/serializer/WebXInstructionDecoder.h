@@ -7,8 +7,6 @@
 class WebXBinaryBuffer;
 class WebXInstruction;
 class WebXMouseInstruction;
-template<typename WebXMouseInstruction>
-class WebXObjectPool;
 
 class WebXInstructionDecoder {
 public:
@@ -108,8 +106,6 @@ private:
     std::shared_ptr<WebXInstruction> createConnectInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
 
 private:
-
-    WebXObjectPool<WebXMouseInstruction> * _webXMouseInstructionPool;
 
 };
 
