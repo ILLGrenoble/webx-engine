@@ -26,7 +26,7 @@ inline bool checkTransparent(XImage * image) {
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    spdlog::trace("Transparency check {:d} x {:d} ({:d}KB) in {:f}us", width, height, length * 4 / 1024, duration.count() / 100);
+    spdlog::trace("Transparency check {:d} x {:d} ({:d}KB) in {:f}us", width, height, length * 4 / 1024, duration.count());
 
     return transparencyCount > 0;
 }
