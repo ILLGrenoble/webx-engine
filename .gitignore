@@ -22,6 +22,7 @@ _deps
 bin
 images
 node_modules
+package-lock.json
 test/output/*.jpg
 test/output/*.png
 gmon.out
