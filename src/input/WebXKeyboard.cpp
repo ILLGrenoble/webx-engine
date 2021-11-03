@@ -1,5 +1,5 @@
 #include "WebXKeyboard.h"
-#include "WebXKeysymMapping.h"
+#include "WebXKeyboardMapping.h"
 #include <X11/extensions/XTest.h>
 #include <spdlog/spdlog.h>
 
