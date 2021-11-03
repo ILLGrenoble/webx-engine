@@ -2,6 +2,7 @@
 #define WEBX_KEYSYM_H
 
 #include <string>
+#include <map>
 
 #define WEBX_MODIFIER_SHIFT_KEY 1
 #define WEBX_MODIFIER_ALTGR_KEY 2
@@ -17,7 +18,7 @@ typedef struct WebXKeySymDefinition {
 
 typedef struct WebXKeyboardMapping {
     std::string name;
-    const WebXKeySymDefinition * mapping;
+    const std::map<int, WebXKeySymDefinition> & mapping;
 } WebXKeyboardMapping;
 
 #endif /* WEBX_KEYSYM_H */

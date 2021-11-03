@@ -16,6 +16,8 @@ export const translate = (symbolMappings) => {
         #ifndef WEBX_KEYBOARD_SYMBOL_MAPPING_H
         #define WEBX_KEYBOARD_SYMBOL_MAPPING_H
         
+        #include <vector>
+        #include <map>
         #include "WebXKeyboardMapping.h"
     `;
 
@@ -29,16 +31,16 @@ export const translate = (symbolMappings) => {
         keyMaps.push({layout: layout, keySymsName: webXKeySymsName});
 
         let layoutSymbolsText = dedent`\n
-            static WebXKeySymDefinition ${webXKeySymsName}[] = {\n
+            static std::map<int, WebXKeySymDefinition> ${webXKeySymsName} = {\n
         `;
 
         layoutSymbolsText += keysymMappings.map(keysymMapping => {
-            let mapping = `    { "${keysymMapping.keysymName}", 0x${toHex(keysymMapping.keysymValue)}, "${keysymMapping.scancode}", 0x${toHex(keysymMapping.keycode)}`;
+            let mapping = `    { 0x${toHex(keysymMapping.keysymValue)}, { "${keysymMapping.keysymName}", 0x${toHex(keysymMapping.keysymValue)}, "${keysymMapping.scancode}", 0x${toHex(keysymMapping.keycode)}`;
             if (keysymMapping.modifiers.length > 0) {
                 mapping += `, ${keysymMapping.modifiers.join(' | ')}`;
             }
 
-            mapping += ' }';
+            mapping += ' } }';
 
             return mapping;
         }).join(',\n');
@@ -53,7 +55,7 @@ export const translate = (symbolMappings) => {
 
 
     output += dedent`\n
-        static const WebXKeyboardMapping WEBX_KEY_MAP[] = {\n
+        static std::vector<WebXKeyboardMapping> WEBX_KEY_MAPS = {\n
         `;
 
 

@@ -72,7 +72,7 @@ public:
     void updateMousePosition(int x, int y);
 
     void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
-    void sendKeyboard(int key, bool pressed);
+    void sendKeyboard(int keysym, bool pressed);
     
 private:
     struct WebXTreeDetails {

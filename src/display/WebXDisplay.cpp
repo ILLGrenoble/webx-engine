@@ -56,6 +56,7 @@ void WebXDisplay::init() {
     this->_screenSize = WebXSize(screen->width, screen->height);
     this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
     this->_keyboard = new WebXKeyboard(this->_x11Display);
+    this->_keyboard->init();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -348,12 +349,13 @@ void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMa
     this->_mouse->sendClientInstruction(x, y, buttonMask);
 }
 
-void WebXDisplay::sendKeyboard(int key, bool pressed) {
-    spdlog::trace("Sending keyboard instruction key={}, pressed={}", key, pressed);
+void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
+    spdlog::trace("Sending keyboard instruction key={}, pressed={}", keysym, pressed);
+    // this->_keyboard->handleKeySym(keysym, pressed);
     if (pressed) {
-        this->_keyboard->press(key);
+        this->_keyboard->press(keysym);
     } else {
-        this->_keyboard->release(key);
+        this->_keyboard->release(keysym);
     }
 }
 
