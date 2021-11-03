@@ -1,12 +1,22 @@
 import dedent from 'dedent';
 
-export const translate = (symbolMappings, modifiers) => {
+const toHex = (number) => {
+    let hex = number.toString(16).toUpperCase();
+    if (hex.length < 2) {
+         hex = "0" + hex;
+    }
+    return hex;
+}
+
+export const translate = (symbolMappings) => {
 
     let output = dedent`
+        // Automatically generated in utils/xkb-interpreter
+        
         #ifndef WEBX_KEYBOARD_SYMBOL_MAPPING_H
         #define WEBX_KEYBOARD_SYMBOL_MAPPING_H
         
-        #include "WebXKeysym.h"
+        #include "WebXKeyboardMapping.h"
     `;
 
     const keyMaps = [];
@@ -15,15 +25,15 @@ export const translate = (symbolMappings, modifiers) => {
         const layout = symbolMapping.layout;
         const keysymMappings = symbolMapping.symbolsToKeys;
 
-        const webXKeysymsName = `__webx_keysyms_${layout}`;
-        keyMaps.push({layout: layout, keysymsName: webXKeysymsName});
+        const webXKeySymsName = `__webx_keysyms_${layout}`;
+        keyMaps.push({layout: layout, keySymsName: webXKeySymsName});
 
         let layoutSymbolsText = dedent`\n
-            static WebXKeysym ${webXKeysymsName}[] = {\n
+            static WebXKeySymDefinition ${webXKeySymsName}[] = {\n
         `;
 
         layoutSymbolsText += keysymMappings.map(keysymMapping => {
-            let mapping = `    { "${keysymMapping.keysymName}", 0x${keysymMapping.keysymValue.toString(16).toUpperCase()}, "${keysymMapping.scancode}", 0x${keysymMapping.keycode.toString(16).toUpperCase()}`;
+            let mapping = `    { "${keysymMapping.keysymName}", 0x${toHex(keysymMapping.keysymValue)}, "${keysymMapping.scancode}", 0x${toHex(keysymMapping.keycode)}`;
             if (keysymMapping.modifiers.length > 0) {
                 mapping += `, ${keysymMapping.modifiers.join(' | ')}`;
             }
@@ -43,12 +53,12 @@ export const translate = (symbolMappings, modifiers) => {
 
 
     output += dedent`\n
-        static const WebXKeymap WEBX_KEY_MAP[] = {\n
+        static const WebXKeyboardMapping WEBX_KEY_MAP[] = {\n
         `;
 
 
     output += keyMaps.map(keymap => {
-        return `    { "${keymap.layout}", ${keymap.keysymsName} }`;
+        return `    { "${keymap.layout}", ${keymap.keySymsName} }`;
     }).join(',\n');
 
     output += dedent`

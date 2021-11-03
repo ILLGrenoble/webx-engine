@@ -6,18 +6,18 @@
 #define WEBX_MODIFIER_SHIFT_KEY 1
 #define WEBX_MODIFIER_ALTGR_KEY 2
 
-typedef struct WebXKeysym {
+typedef struct WebXKeySymDefinition {
     std::string name;
     int keysym;
     std::string scancode;
     int keycode;
     int modifiers;
 
-} WebXKeysym;
+} WebXKeySymDefinition;
 
-typedef struct WebXKeymap {
+typedef struct WebXKeyboardMapping {
     std::string name;
-    const WebXKeysym * mapping;
-} WebXKeymap;
+    const WebXKeySymDefinition * mapping;
+} WebXKeyboardMapping;
 
 #endif /* WEBX_KEYSYM_H */

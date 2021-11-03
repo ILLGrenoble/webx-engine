@@ -1,0 +1,47 @@
+key <ESC>  {	[ Escape		]	};
+
+key <LSGT> {	[ less, greater, bar, brokenbar ] };
+
+key <BKSL> {	[ backslash,	bar	]	};
+key <SPCE> {	[ 	 space		]	};
+
+key <BKSP> {	[ BackSpace, BackSpace	]	};
+
+key  <TAB> {	[ Tab,	ISO_Left_Tab	]	};
+key <RTRN> {	[ Return		]	};
+
+key <CAPS> {	[ Caps_Lock		]	};
+key <NMLK> {	[ Num_Lock 		]	};
+
+key <LFSH> {	[ Shift_L		]	};
+key <LCTL> {	[ Control_L		]	};
+key <LWIN> {	[ Super_L		]	};
+
+key <RTSH> {	[ Shift_R		]	};
+key <RCTL> {	[ Control_R		]	};
+key <RWIN> {	[ Super_R		]	};
+key <MENU> {	[ Menu			]	};
+
+key <LVL3> {	[ ISO_Level3_Shift	]	};
+key <MDSW> {	[ Mode_switch 		]	};
+
+key <ALT>  {	[ NoSymbol, Alt_L	]	};
+
+key <META> {	[ NoSymbol, Meta_L	]	};
+
+key <SUPR> {	[ NoSymbol, Super_L	]	};
+
+key <HYPR> {	[ NoSymbol, Hyper_L	]	};
+
+key <SCLK> {	[  Scroll_Lock		]	};
+key  <INS> {	[  Insert		]	};
+key <HOME> {	[  Home			]	};
+key <PGUP> {	[  Prior		]	};
+key <DELE> {	[  Delete		]	};
+key  <END> {	[  End			]	};
+key <PGDN> {	[  Next			]	};
+
+key   <UP> {	[  Up			]	};
+key <LEFT> {	[  Left			]	};
+key <DOWN> {	[  Down			]	};xorsetxkbmap -query
+key <RGHT> {	[  Right		]	};

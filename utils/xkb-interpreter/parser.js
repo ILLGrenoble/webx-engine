@@ -2,13 +2,13 @@ import * as fs from 'fs';
 
 const xkbSymbols = [{
     file: 'fr',
-    inherits: 'latin'
+    inherits: ['latin','pc','keypad']
 }, {
     file: 'gb',
-    inherits: 'latin'
+    inherits: ['latin','pc','keypad']
 }, {
     file: 'us',
-    inherits: null
+    inherits: ['pc','keypad']
 }];
 
 
@@ -35,11 +35,13 @@ export const parseSymbols = () => {
         const { file, inherits } = xkbSymbol;
         const symbols = parseSymbolFile(file);
     
-        if (inherits) {
-            parseSymbolFile(inherits).forEach(key => {
-                if (!symbols.find(f => f.keycode === key.keycode)) {
-                    symbols.push(key);      
-                }
+        if (inherits && inherits.length > 0) {
+            inherits.forEach(inherited => {
+                parseSymbolFile(inherited).forEach(key => {
+                    if (!symbols.find(f => f.scancode === key.scancode)) {
+                        symbols.push(key);      
+                    }
+                });
             });
         }
     
