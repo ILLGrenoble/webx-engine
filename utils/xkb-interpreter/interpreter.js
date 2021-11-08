@@ -25,7 +25,9 @@ export const interpret = (symbols, keycodeMappings, keysymDefs) => {
         // Get keysym value for the keysym name
         const keysym = keysymDefs.find(({name}) => name === keysymName);
         if (keysym == null) {
-          console.error(`Could not find keysym value for keysym name '${keysymName}''`);
+          if (keysymName !== 'NoSymbol') {
+            console.error(`Could not find keysym value for keysym name '${keysymName}'`);
+          }
           return null;
         }
         const keysymValue = keysym.value;
@@ -33,7 +35,7 @@ export const interpret = (symbols, keycodeMappings, keysymDefs) => {
         // Convert the scancode to a keycode
         const keycodeMapping = keycodeMappings.find((keycodeMapping => keycodeMapping.scancode === scancode));
         if (keycodeMapping == null) {
-          console.error(`Could not find keycode for scancode '${scancode}''`);
+          console.error(`Could not find keycode for scancode '${scancode}'`);
           return null;
         }
         const keycode = keycodeMapping.keycode;
