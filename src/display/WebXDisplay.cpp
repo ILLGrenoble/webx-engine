@@ -351,12 +351,12 @@ void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMa
 
 void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
     spdlog::trace("Sending keyboard instruction key={}, pressed={}", keysym, pressed);
-    // this->_keyboard->handleKeySym(keysym, pressed);
-    if (pressed) {
-        this->_keyboard->press(keysym);
-    } else {
-        this->_keyboard->release(keysym);
-    }
+    this->_keyboard->handleKeySym(keysym, pressed, true);
+    // if (pressed) {
+    //     this->_keyboard->press(keysym);
+    // } else {
+    //     this->_keyboard->release(keysym);
+    // }
 }
 
 void WebXDisplay::updateManagedWindows() {
