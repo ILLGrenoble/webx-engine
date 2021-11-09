@@ -1,0 +1,13 @@
+{
+  "name": "guacd-kxb-translator",
+  "version": "1.0.0",
+  "description": "Parses Guacamole keyboard mapping files and generates keycode and modifier combinations",
+  "main": "index.js",
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dedent": "^0.7.0",
+    "yargs": "^17.2.1"
+  }
+}

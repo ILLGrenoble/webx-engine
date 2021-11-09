@@ -43,5 +43,5 @@ key <PGDN> {	[  Next			]	};
 
 key   <UP> {	[  Up			]	};
 key <LEFT> {	[  Left			]	};
-key <DOWN> {	[  Down			]	};xorsetxkbmap -query
+key <DOWN> {	[  Down			]	};
 key <RGHT> {	[  Right		]	};
