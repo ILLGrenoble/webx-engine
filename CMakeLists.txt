@@ -43,6 +43,7 @@ target_link_libraries(
     ${CMAKE_THREAD_LIBS_INIT}
     -lzmq
     -lXtst
+    -lxkbfile
     -lXfixes
 )
 
@@ -109,6 +110,7 @@ target_link_libraries(
     -lXtst
     -lX11
     -lXfixes
+    -lxkbfile
     -ljpeg
     -lwebp
     -lpng

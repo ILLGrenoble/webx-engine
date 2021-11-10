@@ -1,4 +1,5 @@
 #include "WebXKeyboard.h"
+#include "WebXKB.h"
 #include "WebXKeyboardSymbolMapping.h"
 #include <X11/extensions/XTest.h>
 #include <spdlog/spdlog.h>
@@ -14,6 +15,12 @@ WebXKeyboard::~WebXKeyboard() {
 }
 
 void WebXKeyboard::init() {
+    WebXKB webXKB;
+    std::string layout = webXKB.getKeyboardLayout(this->_x11Display);
+    spdlog::info("Got keyboard layout '{:s}'", layout);
+    webXKB.setKeyboardLayout(this->_x11Display, "fr");
+
+    // std::string mappingName = "en_gb_qwerty";
     // std::string mappingName = "en_us_qwerty";
     std::string mappingName = "fr_fr_azerty";
 
@@ -138,4 +145,3 @@ void WebXKeyboard::releaseModifiers(int modifiers) const {
         this->handleKeySym(WEBX_KEYBOARD_KEYSYM_ALTGR, false);
     }
 }
-

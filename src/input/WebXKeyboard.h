@@ -4,6 +4,8 @@
 #include "WebXKeyboardMapping.h"
 #include <X11/Xlib.h>
 
+#define WEBX_XBD_RULES_PATH "/usr/share/X11/xkb/rules/"
+
 class WebXKeyboard {
 
 public:
