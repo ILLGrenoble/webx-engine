@@ -14,16 +14,11 @@ public:
 
     void handleKeySym(int keysym, bool pressed, bool isFromClient = false) const;
 
-    // void press(int key);
-
-    // void release(int key);
-
 private:
-    // int getMappedKey(int key) const;
-    // KeyCode getMappedKeyAsKeyCode(int mappedKey) const;
+    int getMappedKey(int key) const;
     const WebXKeySymDefinition * getKeySymDefinition(int keysym) const;
-    void clearModifiers() const;
-    void setModifiers(int modifiers) const;
+    void clearLocks() const;
+    void updateModifiers(int modifiersToSet, int modifiersToClear) const;
     void releaseModifiers(int modifiers) const;
 
 private:

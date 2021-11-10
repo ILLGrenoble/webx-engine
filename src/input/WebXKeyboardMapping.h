@@ -22,11 +22,6 @@
 #define WEBX_KEYBOARD_KEYSYM_CAPS_LOCK 0xFFE5
 
 /**
- * The X11 keysym for Kana Lock.
- */
-#define WEBX_KEYBOARD_KEYSYM_KANA_LOCK 0xFF2D
-
-/**
  * The X11 keysym for Left Shift.
  */
 #define WEBX_KEYBOARD_KEYSYM_LSHIFT 0xFFE1
@@ -69,7 +64,8 @@ typedef struct WebXKeySymDefinition {
     std::string name;
     int keysym;
     int keycode;
-    int modifiers;
+    int modifiersToSet;
+    int modifiersToClear;
 
 } WebXKeySymDefinition;
 

@@ -35,9 +35,13 @@ export const translate = (symbolMappings) => {
         `;
 
         layoutSymbolsText += keysymMappings.map(keysymMapping => {
-            let mapping = `    { 0x${toHex(keysymMapping.keysymValue)}, { "${keysymMapping.keysymName}", 0x${toHex(keysymMapping.keysymValue)}, 0x${toHex(keysymMapping.keycode)}`;
+            let mapping = `    { 0x${toHex(keysymMapping.keysymValue)}, { "${keysymMapping.keysymName}", 0x${toHex(keysymMapping.keysymValue)}, 0x${toHex(keysymMapping.keycode)}, 0`;
             if (keysymMapping.modifiersSet.length > 0) {
-                mapping += `, ${keysymMapping.modifiersSet.join(' | ')}`;
+                mapping += ` | ${keysymMapping.modifiersSet.join(' | ')}`;
+            }
+            mapping += ', 0';
+            if (keysymMapping.modifiersClear.length > 0) {
+                mapping += ` | ${keysymMapping.modifiersClear.join(' | ')}`;
             }
 
             mapping += ' } }';
