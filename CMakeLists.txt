@@ -94,6 +94,14 @@ target_link_libraries(
     -lX11
 )
 
+file(GLOB_RECURSE TEST_KEYBOARD_SOURCES test/testKeyboard.cpp)
+add_executable(testKeyboard ${TEST_KEYBOARD_SOURCES})
+target_link_libraries(
+    testKeyboard
+    -lXtst
+    -lX11
+)
+
 file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/image/* lib/crc32/*)
 add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
 target_link_libraries(
