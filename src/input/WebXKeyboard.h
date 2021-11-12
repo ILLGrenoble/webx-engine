@@ -21,6 +21,7 @@ private:
     WebXKeyboardMapping * getKeyboardMapping(const std::string & layout) const;
     int getMappedKey(int key) const;
     const WebXKeySymDefinition * getKeySymDefinition(int keysym) const;
+    bool ignoreKeysym(int keysym) const;
     void clearLocks() const;
     void updateModifiers(int modifiersToSet, int modifiersToClear) const;
     void releaseModifiers(int modifiers) const;

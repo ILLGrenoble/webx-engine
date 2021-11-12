@@ -90,7 +90,7 @@ void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) con
 
     // Convert keysym to KeySymDefinition
     const WebXKeySymDefinition * keysymDef = this->getKeySymDefinition(mappedKey);
-    if (keysymDef != NULL) {
+    if (keysymDef != NULL && !ignoreKeysym(keysym)) {
         if (pressed) {
             // Clear all modifier if from client
             if (isFromClient) {
@@ -131,9 +131,11 @@ const WebXKeySymDefinition * WebXKeyboard::getKeySymDefinition(int keysym) const
     return NULL;
 }
 
+bool WebXKeyboard::ignoreKeysym(int keysym) const {
+    return keysym == WEBX_KEYBOARD_KEYSYM_CAPS_LOCK;
+}
+
 void WebXKeyboard::clearLocks() const {
-    this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, false);
-    this->handleKeySym(WEBX_KEYBOARD_KEYSYM_SCROLL_LOCK, false);
     this->handleKeySym(WEBX_KEYBOARD_KEYSYM_CAPS_LOCK, false);
 }
 
