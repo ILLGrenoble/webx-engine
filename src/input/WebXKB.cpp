@@ -15,12 +15,12 @@ std::string WebXKB::getKeyboardLayout(Display * display) const {
     return settings.layout;
 }
 
-void WebXKB::setKeyboardLayout(Display * display, const std::string & layout) const {
+bool WebXKB::setKeyboardLayout(Display * display, const std::string & layout) const {
     WebXKBSettings settings;
     // Initialise keyboard settings from the server
     if (!this->initialiseKeyboardSettings(display, settings)) {
         spdlog::error("Couldn't get XKB properties from the server");
-        return;
+        return false;
     }
 
     // set the desired layout
@@ -28,15 +28,17 @@ void WebXKB::setKeyboardLayout(Display * display, const std::string & layout) co
 
     // Apply the rules with the new layout
     if (!this->applyRules(settings)) {
-        return;
+        return false;
     }
 
     // Send the settings to X11
     if (this->sendKeyboardSettings(display, settings)) {
         spdlog::info("Updated the XKB setting to use '{:s}' layout", layout);
+        return true;
 
     } else {
         spdlog::error("Failed to update the XKB settings to use '{:s}' layout", layout);
+        return false;
     }
 }
 

@@ -25,10 +25,11 @@ export const translate = (symbolMappings) => {
 
     output += symbolMappings.map(symbolMapping => {
         const layout = symbolMapping.layout;
+        const name = symbolMapping.name;
         const keysymMappings = symbolMapping.symbols;
 
-        const webXKeySymsName = `__webx_keysyms_${layout}`;
-        keyMaps.push({layout: layout, keySymsName: webXKeySymsName});
+        const webXKeySymsName = `__webx_keysyms_${name}`;
+        keyMaps.push({layout: layout, name: name, keySymsName: webXKeySymsName});
 
         let layoutSymbolsText = dedent`\n
             static std::map<int, WebXKeySymDefinition> ${webXKeySymsName} = {\n
@@ -64,7 +65,7 @@ export const translate = (symbolMappings) => {
 
 
     output += keyMaps.map(keymap => {
-        return `    { "${keymap.layout}", ${keymap.keySymsName} }`;
+        return `    { "${keymap.name}", "${keymap.layout}", ${keymap.keySymsName} }`;
     }).join(',\n');
 
     output += dedent`

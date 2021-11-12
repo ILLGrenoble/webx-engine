@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <iterator>
 
+std::string WebXKeyboard::DEFAULT_KEYBOARD_LAYOUT = "gb";
+
 WebXKeyboard::WebXKeyboard(Display * x11Display) :
     _x11Display(x11Display),
     _keyboardMapping(NULL) {
@@ -17,27 +19,45 @@ WebXKeyboard::~WebXKeyboard() {
 void WebXKeyboard::init() {
     WebXKB webXKB;
     std::string layout = webXKB.getKeyboardLayout(this->_x11Display);
-    spdlog::info("Got keyboard layout '{:s}'", layout);
-    webXKB.setKeyboardLayout(this->_x11Display, "fr");
+    spdlog::info("Got keyboard layout '{:s}' from X11. Searching for mapping...", layout);
+    WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layout);
+    if (keyboardMapping != NULL) {
+        spdlog::info("... loaded keyboard mapping '{:s}'", keyboardMapping->name);
+        this->_keyboardMapping = keyboardMapping;
 
-    // std::string mappingName = "en_gb_qwerty";
-    // std::string mappingName = "en_us_qwerty";
-    std::string mappingName = "fr_fr_azerty";
+    } else {
+        if (this->loadKeyboardLayout(DEFAULT_KEYBOARD_LAYOUT)) {
+            spdlog::warn("... could not find keyboard mapping for '{:s}'. Loading default {:s} layout and sent to X11.", keyboardMapping->name, DEFAULT_KEYBOARD_LAYOUT);
 
-    // Dummy init of keyboard. Using French keyboard symbol mapping
+        } else {
+            spdlog::error("... could not find keyboard mapping for '{:s}' and failed to send default {:s} layout to X11.", keyboardMapping->name, DEFAULT_KEYBOARD_LAYOUT);
+        }
+    }
+}
+
+WebXKeyboardMapping * WebXKeyboard::getKeyboardMapping(const std::string & layout) const {
     auto it = std::find_if(begin(WEBX_KEY_MAPS), end(WEBX_KEY_MAPS), [=](const WebXKeyboardMapping & mapping) {
-        return mapping.name == mappingName;
+        return mapping.layout == layout;
     });
 
     if (it != WEBX_KEY_MAPS.end()) {
         WebXKeyboardMapping & keyboardMapping = *it;
-        this->_keyboardMapping = &(keyboardMapping);
-
-        spdlog::info("Loading keyboard mapping '{:s}'", keyboardMapping.name);
+        return &keyboardMapping;
     
     } else {
-        spdlog::error("Could not find keyboard mapping for '{:s}'", mappingName);
+        return NULL;
     }
+}
+
+bool WebXKeyboard::loadKeyboardLayout(const std::string & layout) {
+    WebXKB webXKB;
+    WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layout);
+    if (keyboardMapping != NULL) {
+        this->_keyboardMapping = keyboardMapping;
+
+        return webXKB.setKeyboardLayout(this->_x11Display, layout);
+    }
+    return false;
 }
 
 int WebXKeyboard::getMappedKey(int key) const {

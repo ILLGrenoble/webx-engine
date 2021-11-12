@@ -354,6 +354,10 @@ void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
     this->_keyboard->handleKeySym(keysym, pressed, true);
 }
 
+bool WebXDisplay::loadKeyboardLayout(const std::string & layout) {
+    return this->_keyboard->loadKeyboardLayout(layout);
+}
+
 void WebXDisplay::updateManagedWindows() {
     Window root = this->_rootWindow->getX11Window();
     Atom atom = XInternAtom(this->_x11Display, "_NET_CLIENT_LIST", True);

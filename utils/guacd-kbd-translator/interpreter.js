@@ -1,9 +1,9 @@
 import { evdevKeycodes } from "./keycodes.js";
 
 export const interpret = (symbols, keysymDefs) => {
-  return symbols.map(({ layout, symbols }) => {
+  return symbols.map(({ layout, name, symbols }) => {
 
-    console.log(`Interpreting ${layout}`);
+    console.log(`Interpreting ${name}`);
     const interpreted = symbols.map(({charVal, rdpScancode, locksSet, ...keysymExtra}) => {
 
       // Remove any mappings with locks
@@ -26,20 +26,20 @@ export const interpret = (symbols, keysymDefs) => {
       });
 
       if (keysymEntry == null) {
-        console.warn(`Could not find keysym for charVal ${charVal} of layout ${layout}`);
+        console.warn(`Could not find keysym for charVal ${charVal} of layout ${name}`);
         return null;
       }
 
       // Convert RDP scancode to X11 keycode
       if (rdpScancode >= evdevKeycodes.length) {
-        console.warn(`RDP scancode ${rdpScancode} for charVal ${charVal} of layout ${layout} is too big`);
+        console.warn(`RDP scancode ${rdpScancode} for charVal ${charVal} of layout ${name} is too big`);
         return null;
       }
 
       const keycode = evdevKeycodes[rdpScancode];
 
       if (keycode === 0){
-        console.warn(`Ignoring keysym for charVal ${charVal} of layout ${layout} (keycode is 0)`);
+        console.warn(`Ignoring keysym for charVal ${charVal} of layout ${name} (keycode is 0)`);
         return null;
       } 
 
@@ -48,7 +48,7 @@ export const interpret = (symbols, keysymDefs) => {
     }).filter(entry => entry != null);
 
 
-    return {layout, symbols: interpreted};
+    return {layout, name, symbols: interpreted};
   });
 
 };

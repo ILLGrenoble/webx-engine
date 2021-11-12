@@ -21,55 +21,72 @@ const convertToModifier = (text) => {
 }
 
 const guacdSymbols = [{
-    layout: 'en_gb_qwerty',
+    layout: 'gb',
+    name: 'en_gb_qwerty',
     inherits: ['base']
 }, {
-    layout: 'hu_hu_qwertz',
+    layout: 'hu',
+    name: 'hu_hu_qwertz',
     inherits: ['base']
 }, {
-    layout: 'pt_br_qwerty',
+    layout: 'br',
+    name: 'pt_br_qwerty',
     inherits: ['base']
 }, {
-    layout: 'da_dk_qwerty',
+    layout: 'dk',
+    name: 'da_dk_qwerty',
     inherits: ['base']
 }, {
-    layout: 'en_us_qwerty',
+    layout: 'us',
+    name: 'en_us_qwerty',
     inherits: ['base']
 }, {
-    layout: 'fr_be_azerty',
+    layout: 'be',
+    name: 'fr_be_azerty',
     inherits: ['base']
 }, {
-    layout: 'it_it_qwerty',
+    layout: 'it',
+    name: 'it_it_qwerty',
     inherits: ['base']
 }, {
-    layout: 'sv_se_qwerty',
+    layout: 'se',
+    name: 'sv_se_qwerty',
     inherits: ['base']
 }, {
-    layout: 'de_ch_qwertz',
+    layout: 'ch(de)',
+    name: 'de_ch_qwertz',
     inherits: ['base']
 }, {
-    layout: 'es_es_qwerty',
+    layout: 'es',
+    name: 'es_es_qwerty',
     inherits: ['base']
 }, {
-    layout: 'fr_ch_qwertz',
+    layout: 'ch(fr)',
+    name: 'fr_ch_qwertz',
     inherits: ['base']
 }, {
-    layout: 'ja_jp_qwerty',
+    layout: 'jp',
+    name: 'ja_jp_qwerty',
     inherits: ['base']
 }, {
-    layout: 'tr_tr_qwerty',
+    layout: 'tr',
+    name: 'tr_tr_qwerty',
     inherits: ['base']
 }, {
-    layout: 'de_de_qwertz',
+    layout: 'de',
+    name: 'de_de_qwertz',
     inherits: ['base']
 }, {
-    layout: 'es_latam_qwerty',
+    layout: 'latam',
+    name: 'es_latam_qwerty',
     inherits: ['base']
 }, {
-    layout: 'fr_fr_azerty',
+    layout: 'fr',
+    name: 'fr_fr_azerty',
     inherits: ['base']
 }, {
-    layout: 'no_no_qwerty',
+    layout: 'no',
+    name: 'no_no_qwerty',
     inherits: ['base']
 }];
 
@@ -161,8 +178,8 @@ const parseSymbolFile = (file) => {
 
 export const parseSymbols = () => {
     const parsed = guacdSymbols.map(guacdSymbol => {
-        const { layout, inherits } = guacdSymbol;
-        const file = `${layout}.keymap`;
+        const { layout, name, inherits } = guacdSymbol;
+        const file = `${name}.keymap`;
         const symbols = parseSymbolFile(file);
     
         if (inherits && inherits.length > 0) {
@@ -176,7 +193,7 @@ export const parseSymbols = () => {
             });
         }
     
-        return { layout, symbols }
+        return { layout, name, symbols }
     });
 
     return parsed;

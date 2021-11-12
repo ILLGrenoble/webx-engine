@@ -71,6 +71,7 @@ typedef struct WebXKeySymDefinition {
 
 typedef struct WebXKeyboardMapping {
     std::string name;
+    std::string layout;
     const std::map<int, WebXKeySymDefinition> & mapping;
 } WebXKeyboardMapping;
 

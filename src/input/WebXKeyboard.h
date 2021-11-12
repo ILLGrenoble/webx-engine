@@ -15,8 +15,10 @@ public:
     void init();
 
     void handleKeySym(int keysym, bool pressed, bool isFromClient = false) const;
+    bool loadKeyboardLayout(const std::string & layout);
 
 private:
+    WebXKeyboardMapping * getKeyboardMapping(const std::string & layout) const;
     int getMappedKey(int key) const;
     const WebXKeySymDefinition * getKeySymDefinition(int keysym) const;
     void clearLocks() const;
@@ -26,6 +28,7 @@ private:
 private:
     Display * _x11Display;
     WebXKeyboardMapping * _keyboardMapping;
+    static std::string DEFAULT_KEYBOARD_LAYOUT;
 };
 
 

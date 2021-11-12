@@ -43,10 +43,11 @@ The following options are available:
 
 |Option | Description|
 |---|---|
-|-l <debug|trace> | increases the logging level |
-|-k | Adds WebX keyboard connector to assist in debugging the server|
+|-l <debug|trace> | Set the logging level (default is `info`) |
+|-i | Adds WebX interactive keyboard connector to assist in debugging the server|
+|-k <layout> | Sets the keyboard layout in the X server (by default WebX will automatically use the existing X11 keyboard) |
 
-WebX will expose three zeromq ports
+WebX will expose three zeromq ports.
 
 > For the moment these ports are not configurable. Please make sure you open these ports on your firewall
 

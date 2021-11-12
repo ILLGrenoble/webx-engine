@@ -26,7 +26,7 @@ public:
     ~WebXKB() {}
 
     std::string getKeyboardLayout(Display * display) const;
-    void setKeyboardLayout(Display * display, const std::string & layout) const;
+    bool setKeyboardLayout(Display * display, const std::string & layout) const;
 
 private:
     bool initialiseKeyboardSettings(Display * display, WebXKBSettings & settings) const;
