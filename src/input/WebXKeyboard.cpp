@@ -25,6 +25,9 @@ void WebXKeyboard::init() {
         spdlog::info("... loaded keyboard mapping '{:s}'", keyboardMapping->name);
         this->_keyboardMapping = keyboardMapping;
 
+        // Make sure the keyboard layout really is loaded (reload the current one. Fixes a bug where XKB behaved as if US was loaded)
+        this->loadKeyboardLayout(layout);
+
     } else {
         if (this->loadKeyboardLayout(DEFAULT_KEYBOARD_LAYOUT)) {
             spdlog::warn("... could not find keyboard mapping for '{:s}'. Loading default {:s} layout and sent to X11.", keyboardMapping->name, DEFAULT_KEYBOARD_LAYOUT);

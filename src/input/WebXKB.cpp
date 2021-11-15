@@ -33,7 +33,7 @@ bool WebXKB::setKeyboardLayout(Display * display, const std::string & layout) co
 
     // Send the settings to X11
     if (this->sendKeyboardSettings(display, settings)) {
-        spdlog::info("Updated the XKB setting to use '{:s}' layout", layout);
+        spdlog::debug("Updated the XKB setting to use '{:s}' layout", layout);
         return true;
 
     } else {
@@ -135,9 +135,11 @@ bool WebXKB::sendKeyboardSettings(Display * display, WebXKBSettings & settings) 
                                    (~XkbGBN_GeometryMask), True);
     if (xkb) {
         XkbRF_VarDefsRec rdefs;
+        const char * options = "";
         rdefs.model = settings.model.empty() ? NULL : (char *)settings.model.c_str();
         rdefs.layout = settings.layout.empty() ? NULL : (char *)settings.layout.c_str();
         rdefs.variant = settings.variant.empty() ? NULL : (char *)settings.variant.c_str();
+        rdefs.options = (char *)options;
         
         // update the XKB root property
         if (!settings.rules.empty() && (rdefs.model || rdefs.layout)) {
