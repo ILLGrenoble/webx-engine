@@ -5,7 +5,7 @@
 #include <X11/extensions/Xfixes.h>
 #include <map>
 #include <memory>
-#include <tinythread/tinythread.h>
+#include <mutex>
 #include <image/WebXImage.h>
 #include <image/WebXPNGImageConverter.h>
 #include "WebXMouseCursor.h"
@@ -30,7 +30,7 @@ private:
 
     std::map<uint32_t, uint32_t> _checksumLookup;
     std::map<uint32_t, std::shared_ptr<WebXMouseCursor>> _catalogue;
-	tthread::mutex _catalogueMutex;
+	std::mutex _catalogueMutex;
 
 };
 

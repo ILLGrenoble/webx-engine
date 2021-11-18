@@ -1,7 +1,8 @@
 #ifndef WEBX_KEYBOARD_CONNECTION_H
 #define WEBX_KEYBOARD_CONNECTION_H
 
-#include <tinythread/tinythread.h>
+#include <thread>
+#include <mutex>
 #include <vector>
 
 class WebXWindow;
@@ -15,7 +16,6 @@ public:
     void stop();
 
 private:
-    static void threadMain(void * arg);
     void mainLoop();
     void printWindows();
     void exportWindowImages();
@@ -23,8 +23,8 @@ private:
 private:
     unsigned long _id;
 
-    tthread::thread * _thread;
-    tthread::mutex _mutex;
+    std::thread * _thread;
+    std::mutex _mutex;
     bool _running;
 };
 

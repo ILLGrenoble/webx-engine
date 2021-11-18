@@ -71,7 +71,7 @@ WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
 }
 
 WebXWindow * WebXDisplay::getVisibleWindow(Window x11Window) {
-    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
+    std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
     
     // Find visible window
     auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
@@ -119,7 +119,7 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
         this->deleteTree(window);
 
         // Delete from visible windows
-        tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+        std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
         // Set manually the isViewable attribute (cannot call XGetWindowAttributes as window is no longer valid)
         window->setIsViewable(false);
@@ -179,7 +179,7 @@ void WebXDisplay::updateVisibleWindows() {
 
     this->_rootWindow->updateAttributes();
 
-    tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+    std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
     // Make a copy of current visible windows
     std::vector<WebXWindow *> oldVisibleWindows = this->_visibleWindows;
@@ -253,7 +253,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
 }
 
 std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, WebXRectangle * imageRectangle) {
-    tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+    std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
     // Find visible window
     auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
@@ -273,8 +273,8 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, WebXRectangle
 }
 
 void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh) {
-    tthread::lock_guard<tthread::mutex> damageLock(this->_damagedWindowsMutex);
-    tthread::lock_guard<tthread::mutex> windowsLock(this->_visibleWindowsMutex);
+    std::lock_guard<std::mutex> damageLock(this->_damagedWindowsMutex);
+    std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
 
     // Find visible window
     auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
@@ -315,7 +315,7 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
 }
 
 std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imageUpdateUs) {
-    tthread::lock_guard<tthread::mutex> lock(this->_damagedWindowsMutex);
+    std::lock_guard<std::mutex> lock(this->_damagedWindowsMutex);
 
     std::vector<WebXWindowDamageProperties> windowDamageToRepair;
 

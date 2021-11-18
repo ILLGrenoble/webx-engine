@@ -123,7 +123,7 @@ target_link_libraries(
     -lzmq
 )
 
-file(GLOB_RECURSE TEST_PUSH_PULL_SOURCES test/testPushPull.cpp lib/tinythread/*.cpp)
+file(GLOB_RECURSE TEST_PUSH_PULL_SOURCES test/testPushPull.cpp)
 add_executable(testPushPull ${TEST_PUSH_PULL_SOURCES})
 target_link_libraries(
     testPushPull

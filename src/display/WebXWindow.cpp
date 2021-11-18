@@ -30,7 +30,7 @@ WebXWindow::~WebXWindow() {
 }
 
 void WebXWindow::enableDamage() {
-    tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
+    std::lock_guard<std::mutex> lock(this->_damageMutex);
     if (this->_damage == 0) {
         // Flush all pending events
         XSync(this->_display, false);
@@ -50,7 +50,7 @@ void WebXWindow::enableDamage() {
 }
 
 void WebXWindow::disableDamage() {
-    tthread::lock_guard<tthread::mutex> lock(this->_damageMutex);
+    std::lock_guard<std::mutex> lock(this->_damageMutex);
     if (this->_damage != 0 && this->_isViewable) {
         XDamageDestroy(this->_display, this->_damage);
         this->_damage = 0;

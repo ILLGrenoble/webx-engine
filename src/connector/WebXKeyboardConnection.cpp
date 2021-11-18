@@ -20,15 +20,15 @@ WebXKeyboardConnection::~WebXKeyboardConnection() {
 }
 
 void WebXKeyboardConnection::run() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    std::lock_guard<std::mutex> lock(this->_mutex);
     this->_running = true;
     if (this->_thread == NULL) {
-        this->_thread = new tthread::thread(WebXKeyboardConnection::threadMain, (void *)this);
+        this->_thread = new std::thread(&WebXKeyboardConnection::mainLoop, this);
     }
 }
 
 void WebXKeyboardConnection::stop() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    std::lock_guard<std::mutex> lock(this->_mutex);
     this->_running = false;
     if (this->_thread != NULL) {
         // Join thread and cleanup
@@ -38,11 +38,6 @@ void WebXKeyboardConnection::stop() {
         // delete this->_thread;
         // this->_thread = NULL;
     }
-}
-
-void WebXKeyboardConnection::threadMain(void * arg) {
-    WebXKeyboardConnection * self  = (WebXKeyboardConnection *)arg;
-    self->mainLoop();
 }
 
 void WebXKeyboardConnection::mainLoop() {

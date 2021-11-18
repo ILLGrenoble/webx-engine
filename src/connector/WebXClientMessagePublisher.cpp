@@ -10,7 +10,7 @@
 WebXClientMessagePublisher::WebXClientMessagePublisher() : 
     _thread(NULL),
     _running(false),
-    _messageQueue(1024),
+    _messageQueue(),
     _context(NULL),
     _port(0)  {
 }
@@ -20,18 +20,18 @@ WebXClientMessagePublisher::~WebXClientMessagePublisher() {
 }
 
 void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::context_t * context, int port) {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    std::lock_guard<std::mutex> lock(this->_mutex);
     this->_serializer = serializer;
     this->_context = context;
     this->_port = port;
     this->_running = true;
     if (this->_thread == NULL) {
-        this->_thread = new tthread::thread(WebXClientMessagePublisher::threadMain, (void *)this);
+        this->_thread = new std::thread(&WebXClientMessagePublisher::mainLoop, this);
     }
 }
 
 void WebXClientMessagePublisher::stop() {
-    tthread::lock_guard<tthread::mutex> lock(this->_mutex);
+    std::lock_guard<std::mutex> lock(this->_mutex);
     this->_running = false;
     this->_context = NULL;
     this->_port = 0;
@@ -64,11 +64,6 @@ void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, cons
 void WebXClientMessagePublisher::onMouseChanged(int x, int y, uint32_t cursorId) {
     auto message = std::make_shared<WebXMouseMessage>(x, y, cursorId);
     this->_messageQueue.put(message);
-}
-
-void WebXClientMessagePublisher::threadMain(void * arg) {
-    WebXClientMessagePublisher * self  = (WebXClientMessagePublisher *)arg;
-    self->mainLoop();
 }
 
 void WebXClientMessagePublisher::mainLoop() {

@@ -6,7 +6,8 @@
 #include <vector>
 #include <memory>
 #include <utils/WebXSize.h>
-#include <tinythread/tinythread.h>
+#include <thread>
+#include <mutex>
 #include <connector/instruction/WebXMouseInstruction.h>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
@@ -35,12 +36,12 @@ public:
     void reparentWindow(Window x11Window, Window parentX11Window);
 
     const std::vector<WebXWindow *> & getVisibleWindows() {
-        tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+        const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
         return this->_visibleWindows;
     }
 
     const std::vector<WebXWindowProperties> & getVisibleWindowsProperties() {
-        tthread::lock_guard<tthread::mutex> lock(this->_visibleWindowsMutex);
+        const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
         return this->_visibleWindowsProperties;
     }
 
@@ -118,12 +119,12 @@ private:
     std::vector<WebXWindow *> _visibleWindows;
     std::vector<WebXWindowProperties> _visibleWindowsProperties;
 
-    tthread::mutex _visibleWindowsMutex;
+    std::mutex _visibleWindowsMutex;
 
     WebXImageConverter * _imageConverter;
 
     std::vector<WebXWindowDamageProperties> _damagedWindows;
-    tthread::mutex _damagedWindowsMutex;
+    std::mutex _damagedWindowsMutex;
     WebXMouse * _mouse;
     WebXKeyboard * _keyboard;
 };

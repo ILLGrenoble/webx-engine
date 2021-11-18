@@ -4,7 +4,8 @@
 #include <vector>
 #include <set>
 #include <chrono>
-#include <tinythread/tinythread.h>
+#include <thread>
+#include <mutex>
 #include <connector/instruction/WebXInstruction.h>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
@@ -36,27 +37,26 @@ public:
     void resume();
 
     void addConnection(WebXConnection * connection) {
-        tthread::lock_guard<tthread::mutex> lock(this->_connectionsMutex);
+        const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
         this->_connections.insert(connection);
     } 
 
     void removeConnection(WebXConnection * connection) {
-        tthread::lock_guard<tthread::mutex> lock(this->_connectionsMutex);
+        const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
         this->_connections.erase(connection);
     }
 
     const std::vector<WebXWindowProperties> & getWindows() {
-        tthread::lock_guard<tthread::mutex> lock(this->_windowsMutex);
+        const std::lock_guard<std::mutex> lock(this->_windowsMutex);
         return this->_windows;
     }
 
     void onClientInstruction(std::shared_ptr<WebXInstruction> instruction) {
-        tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
+        const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
         this->_instructions.push_back(instruction);
     }
 
 private:
-    static void threadMain(void * arg);
     void mainLoop();
     void handleClientInstructions();
     void notifyDisplayChanged();
@@ -79,12 +79,12 @@ private:
 
     long _imageRefreshUs;
 
-    tthread::thread * _thread;
+    std::thread * _thread;
     long _threadSleepUs;
-    tthread::mutex _stateMutex;
-    tthread::mutex _connectionsMutex;
-    tthread::mutex _windowsMutex;
-    tthread::mutex _instructionsMutex;
+    std::mutex _stateMutex;
+    std::mutex _connectionsMutex;
+    std::mutex _windowsMutex;
+    std::mutex _instructionsMutex;
     WebXControllerState _state;
 
     std::set<WebXConnection *> _connections;

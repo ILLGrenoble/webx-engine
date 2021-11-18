@@ -1,14 +1,14 @@
 #include <stdlib.h>
 #include <zmq.hpp>
 #include <unistd.h>
-#include <tinythread/tinythread.h>
+#include <thread>
 
 
 #if !defined(CPPZMQ_VERSION) || (CPPZMQ_VERSION < ZMQ_MAKE_VERSION(4, 3, 1))
 #define COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
 #endif
 
-void pusher(void * arg) {
+void pusher() {
     zmq::context_t context(1);
     zmq::socket_t socket(context, ZMQ_PUSH);
     int linger = 0;
@@ -48,7 +48,7 @@ int main() {
     std::string address = "tcp://*:5555";
     socket.bind(address.c_str());
 
-    tthread::thread * pusherThread = new tthread::thread(pusher, 0);
+    std::thread * pusherThread = new std::thread(&pusher);
 
 
     while (true) {

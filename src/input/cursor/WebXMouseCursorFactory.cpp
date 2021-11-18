@@ -10,7 +10,7 @@ WebXMouseCursorFactory::~WebXMouseCursorFactory() {
 }
 
 std::shared_ptr<WebXMouseCursor> WebXMouseCursorFactory::createCursor() {
-    tthread::lock_guard<tthread::mutex> lock(this->_catalogueMutex);
+    std::lock_guard<std::mutex> lock(this->_catalogueMutex);
 
     XFixesCursorImage * cursorImage = XFixesGetCursorImage(_display);
     if (cursorImage) {
@@ -36,7 +36,7 @@ std::shared_ptr<WebXMouseCursor> WebXMouseCursorFactory::createCursor() {
 }
 
 std::shared_ptr<WebXMouseCursor> WebXMouseCursorFactory::getCursor(uint32_t cursorId) {
-    tthread::lock_guard<tthread::mutex> lock(this->_catalogueMutex);
+    std::lock_guard<std::mutex> lock(this->_catalogueMutex);
 
     auto catalogueIt = this->_catalogue.find(cursorId);
     if (catalogueIt != this->_catalogue.end()) {

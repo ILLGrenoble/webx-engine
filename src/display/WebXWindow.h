@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 #include <chrono>
-#include <tinythread/tinythread.h>
+#include <mutex>
 #include <utils/WebXRectangle.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
@@ -99,7 +99,7 @@ private:
 
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 
-    tthread::mutex _damageMutex;
+    std::mutex _damageMutex;
 
     unsigned long _windowChecksum;
     unsigned long _windowAlphaChecksum;

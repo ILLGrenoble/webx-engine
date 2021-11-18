@@ -3,7 +3,8 @@
 
 #include <display/WebXConnection.h>
 #include <utils/WebXQueue.h>
-#include <tinythread/tinythread.h>
+#include <thread>
+#include <mutex>
 
 class WebXMessage;
 class WebXBinarySerializer;
@@ -27,12 +28,11 @@ public:
     virtual void onMouseChanged(int x, int y, uint32_t cursorId);
 
 private:
-    static void threadMain(void * arg);
     void mainLoop();
 
 private:
-    tthread::thread * _thread;
-    tthread::mutex _mutex;
+    std::thread * _thread;
+    std::mutex _mutex;
     bool _running;
     WebXQueue<std::shared_ptr<WebXMessage>> _messageQueue;
 

@@ -36,15 +36,15 @@ WebXController::~WebXController() {
 }
 
 void WebXController::run() {
-    tthread::lock_guard<tthread::mutex> lock(this->_stateMutex);
+    std::lock_guard<std::mutex> lock(this->_stateMutex);
     this->_state = WebXControllerState::Running;
     if (this->_thread == NULL) {
-        this->_thread = new tthread::thread(WebXController::threadMain, (void *)this);
+        this->_thread = new std::thread(&WebXController::mainLoop, this);
     }
 }
 
 void WebXController::stop() {
-    tthread::lock_guard<tthread::mutex> lock(this->_stateMutex);
+    std::lock_guard<std::mutex> lock(this->_stateMutex);
     this->_state = WebXControllerState::Stopped;
     if (this->_thread != NULL) {
         // Join thread and cleanup
@@ -57,22 +57,17 @@ void WebXController::stop() {
 }
 
 void WebXController::pause() {
-    tthread::lock_guard<tthread::mutex> lock(this->_stateMutex);
+    std::lock_guard<std::mutex> lock(this->_stateMutex);
     if (this->_state == WebXControllerState::Running) {
         this->_state = WebXControllerState::Paused;
     }
 }
 
 void WebXController::resume() {
-    tthread::lock_guard<tthread::mutex> lock(this->_stateMutex);
+    std::lock_guard<std::mutex> lock(this->_stateMutex);
     if (this->_state == WebXControllerState::Paused) {
         this->_state = WebXControllerState::Running;
     }
-}
-
-void WebXController::threadMain(void * arg) {
-    WebXController * self  = (WebXController *)arg;
-    self->mainLoop();
 }
 
 void WebXController::mainLoop() {
@@ -138,7 +133,7 @@ void WebXController::mainLoop() {
 }
 
 void WebXController::handleClientInstructions() {
-    tthread::lock_guard<tthread::mutex> lock(this->_instructionsMutex);
+    std::lock_guard<std::mutex> lock(this->_instructionsMutex);
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         auto instruction = *it;
         if (instruction->type == WebXInstruction::Type::Mouse) {
@@ -158,11 +153,11 @@ void WebXController::handleClientInstructions() {
 }
 
 void WebXController::notifyDisplayChanged() {
-    tthread::lock_guard<tthread::mutex> windowsLock(this->_windowsMutex);
+    std::lock_guard<std::mutex> windowsLock(this->_windowsMutex);
     this->_windows = this->_display->getVisibleWindowsProperties();
     this->_displayDirty = false;
 
-    tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
     for (WebXConnection * connection : this->_connections) {
         connection->onDisplayChanged(this->_windows);
     }
@@ -188,7 +183,7 @@ void WebXController::notifyImagesChanged() {
                         // Send event if checksum has changed
                         if (newChecksum != oldChecksum) {
 
-                            tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                            std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
 
                             // Compare alpha checksums
                             if (newAlphaChecksum == oldAlphaChecksum) {
@@ -220,7 +215,7 @@ void WebXController::notifyImagesChanged() {
                 }
 
                 if (subImages.size() > 0) {
-                    tthread::lock_guard<tthread::mutex> connectionsLock(this->_connectionsMutex);
+                    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
                     for (auto it = subImages.begin(); it != subImages.end(); it++) {
                         const WebXSubImage & subImage = *it;
                         spdlog::debug("Sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
