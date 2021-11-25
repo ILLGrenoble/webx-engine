@@ -2,16 +2,16 @@
 #include "WebXDisplay.h"
 #include "WebXManager.h"
 #include "WebXConnection.h"
-#include <connector/instruction/WebXMouseInstruction.h>
-#include <connector/instruction/WebXKeyboardInstruction.h>
-#include <connector/instruction/WebXImageInstruction.h>
-#include <connector/instruction/WebXCursorImageInstruction.h>
-#include <connector/message/WebXScreenMessage.h>
-#include <connector/message/WebXWindowsMessage.h>
-#include <connector/message/WebXImageMessage.h>
-#include <connector/message/WebXCursorImageMessage.h>
-#include <connector/message/WebXSubImagesMessage.h>
-#include <connector/message/WebXMouseMessage.h>
+#include <instruction/WebXMouseInstruction.h>
+#include <instruction/WebXKeyboardInstruction.h>
+#include <instruction/WebXImageInstruction.h>
+#include <instruction/WebXCursorImageInstruction.h>
+#include <message/WebXScreenMessage.h>
+#include <message/WebXWindowsMessage.h>
+#include <message/WebXImageMessage.h>
+#include <message/WebXCursorImageMessage.h>
+#include <message/WebXSubImagesMessage.h>
+#include <message/WebXMouseMessage.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
@@ -187,9 +187,10 @@ void WebXController::handleClientInstructions() {
 
 void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
     message->commandId = commandId;
-    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
-
-    this->_connection->onMessage(message);
+    std::lock_guard<std::mutex> connectionLock(this->_connectionMutex);
+    if (this->_connection) {
+        this->_connection->onMessage(message);
+    }
 }
 
 void WebXController::notifyDisplayChanged() {

@@ -8,7 +8,6 @@
 #include <utils/WebXSize.h>
 #include <thread>
 #include <mutex>
-#include <connector/instruction/WebXMouseInstruction.h>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 

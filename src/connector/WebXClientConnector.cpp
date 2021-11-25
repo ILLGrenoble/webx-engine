@@ -1,15 +1,15 @@
 #include "WebXClientConnector.h"
-#include "message/WebXScreenMessage.h"
-#include "message/WebXWindowsMessage.h"
-#include "message/WebXImageMessage.h"
-#include "message/WebXCursorImageMessage.h"
-#include "message/WebXVoidMessage.h"
-#include "instruction/WebXImageInstruction.h"
-#include "instruction/WebXMouseInstruction.h"
-#include "instruction/WebXCursorImageInstruction.h"
-#include "serializer/WebXBinarySerializer.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
+#include <message/WebXScreenMessage.h>
+#include <message/WebXWindowsMessage.h>
+#include <message/WebXImageMessage.h>
+#include <message/WebXCursorImageMessage.h>
+#include <message/WebXVoidMessage.h>
+#include <instruction/WebXImageInstruction.h>
+#include <instruction/WebXMouseInstruction.h>
+#include <instruction/WebXCursorImageInstruction.h>
+#include <serializer/WebXBinarySerializer.h>
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXController.h>
@@ -57,7 +57,7 @@ WebXClientConnector * WebXClientConnector::initInstance() {
 
 void WebXClientConnector::init() {
     this->_publisher = new WebXClientMessagePublisher();
-    WebXManager::instance()->getController()->addConnection(this->_publisher);
+    WebXManager::instance()->getController()->setConnection(this->_publisher);
 
     this->_collector = new WebXClientCommandCollector();
 }

@@ -37,13 +37,13 @@ public:
     void pause();
     void resume();
 
-    void addConnection(WebXConnection * connection) {
-        const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
+    void setConnection(WebXConnection * connection) {
+        const std::lock_guard<std::mutex> lock(this->_connectionMutex);
         this->_connection = connection;
     } 
 
     void removeConnection() {
-        const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
+        const std::lock_guard<std::mutex> lock(this->_connectionMutex);
         this->_connection = NULL;
     }
 
@@ -84,7 +84,7 @@ private:
     std::thread * _thread;
     long _threadSleepUs;
     std::mutex _stateMutex;
-    std::mutex _connectionsMutex;
+    std::mutex _connectionMutex;
     std::mutex _windowsMutex;
     std::mutex _instructionsMutex;
     WebXControllerState _state;

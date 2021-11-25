@@ -1,13 +1,13 @@
 #include "WebXMessageEncoder.h"
 
-#include <connector/message/WebXMessage.h>
-#include <connector/message/WebXCursorImageMessage.h>
-#include <connector/message/WebXImageMessage.h>
-#include <connector/message/WebXMouseMessage.h>
-#include <connector/message/WebXScreenMessage.h>
-#include <connector/message/WebXSubImagesMessage.h>
-#include <connector/message/WebXVoidMessage.h>
-#include <connector/message/WebXWindowsMessage.h>
+#include <message/WebXMessage.h>
+#include <message/WebXCursorImageMessage.h>
+#include <message/WebXImageMessage.h>
+#include <message/WebXMouseMessage.h>
+#include <message/WebXScreenMessage.h>
+#include <message/WebXSubImagesMessage.h>
+#include <message/WebXVoidMessage.h>
+#include <message/WebXWindowsMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <zmq.hpp>
 
