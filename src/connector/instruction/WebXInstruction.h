@@ -6,8 +6,7 @@
 class WebXInstruction {
 public:
     enum Type {
-        Connect = 1,
-        Windows,
+        Windows = 2,
         Image,
         Screen,
         Mouse,

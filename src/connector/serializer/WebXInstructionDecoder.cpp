@@ -1,7 +1,6 @@
 #include "WebXInstructionDecoder.h"
 
 #include <connector/instruction/WebXMouseInstruction.h>
-#include <connector/instruction/WebXConnectInstruction.h>
 #include <connector/instruction/WebXImageInstruction.h>
 #include <connector/instruction/WebXScreenInstruction.h>
 #include <connector/instruction/WebXWindowsInstruction.h>
@@ -31,8 +30,6 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
         return this->createCursorImageInstruction(instructionId, buffer);
     } else if (type == WebXInstruction::Image) {
         return this->createImageInstruction(instructionId, buffer);
-    } else if (type == WebXInstruction::Connect) {
-        return this->createConnectInstruction(instructionId, buffer);
     } else if (type == WebXInstruction::Screen) {
         return this->createScreenInstruction(instructionId, buffer);
     } else if (type == WebXInstruction::Windows) {
@@ -71,8 +68,4 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createScreenInstruction
 
 std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer) {
     return std::make_shared<WebXWindowsInstruction>(instructionId);
-}
-
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createConnectInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer) {
-    return std::make_shared<WebXConnectInstruction>(instructionId);
 }

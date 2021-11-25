@@ -9,7 +9,6 @@ class message_t;
 }
 
 class WebXMessage;
-class WebXConnectionMessage;
 class WebXCursorImageMessage;
 class WebXImageMessage;
 class WebXMouseMessage;
@@ -27,19 +26,6 @@ class WebXMessageEncoder {
     zmq::message_t * encode(std::shared_ptr<WebXMessage> message);
 
 private:
-
-    // Structure:
-    // Header: 16 bytes
-    //   type: 4 bytes
-    //   id: 4 bytes
-    //   length: 4 bytes
-    //   padding: 4 bytes
-    // Content:
-    //   commandId: 4 bytes
-    //   publisherPort: 4 bytes
-    //   collectorPort: 4 bytes
-    zmq::message_t * createConnectionMessage(std::shared_ptr<WebXConnectionMessage> message);
-  
 
     // Structure:
     // Header: 16 bytes

@@ -1,8 +1,4 @@
 #include "WebXClientMessagePublisher.h"
-#include "message/WebXWindowsMessage.h"
-#include "message/WebXImageMessage.h"
-#include "message/WebXSubImagesMessage.h"
-#include "message/WebXMouseMessage.h"
 #include "serializer/WebXBinarySerializer.h"
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
@@ -44,26 +40,6 @@ void WebXClientMessagePublisher::stop() {
         delete this->_thread;
         this->_thread = NULL;
     }
-}
-
-void WebXClientMessagePublisher::onDisplayChanged(const std::vector<WebXWindowProperties> & windows) {
-    auto message = std::make_shared<WebXWindowsMessage>(windows);
-    this->_messageQueue.put(message);
-}
-
-void WebXClientMessagePublisher::onImageChanged(unsigned long windowId, std::shared_ptr<WebXImage> image) {
-    auto message = std::make_shared<WebXImageMessage>(windowId, image);
-    this->_messageQueue.put(message);
-}
-
-void WebXClientMessagePublisher::onSubImagesChanged(unsigned long windowId, const std::vector<WebXSubImage> & subImages) {
-    auto message = std::make_shared<WebXSubImagesMessage>(windowId, subImages);
-    this->_messageQueue.put(message);
-}
-
-void WebXClientMessagePublisher::onMouseChanged(int x, int y, uint32_t cursorId) {
-    auto message = std::make_shared<WebXMouseMessage>(x, y, cursorId);
-    this->_messageQueue.put(message);
 }
 
 void WebXClientMessagePublisher::mainLoop() {

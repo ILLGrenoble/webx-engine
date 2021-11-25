@@ -93,18 +93,6 @@ private:
      */
     std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
 
-    /**
-     * Create a connect instruction
-     * Structure:
-     *   Header: 16 bytes
-     *    type: 4 bytes
-     *    id: 4 bytes
-     *    length: 4 bytes
-     *    padding: 4 bytes
-     */
-
-    std::shared_ptr<WebXInstruction> createConnectInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
-
 private:
 
 };

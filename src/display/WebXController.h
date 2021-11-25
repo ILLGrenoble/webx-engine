@@ -6,12 +6,13 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
-#include <connector/instruction/WebXInstruction.h>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 
 class WebXDisplay;
 class WebXConnection;
+class WebXInstruction;
+class WebXMessage;
 
 class WebXController {
 public:
@@ -38,12 +39,12 @@ public:
 
     void addConnection(WebXConnection * connection) {
         const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
-        this->_connections.insert(connection);
+        this->_connection = connection;
     } 
 
-    void removeConnection(WebXConnection * connection) {
+    void removeConnection() {
         const std::lock_guard<std::mutex> lock(this->_connectionsMutex);
-        this->_connections.erase(connection);
+        this->_connection = NULL;
     }
 
     const std::vector<WebXWindowProperties> & getWindows() {
@@ -59,6 +60,7 @@ public:
 private:
     void mainLoop();
     void handleClientInstructions();
+    void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);
     void notifyDisplayChanged();
     void notifyImagesChanged();
     void notifyMouseChanged();
@@ -87,7 +89,7 @@ private:
     std::mutex _instructionsMutex;
     WebXControllerState _state;
 
-    std::set<WebXConnection *> _connections;
+    WebXConnection * _connection;
     std::vector<double> _fpsStore;
     const static size_t FPS_STORE_SIZE = 30;
     int _fpsStoreIndex;

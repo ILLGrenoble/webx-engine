@@ -6,8 +6,7 @@
 class WebXMessage {
 public:
     enum Type {
-        Connection = 1,
-        Windows,
+        Windows = 2,
         Image,
         Screen,
         Subimages,

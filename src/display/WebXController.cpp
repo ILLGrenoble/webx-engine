@@ -4,6 +4,14 @@
 #include "WebXConnection.h"
 #include <connector/instruction/WebXMouseInstruction.h>
 #include <connector/instruction/WebXKeyboardInstruction.h>
+#include <connector/instruction/WebXImageInstruction.h>
+#include <connector/instruction/WebXCursorImageInstruction.h>
+#include <connector/message/WebXScreenMessage.h>
+#include <connector/message/WebXWindowsMessage.h>
+#include <connector/message/WebXImageMessage.h>
+#include <connector/message/WebXCursorImageMessage.h>
+#include <connector/message/WebXSubImagesMessage.h>
+#include <connector/message/WebXMouseMessage.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
@@ -24,6 +32,7 @@ WebXController::WebXController(WebXDisplay * display) :
     _thread(NULL),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
+    _connection(NULL),
     _fpsStoreIndex(0) {
 
     for (int i = 0; i < WebXController::FPS_STORE_SIZE; i++) {
@@ -140,16 +149,47 @@ void WebXController::handleClientInstructions() {
             auto mouseInstruction = std::static_pointer_cast<WebXMouseInstruction>(instruction);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
-        }
-
-        if (instruction->type == WebXInstruction::Type::Keyboard) {
+        
+        } else if (instruction->type == WebXInstruction::Type::Keyboard) {
            auto keyboardInstruction = std::static_pointer_cast<WebXKeyboardInstruction>(instruction);
             WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
+    
+        } else if (instruction->type == WebXInstruction::Type::Screen) {
+            auto message = std::make_shared<WebXScreenMessage>(WebXManager::instance()->getDisplay()->getScreenSize());
+            this->sendMessage(message, instruction->id);
+
+        } else if (instruction->type == WebXInstruction::Type::Windows) {
+            auto message = std::make_shared<WebXWindowsMessage>(WebXManager::instance()->getController()->getWindows());
+            this->sendMessage(message, instruction->id);
+        
+        } else if (instruction->type == WebXInstruction::Type::Image) {
+            auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
+            std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(imageInstruction->windowId);
+
+            auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
+            this->sendMessage(message, instruction->id);
+
+        } else if (instruction->type == WebXInstruction::Type::Cursor) {
+            auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
+
+            WebXMouse * mouse = WebXManager::instance()->getDisplay()->getMouse();
+            WebXMouseState * mouseState = mouse->getState();
+            std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorImageInstruction->cursorId);
+            
+            auto message = std::make_shared<WebXCursorImageMessage>(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
+            this->sendMessage(message, instruction->id);
         }
     }
 
     this->_instructions.clear();
+}
+
+void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
+    message->commandId = commandId;
+    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
+
+    this->_connection->onMessage(message);
 }
 
 void WebXController::notifyDisplayChanged() {
@@ -157,10 +197,9 @@ void WebXController::notifyDisplayChanged() {
     this->_windows = this->_display->getVisibleWindowsProperties();
     this->_displayDirty = false;
 
-    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
-    for (WebXConnection * connection : this->_connections) {
-        connection->onDisplayChanged(this->_windows);
-    }
+    auto message = std::make_shared<WebXWindowsMessage>(this->_windows);
+
+    this->sendMessage(message);
 }
 
 void WebXController::notifyImagesChanged() {
@@ -183,8 +222,6 @@ void WebXController::notifyImagesChanged() {
                         // Send event if checksum has changed
                         if (newChecksum != oldChecksum) {
 
-                            std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
-
                             // Compare alpha checksums
                             if (newAlphaChecksum == oldAlphaChecksum) {
                                 bool removed = image->removeAlpha();
@@ -195,9 +232,8 @@ void WebXController::notifyImagesChanged() {
 
                             spdlog::debug("Sending encoded image {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
-                            for (WebXConnection * connection : this->_connections) {
-                                connection->onImageChanged(windowDamage.windowId, image);
-                            }
+                            auto message = std::make_shared<WebXImageMessage>(windowDamage.windowId, image);
+                            this->sendMessage(message);
                         }
                     }
                 }
@@ -215,14 +251,13 @@ void WebXController::notifyImagesChanged() {
                 }
 
                 if (subImages.size() > 0) {
-                    std::lock_guard<std::mutex> connectionsLock(this->_connectionsMutex);
                     for (auto it = subImages.begin(); it != subImages.end(); it++) {
                         const WebXSubImage & subImage = *it;
                         spdlog::debug("Sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     }
-                    for (WebXConnection * connection : this->_connections) {
-                        connection->onSubImagesChanged(windowDamage.windowId, subImages);
-                    }
+    
+                    auto message = std::make_shared<WebXSubImagesMessage>(windowDamage.windowId, subImages);
+                    this->sendMessage(message);
                 }
             }
         }
@@ -233,9 +268,9 @@ void WebXController::notifyMouseChanged() {
     this->_mouseDirty = false;
 
     const WebXMouseState  * mouseState = this->_display->getMouse()->getState();
-    for (WebXConnection * connection : this->_connections) {
-        connection->onMouseChanged(mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
-    }
+
+    auto message = std::make_shared<WebXMouseMessage>( mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
+    this->sendMessage(message);
 }
 
 void WebXController::updateFps(double fps) {

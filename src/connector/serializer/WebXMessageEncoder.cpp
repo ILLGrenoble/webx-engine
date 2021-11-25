@@ -1,7 +1,6 @@
 #include "WebXMessageEncoder.h"
 
 #include <connector/message/WebXMessage.h>
-#include <connector/message/WebXConnectionMessage.h>
 #include <connector/message/WebXCursorImageMessage.h>
 #include <connector/message/WebXImageMessage.h>
 #include <connector/message/WebXMouseMessage.h>
@@ -14,10 +13,6 @@
 
 zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message) {
     switch (message->type) {
-        case WebXMessage::Connection: {
-            auto connectionMessage = std::static_pointer_cast<WebXConnectionMessage>(message);
-            return this->createConnectionMessage(connectionMessage);
-        }
         case WebXMessage::Windows: {
             auto windowsMessage = std::static_pointer_cast<WebXWindowsMessage>(message);
             return this->createWindowsMessage(windowsMessage);
@@ -50,19 +45,6 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         default:
             return new zmq::message_t(0);
     }
-}
-
-
-zmq::message_t * WebXMessageEncoder::createConnectionMessage(std::shared_ptr<WebXConnectionMessage> message) {
-    size_t dataSize = 16 + 12;
-    zmq::message_t * output= new zmq::message_t(dataSize);
-
-    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, (uint32_t)message->type);
-    buffer.write<uint32_t>(message->commandId);
-    buffer.write<int32_t>(message->publisherPort);
-    buffer.write<int32_t>(message->collectorPort);
-
-    return output;
 }
 
 zmq::message_t * WebXMessageEncoder::createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message) {

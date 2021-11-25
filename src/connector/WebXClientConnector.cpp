@@ -1,5 +1,4 @@
 #include "WebXClientConnector.h"
-#include "message/WebXConnectionMessage.h"
 #include "message/WebXScreenMessage.h"
 #include "message/WebXWindowsMessage.h"
 #include "message/WebXImageMessage.h"
@@ -103,24 +102,6 @@ void WebXClientConnector::run(int socketTimoutMs) {
                     zmq::message_t replyMessage(ports.c_str(), ports.size());
                     this->sendMessage(socket, replyMessage);
                     sendRequired = false;
-
-                } else {
-                    // Deserialize instruction
-                    auto instruction = this->_serializer->deserialize(instructionData, instructionMessage.size());
-                    if (instruction != NULL) {
-                        // Handle instruction and get message (response)
-                        std::shared_ptr<WebXMessage> message = this->handleInstruction(instruction);
-                        
-                        // Send message
-                        if (message != NULL) {
-                            message->commandId = instruction->id;
-                            zmq::message_t *replyMessage = this->_serializer->serialize(message);
-                            this->sendMessage(socket, *replyMessage);
-                            sendRequired = false;
-
-                            delete replyMessage;
-                        }
-                    }
                 }
             }
         
@@ -158,7 +139,7 @@ void WebXClientConnector::sendMessage(zmq::socket_t & socket, zmq::message_t & m
 
 void WebXClientConnector::stop() {
     spdlog::info("Stopping client connector...");
-    WebXManager::instance()->getController()->removeConnection(this->_publisher);
+    WebXManager::instance()->getController()->removeConnection();
 
     this->_running = false;
 
@@ -176,52 +157,5 @@ void WebXClientConnector::shutdown() {
     }
 
     WebXManager::instance()->shutdown();
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleInstruction(std::shared_ptr<WebXInstruction> instruction) {
-    if (instruction->type == WebXInstruction::Type::Connect) {
-        return this->handleConnectionInstruction();
-    
-    } else if (instruction->type == WebXInstruction::Type::Screen) {
-        return this->handleScreenInstruction();
-    
-    } else if (instruction->type == WebXInstruction::Type::Windows) {
-        return this->handleWindowsInstruction();
-    
-    } else if (instruction->type == WebXInstruction::Type::Image) {
-        auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
-        return this->handleImageInstruction(imageInstruction->windowId);
-    
-    } else if (instruction->type == WebXInstruction::Type::Cursor) {
-        auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
-        return this->handleCursorInstruction(cursorImageInstruction->cursorId);
-    }
-
-    return nullptr;
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleConnectionInstruction() {
-    return std::make_shared<WebXConnectionMessage>(WebXClientConnector::PUBLISHER_PORT, WebXClientConnector::COLLECTOR_PORT);
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleScreenInstruction() {
-    return std::make_shared<WebXScreenMessage>(WebXManager::instance()->getDisplay()->getScreenSize());
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleWindowsInstruction() {
-    return std::make_shared<WebXWindowsMessage>(WebXManager::instance()->getController()->getWindows());
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleImageInstruction(long windowId) {
-    std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(windowId);
-
-    return std::make_shared<WebXImageMessage>(windowId, image);
-}
-
-std::shared_ptr<WebXMessage> WebXClientConnector::handleCursorInstruction(uint32_t cursorId) {
-    WebXMouse * mouse = WebXManager::instance()->getDisplay()->getMouse();
-    WebXMouseState * mouseState = mouse->getState();
-    std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorId);
-    return std::make_shared<WebXCursorImageMessage>(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
 }
 
