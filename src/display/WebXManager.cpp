@@ -1,15 +1,13 @@
 #include "WebXManager.h"
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
-#include "WebXController.h"
 #include "WebXErrorHandler.h"
+#include <controller/WebXController.h>
 #include <events/WebXEventListener.h>
 #include <X11/extensions/Xfixes.h>
 
 #include <stdio.h>
 #include <spdlog/spdlog.h>
-
-WebXManager * WebXManager::_instance = NULL;
 
 int WebXManager::IO_ERROR_HANDLER(Display *display) {
     spdlog::error("X11 quit unexpectedly");
@@ -19,8 +17,7 @@ int WebXManager::IO_ERROR_HANDLER(Display *display) {
 WebXManager::WebXManager() :
     _x11Display(NULL),
     _display(NULL),
-    _eventListener(NULL),
-    _controller(NULL) {
+    _eventListener(NULL) {
 }
 
 WebXManager::~WebXManager() {
@@ -30,31 +27,18 @@ WebXManager::~WebXManager() {
         this->_eventListener = NULL;
     }
 
-    if (this->_controller) {
-        delete this->_controller;
-        this->_controller = NULL;
-    }
-
     if (this->_display) {
         delete this->_display;
         this->_display = NULL;
     }
 
-    if (_instance->_x11Display) {
-        XCloseDisplay(_instance->_x11Display);
+    if (this->_x11Display) {
+        XCloseDisplay(this->_x11Display);
     }
 
     spdlog::info("Manager terminated");
 }
 
-WebXManager * WebXManager::instance() {
-    if (_instance == NULL) {
-        _instance = new WebXManager();
-        _instance->init();
-    }
-
-    return _instance;
-}
 
 void WebXManager::init() {
     using namespace std::placeholders;
@@ -73,9 +57,6 @@ void WebXManager::init() {
     this->_display = new WebXDisplay(this->_x11Display);
     this->_display->init();
 
-    this->_controller = new WebXController(this->_display);
-    this->_controller->run();
-
     this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
     this->_eventListener->addEventHandler(WebXEventType::Create, std::bind(&WebXManager::handleWindowCreateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Destroy, std::bind(&WebXManager::handleWindowDestroyEvent, this, _1));
@@ -87,14 +68,6 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
-    // this->_eventListener->run();
-}
-
-void WebXManager::shutdown() {
-    if (_instance) {
-        delete _instance;
-        _instance = NULL;
-    }
 }
 
 void WebXManager::flushEventListener() {
@@ -164,11 +137,11 @@ void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
 void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
     spdlog::trace("Got new mouse cursor event");
     this->_display->updateMouseCursor();
-    this->_controller->onMouseChanged();
+    WebXController::instance()->onMouseChanged();
 }
 
 void WebXManager::updateDisplay() {
     this->_display->updateVisibleWindows();
-    this->_controller->onDisplayChanged();
+    WebXController::instance()->onDisplayChanged();
 }
 

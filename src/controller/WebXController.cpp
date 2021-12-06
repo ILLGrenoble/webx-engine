@@ -1,7 +1,7 @@
 #include "WebXController.h"
-#include "WebXDisplay.h"
-#include "WebXManager.h"
 #include "WebXConnection.h"
+#include <display/WebXManager.h>
+#include <display/WebXDisplay.h>
 #include <instruction/WebXMouseInstruction.h>
 #include <instruction/WebXKeyboardInstruction.h>
 #include <instruction/WebXImageInstruction.h>
@@ -19,17 +19,18 @@
 #include <thread>
 #include <spdlog/spdlog.h>
 
+WebXController * WebXController::_instance = NULL;
+
 unsigned int WebXController::THREAD_RATE = 60;
 unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
 unsigned int WebXController::MOUSE_MAX_REFRESH_RATE = 60;
 unsigned int WebXController::MOUSE_MIN_REFRESH_RATE = 10;
 
-WebXController::WebXController(WebXDisplay * display) :
-    _display(display),
+WebXController::WebXController() :
+    _manager(new WebXManager()),
     _displayDirty(true),
     _mouseDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::IMAGE_REFRESH_RATE),
-    _thread(NULL),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
     _connection(NULL),
@@ -41,51 +42,48 @@ WebXController::WebXController(WebXDisplay * display) :
 }
 
 WebXController::~WebXController() {
-    this->stop();
+    if (_manager != NULL) {
+        delete _manager;
+        _manager = NULL;
+    }
 }
 
-void WebXController::run() {
-    std::lock_guard<std::mutex> lock(this->_stateMutex);
-    this->_state = WebXControllerState::Running;
-    if (this->_thread == NULL) {
-        this->_thread = new std::thread(&WebXController::mainLoop, this);
+WebXController * WebXController::instance() {
+    if (_instance == NULL) {
+        _instance = new WebXController();
     }
+    return _instance;
+}
+
+void WebXController::shutdown() {
+    spdlog::info("Shutdown");
+
+    if (_instance) {
+        _instance->stop();
+        _instance = NULL;
+    }
+}
+
+void WebXController::init() {
+    this->_manager->init();
 }
 
 void WebXController::stop() {
     std::lock_guard<std::mutex> lock(this->_stateMutex);
     this->_state = WebXControllerState::Stopped;
-    if (this->_thread != NULL) {
-        // Join thread and cleanup
-        spdlog::info("Stopping controller...");
-        this->_thread->join();
-        spdlog::info("Stopped controller");
-        delete this->_thread;
-        this->_thread = NULL;
-    }
 }
 
-void WebXController::pause() {
-    std::lock_guard<std::mutex> lock(this->_stateMutex);
-    if (this->_state == WebXControllerState::Running) {
-        this->_state = WebXControllerState::Paused;
-    }
-}
 
-void WebXController::resume() {
-    std::lock_guard<std::mutex> lock(this->_stateMutex);
-    if (this->_state == WebXControllerState::Paused) {
-        this->_state = WebXControllerState::Running;
-    }
-}
-
-void WebXController::mainLoop() {
+void WebXController::run() {
     long calculateThreadSleepUs = this->_threadSleepUs;
     double mouseRefreshUs = WebXController::MOUSE_MAX_REFRESH_RATE;
     std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point lastMouseRefreshTime = lastTime;
-    WebXMouse * mouse = this->_display->getMouse();
 
+    WebXDisplay * display = this->_manager->getDisplay();
+    WebXMouse * mouse = display->getMouse();
+
+    this->_state = WebXControllerState::Running;
     while (this->_state != WebXControllerState::Stopped) {
         if (calculateThreadSleepUs > 0) {
             std::this_thread::sleep_for(std::chrono::microseconds(calculateThreadSleepUs));
@@ -111,26 +109,23 @@ void WebXController::mainLoop() {
             }
 
             // Handle all client instructions
-            this->handleClientInstructions();
+            this->handleClientInstructions(display);
 
             // Flush all X11 events
-            WebXManager::instance()->flushEventListener();
+            this->_manager->flushEventListener();
 
-            if (this->_state != WebXControllerState::Paused) {
+            if (this->_displayDirty) {
+                // Dispatch display event to connectors
+                this->notifyDisplayChanged(display);
+            }
 
-                if (this->_displayDirty) {
-                    // Dispatch display event to connectors
-                    this->notifyDisplayChanged();
-                }
+            // Update necessary images
+            this->notifyImagesChanged(display);
 
-                // Update necessary images
-                this->notifyImagesChanged();
-
-                WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
-                if (this->_mouseDirty || finalMousePosition != initialMousePosition) {
-                    this->notifyMouseChanged();
-                    mouseRefreshUs = WebXController::MOUSE_MAX_REFRESH_RATE;
-                }
+            WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
+            if (this->_mouseDirty || finalMousePosition != initialMousePosition) {
+                this->notifyMouseChanged(display);
+                mouseRefreshUs = WebXController::MOUSE_MAX_REFRESH_RATE;
             }
 
             std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -139,33 +134,34 @@ void WebXController::mainLoop() {
             calculateThreadSleepUs = duration > this->_threadSleepUs ? 0 : this->_threadSleepUs - duration;
         }
     }
+
+    spdlog::info("Stopped WebX Controller");
 }
 
-void WebXController::handleClientInstructions() {
+void WebXController::handleClientInstructions(WebXDisplay * display) {
     std::lock_guard<std::mutex> lock(this->_instructionsMutex);
+
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         auto instruction = *it;
         if (instruction->type == WebXInstruction::Type::Mouse) {
             auto mouseInstruction = std::static_pointer_cast<WebXMouseInstruction>(instruction);
-            WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);
         
         } else if (instruction->type == WebXInstruction::Type::Keyboard) {
            auto keyboardInstruction = std::static_pointer_cast<WebXKeyboardInstruction>(instruction);
-            WebXDisplay * display = WebXManager::instance()->getDisplay();
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
     
         } else if (instruction->type == WebXInstruction::Type::Screen) {
-            auto message = std::make_shared<WebXScreenMessage>(WebXManager::instance()->getDisplay()->getScreenSize());
+            auto message = std::make_shared<WebXScreenMessage>(display->getScreenSize());
             this->sendMessage(message, instruction->id);
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
-            auto message = std::make_shared<WebXWindowsMessage>(WebXManager::instance()->getController()->getWindows());
+            auto message = std::make_shared<WebXWindowsMessage>(this->getWindows());
             this->sendMessage(message, instruction->id);
         
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
-            std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(imageInstruction->windowId);
+            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);
@@ -173,7 +169,7 @@ void WebXController::handleClientInstructions() {
         } else if (instruction->type == WebXInstruction::Type::Cursor) {
             auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
 
-            WebXMouse * mouse = WebXManager::instance()->getDisplay()->getMouse();
+            WebXMouse * mouse = display->getMouse();
             WebXMouseState * mouseState = mouse->getState();
             std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorImageInstruction->cursorId);
             
@@ -185,17 +181,9 @@ void WebXController::handleClientInstructions() {
     this->_instructions.clear();
 }
 
-void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
-    message->commandId = commandId;
-    std::lock_guard<std::mutex> connectionLock(this->_connectionMutex);
-    if (this->_connection) {
-        this->_connection->onMessage(message);
-    }
-}
-
-void WebXController::notifyDisplayChanged() {
+void WebXController::notifyDisplayChanged(WebXDisplay * display) {
     std::lock_guard<std::mutex> windowsLock(this->_windowsMutex);
-    this->_windows = this->_display->getVisibleWindowsProperties();
+    this->_windows = display->getVisibleWindowsProperties();
     this->_displayDirty = false;
 
     auto message = std::make_shared<WebXWindowsMessage>(this->_windows);
@@ -203,19 +191,19 @@ void WebXController::notifyDisplayChanged() {
     this->sendMessage(message);
 }
 
-void WebXController::notifyImagesChanged() {
-    std::vector<WebXWindowDamageProperties> damagedWindows = this->_display->getDamagedWindows(this->_imageRefreshUs);
+void WebXController::notifyImagesChanged(WebXDisplay * display) {
+    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_imageRefreshUs);
     if (damagedWindows.size() > 0) {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
 
             if (windowDamage.isFullWindow() || windowDamage.getDamageAreaRatio() > 0.9) {
-                WebXWindow * window = this->_display->getVisibleWindow(windowDamage.windowId);
+                WebXWindow * window = display->getVisibleWindow(windowDamage.windowId);
                 if (window) {
                     // Get checksums before and after updating the window image
                     uint64_t oldChecksum = window->getWindowChecksum();
                     uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
-                    std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId);
                     if (image) {
                         uint64_t newChecksum = window->getWindowChecksum();
                         uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
@@ -244,7 +232,7 @@ void WebXController::notifyImagesChanged() {
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = this->_display->getImage(windowDamage.windowId, &area);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, &area);
                     // Check image not null
                     if (image) {
                         subImages.push_back(WebXSubImage(area, image));
@@ -265,13 +253,22 @@ void WebXController::notifyImagesChanged() {
     }
 }
 
-void WebXController::notifyMouseChanged() {
+void WebXController::notifyMouseChanged(WebXDisplay * display) {
     this->_mouseDirty = false;
 
-    const WebXMouseState  * mouseState = this->_display->getMouse()->getState();
+    const WebXMouseState  * mouseState = display->getMouse()->getState();
 
     auto message = std::make_shared<WebXMouseMessage>( mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     this->sendMessage(message);
+}
+
+
+void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
+    message->commandId = commandId;
+    std::lock_guard<std::mutex> connectionLock(this->_connectionMutex);
+    if (this->_connection) {
+        this->_connection->onMessage(message);
+    }
 }
 
 void WebXController::updateFps(double fps) {

@@ -2,7 +2,6 @@
 #define WEBX_CONNECTION_H
 
 #include <memory>
-#include "WebXWindowProperties.h"
 
 class WebXMessage;
 

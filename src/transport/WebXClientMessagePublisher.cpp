@@ -3,23 +3,22 @@
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientMessagePublisher::WebXClientMessagePublisher() : 
+WebXClientMessagePublisher::WebXClientMessagePublisher() :
     _thread(NULL),
     _running(false),
-    _messageQueue(),
-    _context(NULL),
-    _port(0)  {
+    _messageQueue() {
 }
 
 WebXClientMessagePublisher::~WebXClientMessagePublisher() {
     this->stop();
 }
 
-void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::context_t * context, int port) {
-    std::lock_guard<std::mutex> lock(this->_mutex);
+void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr) {
     this->_serializer = serializer;
     this->_context = context;
-    this->_port = port;
+    this->_clientAddr = clientAddr;
+    this->_bindToClientAddr = bindToClientAddr;
+    this->_eventBusAddr = eventBusAddr;
     this->_running = true;
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientMessagePublisher::mainLoop, this);
@@ -27,10 +26,7 @@ void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::con
 }
 
 void WebXClientMessagePublisher::stop() {
-    std::lock_guard<std::mutex> lock(this->_mutex);
     this->_running = false;
-    this->_context = NULL;
-    this->_port = 0;
     if (this->_thread != NULL) {
         // Join thread and cleanup
         spdlog::info("Stopping client message publisher...");
@@ -44,14 +40,8 @@ void WebXClientMessagePublisher::stop() {
 
 void WebXClientMessagePublisher::mainLoop() {
 
-    // Start zeroMQ publisher
-    zmq::socket_t socket(*this->_context, ZMQ_PUB);
-    int linger = 0;
-    socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-
-    char address[16];
-    snprintf(address, sizeof(address) - 1, "tcp://*:%4d", this->_port);
-    socket.bind(address);
+    // Create client message publisher socket
+    zmq::socket_t messagePublisher = this->createClientMessagePublisher();
 
     while (this->_running) {
         try {
@@ -60,19 +50,42 @@ void WebXClientMessagePublisher::mainLoop() {
 
                 zmq::message_t * replyMessage = this->_serializer->serialize(message);
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
-                socket.send(*replyMessage);
+                messagePublisher.send(*replyMessage);
 #else
-                socket.send(*replyMessage, zmq::send_flags::none);
+                messagePublisher.send(*replyMessage, zmq::send_flags::none);
 #endif
                 delete replyMessage;
             }
 
         } catch(zmq::error_t& e) {
             spdlog::warn("WebXClientMessagePublisher interrupted from message send: {:s}", e.what());
+
         } catch (const std::exception& e) {
             spdlog::error("WebXClientMessagePublisher caught std::exception: {:s}", e.what());
+
         } catch (const std::string& e) {
             spdlog::error("WebXClientMessagePublisher caught std::string: {:s}", e.c_str());
         }
     }
 }
+
+zmq::socket_t WebXClientMessagePublisher::createClientMessagePublisher() {
+    // Start zeroMQ publisher
+    zmq::socket_t socket(*this->_context, ZMQ_PUB);
+    int linger = 0;
+    socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+
+    try {
+        if (this->_bindToClientAddr) {
+            socket.bind(this->_clientAddr);
+        } else {
+            socket.connect(this->_clientAddr);
+        }
+        return socket;
+    
+    } catch (zmq::error_t& e) {
+        spdlog::error("failed to {} Client Message Publisher socket to {:s}", this->_bindToClientAddr ? "bind" : "connect", this->_clientAddr);
+        exit(1);
+    }    
+}
+

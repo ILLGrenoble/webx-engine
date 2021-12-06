@@ -6,23 +6,32 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
-#include "WebXWindowProperties.h"
-#include "WebXWindowDamageProperties.h"
+#include <display/WebXWindowProperties.h>
+#include <display/WebXWindowDamageProperties.h>
 
+class WebXManager;
 class WebXDisplay;
 class WebXConnection;
 class WebXInstruction;
 class WebXMessage;
 
 class WebXController {
+private:
+    WebXController();
+    virtual ~WebXController();
+
 public:
+    static WebXController * instance();
+    static void shutdown();
+
     enum WebXControllerState {
         Stopped = 0,
-        Paused,
         Running
     };
-    WebXController(WebXDisplay * display);
-    virtual ~WebXController();
+
+    WebXManager * getManager() const {
+        return this->_manager;
+    }
 
     void onDisplayChanged() {
         this->_displayDirty = true;
@@ -32,10 +41,9 @@ public:
         this->_mouseDirty = true;
     }
 
+    void init();
     void run();
     void stop();
-    void pause();
-    void resume();
 
     void setConnection(WebXConnection * connection) {
         const std::lock_guard<std::mutex> lock(this->_connectionMutex);
@@ -58,21 +66,25 @@ public:
     }
 
 private:
-    void mainLoop();
-    void handleClientInstructions();
+
+    void handleClientInstructions(WebXDisplay * display);
+    void notifyDisplayChanged(WebXDisplay * display);
+    void notifyImagesChanged(WebXDisplay * display);
+    void notifyMouseChanged(WebXDisplay * display);
+
     void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);
-    void notifyDisplayChanged();
-    void notifyImagesChanged();
-    void notifyMouseChanged();
     void updateFps(double fps);
 
 private:
+    static WebXController * _instance;
+
     static unsigned int THREAD_RATE;
     static unsigned int IMAGE_REFRESH_RATE;
     static unsigned int MOUSE_MIN_REFRESH_RATE;
     static unsigned int MOUSE_MAX_REFRESH_RATE;
 
-    WebXDisplay * _display;
+    WebXManager * _manager;
+
     std::vector<WebXWindowProperties> _windows;
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
 
@@ -81,7 +93,6 @@ private:
 
     long _imageRefreshUs;
 
-    std::thread * _thread;
     long _threadSleepUs;
     std::mutex _stateMutex;
     std::mutex _connectionMutex;

@@ -1,10 +1,10 @@
 #include "WebXKeyboardConnection.h"
+#include <controller/WebXController.h>
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <display/WebXWindow.h>
 #include <events/WebXEventListener.h>
 #include <image/WebXImage.h>
-#include <connector/WebXClientConnector.h>
 #include <fort/fort.h>
 #include <stdlib.h>
 #include <iostream>
@@ -32,11 +32,11 @@ void WebXKeyboardConnection::stop() {
     this->_running = false;
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        spdlog::info("Stopping keyboard connector...\n");
-        // this->_thread->join();
-        spdlog::info("Stopped keyboard connector\n");
-        // delete this->_thread;
-        // this->_thread = NULL;
+        spdlog::info("Stopping keyboard connector...");
+        this->_thread->join();
+        spdlog::info("Stopped keyboard connector");
+        delete this->_thread;
+        this->_thread = NULL;
     }
 }
 
@@ -50,7 +50,8 @@ void WebXKeyboardConnection::mainLoop() {
             this->exportWindowImages();
         
         } else if (key == 'q') {
-            WebXClientConnector::shutdown();
+            this->_running = false;
+            WebXController::shutdown();
         }
     }
 }
@@ -59,12 +60,13 @@ void WebXKeyboardConnection::printWindows() {
     ft_table_t * table = ft_create_table();
     ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
     ft_write_ln(table, "ID", "Managed ID", "x", "y", "Width", "Height");
+    WebXManager * manager = WebXController::instance()->getManager();
 
-    const std::vector<WebXWindow *> windows = WebXManager::instance()->getDisplay()->getVisibleWindows();
+    const std::vector<WebXWindow *> windows = manager->getDisplay()->getVisibleWindows();
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = *it;
 
-        WebXWindow * managedWindow = WebXManager::instance()->getDisplay()->getManagedWindow(window);
+        WebXWindow * managedWindow = manager->getDisplay()->getManagedWindow(window);
 
         const WebXRectangle & rectangle = window->getTopParent()->getRectangle();
         if (managedWindow != NULL) {
@@ -80,14 +82,13 @@ void WebXKeyboardConnection::printWindows() {
 }
 
 void WebXKeyboardConnection::exportWindowImages() {
+    WebXManager * manager = WebXController::instance()->getManager();
 
-    // WebXManager::instance()->pauseEventListener();
-
-    const std::vector<WebXWindow *> windows = WebXManager::instance()->getDisplay()->getVisibleWindows();
+    const std::vector<WebXWindow *> windows = manager->getDisplay()->getVisibleWindows();
     for (std::vector<WebXWindow *>::const_iterator it = windows.begin(); it != windows.end(); it++) {
         WebXWindow * window = (*it);
 
-        std::shared_ptr<WebXImage> image = WebXManager::instance()->getDisplay()->getImage(window->getX11Window());
+        std::shared_ptr<WebXImage> image = manager->getDisplay()->getImage(window->getX11Window());
         if (image) {
             char filename[64];
             snprintf(filename, sizeof(filename) - 1, "images/window-0x%08lx", window->getX11Window());
@@ -97,7 +98,5 @@ void WebXKeyboardConnection::exportWindowImages() {
             }
         }
     }
-
-    // WebXManager::instance()->resumeEventListener();
 }
 

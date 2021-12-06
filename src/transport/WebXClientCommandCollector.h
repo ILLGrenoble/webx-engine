@@ -8,6 +8,7 @@ class WebXInstruction;
 class WebXBinarySerializer;
 namespace zmq {
 class context_t;
+class socket_t;
 }
 
 class WebXClientCommandCollector {
@@ -15,20 +16,22 @@ public:
     WebXClientCommandCollector();
     virtual ~WebXClientCommandCollector();
 
-    void run(WebXBinarySerializer * serializer, zmq::context_t * context, int port);
+    void run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr);
     void stop();
 
 private:
     void mainLoop();
+    zmq::socket_t createClientInstructionSubscriber();
+    zmq::socket_t createEventBusSubscriber();
 
 private:
     std::thread * _thread;
-    std::mutex _mutex;
-    bool _running;
 
     WebXBinarySerializer * _serializer;
     zmq::context_t * _context;
-    int _port;
+    std::string _clientAddr;
+    bool _bindToClientAddr;
+    std::string _eventBusAddr;
 };
 
 
