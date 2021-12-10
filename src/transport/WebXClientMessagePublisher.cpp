@@ -81,6 +81,9 @@ zmq::socket_t WebXClientMessagePublisher::createClientMessagePublisher() {
         } else {
             socket.connect(this->_clientAddr);
         }
+
+        spdlog::debug("Client Message Publisher socket {} to {:s}", this->_bindToClientAddr ? "bound" : "connected", this->_clientAddr);
+
         return socket;
     
     } catch (zmq::error_t& e) {

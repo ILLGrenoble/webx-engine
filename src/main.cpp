@@ -3,8 +3,8 @@
 #include <controller/WebXKeyboardConnection.h>
 #include <transport/WebXTransport.h>
 #include <display/WebXDisplay.h>
+#include <utils/WebXSettings.h>
 #include <spdlog/spdlog.h>
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include <string>
 #include <csignal>
 
@@ -32,24 +32,22 @@ int main(int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::info);
     std::signal(SIGINT, signalHandler);
 
+    WebXSettings settings;
+    if (settings.logging == "debug") {
+        spdlog::set_level(spdlog::level::debug);
+    
+    } else if (settings.logging == "trace") {
+        spdlog::set_level(spdlog::level::trace);
+    }
+
     int opt;
     WebXKeyboardConnection * keyboardConnection = NULL;
-    bool useKeyboard = false;
-    int socketTimeoutMs = -1;
     std::string keyboardLayout = "";
     bool standAlone = false;
 
-    while((opt = getopt(argc, argv, "l:ik:s")) != -1) {  
+    while((opt = getopt(argc, argv, "ik:s")) != -1) {  
         switch(opt)  
         {  
-            case 'l': 
-                if (strcmp(optarg, "debug") == 0) {
-                    spdlog::set_level(spdlog::level::debug);
-                } else if (strcmp(optarg, "trace") == 0) {
-                    spdlog::set_level(spdlog::level::trace);
-                }
-                break;
-             
             case 'i':
                 {
                     keyboardConnection = new WebXKeyboardConnection();
@@ -81,7 +79,7 @@ int main(int argc, char *argv[]) {
     setKeyboardLayout(keyboardLayout);
 
     // Start transport
-    WebXTransport * transport = new WebXTransport(standAlone);
+    WebXTransport * transport = new WebXTransport(settings, standAlone);
     transport->start();
 
     // Start the controller (blocking)

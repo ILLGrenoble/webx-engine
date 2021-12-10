@@ -126,6 +126,9 @@ zmq::socket_t WebXClientConnector::createClientResponder() {
 
     try {
         socket.bind(this->_clientAddr);
+        
+        spdlog::debug("Client Responder socket bound to {:s}", this->_clientAddr);
+
         return socket;
     
     } catch (zmq::error_t& e) {

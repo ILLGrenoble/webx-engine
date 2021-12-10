@@ -116,6 +116,9 @@ zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
         } else {
             socket.connect(this->_clientAddr);
         }
+
+        spdlog::debug("Client Instruction socket {} to {:s}", this->_bindToClientAddr ? "bound" : "connected", this->_clientAddr);
+
         return socket;
     
     } catch (zmq::error_t& e) {

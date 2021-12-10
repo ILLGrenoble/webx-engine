@@ -2,6 +2,7 @@
 #define WEBX_TRANSPORT_H
 
 #include "WebXZMQ.h"
+#include <utils/WebXSettings.h>
 
 class WebXBinarySerializer;
 class WebXClientConnector;
@@ -10,7 +11,7 @@ class WebXClientCommandCollector;
 
 class WebXTransport {
 public:
-    WebXTransport(bool standAlone);
+    WebXTransport(const WebXSettings & settings, bool standAlone);
     virtual ~WebXTransport();
 
     void start();
@@ -20,13 +21,8 @@ private:
     zmq::socket_t createEventBusPublisher();
 
 private:
-    static int CONNECTOR_PORT;
-    static int COLLECTOR_PORT;
-    static int PUBLISHER_PORT;
-
+    const WebXSettings & _settings;
     bool _standAlone;
-
-    static std::string EVENT_BUS_ADDR;
 
     WebXBinarySerializer * _serializer;
 

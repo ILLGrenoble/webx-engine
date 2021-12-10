@@ -4,15 +4,10 @@
 #include "WebXClientCommandCollector.h"
 #include <controller/WebXController.h>
 #include <serializer/WebXBinarySerializer.h>
+#include <utils/WebXSettings.h>
 
-
-int WebXTransport::CONNECTOR_PORT = 5558;
-int WebXTransport::COLLECTOR_PORT = 5556;
-int WebXTransport::PUBLISHER_PORT = 5557;
-
-std::string WebXTransport::EVENT_BUS_ADDR = "inproc://webx-engine/event-bus";
-
-WebXTransport::WebXTransport(bool standAlone) :
+WebXTransport::WebXTransport(const WebXSettings & settings, bool standAlone) :
+    _settings(settings),
     _standAlone(standAlone),
     _serializer(new WebXBinarySerializer()),
     _context(1),
@@ -35,25 +30,25 @@ void WebXTransport::start() {
 
     if (this->_standAlone) {
         // Create connector
-        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", CONNECTOR_PORT);
-        _connector->run(this->_serializer, &this->_context, clientResponderAddr, EVENT_BUS_ADDR, PUBLISHER_PORT, COLLECTOR_PORT);
+        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings.connectorPort);
+        _connector->run(this->_serializer, &this->_context, clientResponderAddr, _settings.inprocEventBusAddress, _settings.publisherPort, _settings.collectorPort);
 
         // Create publisher
-        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", PUBLISHER_PORT);
-        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, true, EVENT_BUS_ADDR);
+        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings.publisherPort);
+        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, true, _settings.inprocEventBusAddress);
 
         // Create instruction collector
-        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", COLLECTOR_PORT);
-        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, true, EVENT_BUS_ADDR);
+        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", _settings.collectorPort);
+        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, true, _settings.inprocEventBusAddress);
     
     } else {
         // Create publisher
         std::string clientPublisherAddr = "ipc:///tmp/webx-router-message-proxy.ipc";
-        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, false, EVENT_BUS_ADDR);
+        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, false, _settings.inprocEventBusAddress);
 
         // Create instruction collector
         std::string clientCollectorAddr = "ipc:///tmp/webx-router-instruction-proxy.ipc";
-        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, false, EVENT_BUS_ADDR);
+        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, false, _settings.inprocEventBusAddress);
     }
 
     WebXController::instance()->setConnection(this->_publisher);
@@ -77,11 +72,11 @@ zmq::socket_t WebXTransport::createEventBusPublisher() {
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
     try {
-        socket.bind(EVENT_BUS_ADDR);
+        socket.bind(_settings.inprocEventBusAddress);
         return socket;
     
     } catch (zmq::error_t& e) {
-        spdlog::error("failed to bind Event Bus socket to {:s}", EVENT_BUS_ADDR);
+        spdlog::error("failed to bind Event Bus socket to {:s}", _settings.inprocEventBusAddress);
         exit(1);
     }       
 }
