@@ -31,7 +31,7 @@ void WebXTransport::start() {
     if (this->_standAlone) {
         // Create connector
         const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings.connectorPort);
-        _connector->run(this->_serializer, &this->_context, clientResponderAddr, _settings.inprocEventBusAddress, _settings.publisherPort, _settings.collectorPort);
+        _connector->run(this->_serializer, &this->_context, clientResponderAddr, _settings.inprocEventBusAddress, _settings);
 
         // Create publisher
         std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings.publisherPort);
@@ -42,12 +42,16 @@ void WebXTransport::start() {
         _collector->run(this->_serializer, &this->_context, clientCollectorAddr, true, _settings.inprocEventBusAddress);
     
     } else {
+        // Create connector
+        std::string sessionConnectorAddr = fmt::format("ipc://{}", _settings.ipcSessionConnectorPath);
+        _connector->run(this->_serializer, &this->_context, sessionConnectorAddr, _settings.inprocEventBusAddress, _settings);
+
         // Create publisher
-        std::string clientPublisherAddr = "ipc:///tmp/webx-router-message-proxy.ipc";
+        std::string clientPublisherAddr = fmt::format("ipc://{}", _settings.ipcMessageProxyPath);
         _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, false, _settings.inprocEventBusAddress);
 
         // Create instruction collector
-        std::string clientCollectorAddr = "ipc:///tmp/webx-router-instruction-proxy.ipc";
+        std::string clientCollectorAddr = fmt::format("ipc://{}", _settings.ipcInstructionProxyPath);
         _collector->run(this->_serializer, &this->_context, clientCollectorAddr, false, _settings.inprocEventBusAddress);
     }
 

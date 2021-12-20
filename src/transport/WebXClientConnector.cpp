@@ -14,13 +14,13 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-void WebXClientConnector::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, int publisherPort, int collectorPort) {
+void WebXClientConnector::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, const WebXSettings & settings) {
     this->_serializer = serializer;
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_eventBusAddr = eventBusAddr;
-    this->_publisherPort = publisherPort;
-    this->_collectorPort = collectorPort;
+    this->_publisherPort = settings.publisherPort;
+    this->_collectorPort = settings.collectorPort;
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientConnector::mainLoop, this);
     }
@@ -82,6 +82,7 @@ void WebXClientConnector::mainLoop() {
                 bool sendRequired = true;
                 if (retVal) {
                     std::string instruction = std::string(static_cast<char *>(message.data()), message.size());
+                    spdlog::debug("Received {} message", instruction);
                     if (instruction == "comm") {
                         const std::string ports = fmt::format("{},{}", this->_publisherPort, this->_collectorPort);
                         zmq::message_t replyMessage(ports.c_str(), ports.size());
@@ -91,6 +92,13 @@ void WebXClientConnector::mainLoop() {
                         clientResponder.send(replyMessage, zmq::send_flags::none);
 #endif            
                         sendRequired = false;
+                    } else if (instruction == "ping") {
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+                        clientResponder.send(replyMessage);
+#else
+                        zmq::message_t replyMessage("pong", 4);
+                        clientResponder.send(replyMessage, zmq::send_flags::none);
+#endif            
                     }
                 }
             }

@@ -11,8 +11,9 @@ public:
         connectorPort(envOrDefault("WEBX_ENGINE_CONNECTOR_PORT", 5555)),
         collectorPort(envOrDefault("WEBX_ENGINE_COLLECTOR_PORT", 5556)),
         publisherPort(envOrDefault("WEBX_ENGINE_PUBLISHER_PORT", 5557)),
-        ipcMessageProxyAddress(envOrDefault("WEBX_ENGINE_IPC_MESSAGE_PROXY_ADDRESS", "ipc:///tmp/webx-router-message-proxy.ipc")),
-        ipcInstructionProxyAddress(envOrDefault("WEBX_ENGINE_IPC_INSTRUCTION_PROXY_ADDRESS", "ipc:///tmp/webx-router-instruction-proxy.ipc")),
+        ipcMessageProxyPath(envOrDefault("WEBX_ENGINE_IPC_MESSAGE_PROXY_PATH", "/tmp/webx-router-message-proxy.ipc")),
+        ipcInstructionProxyPath(envOrDefault("WEBX_ENGINE_IPC_INSTRUCTION_PROXY_PATH", "/tmp/webx-router-instruction-proxy.ipc")),
+        ipcSessionConnectorPath(envOrDefault("WEBX_ENGINE_IPC_SESSION_CONNECTOR_PATH", "/tmp/webx-engine-session-connector.ipc")),
         inprocEventBusAddress(envOrDefault("WEBX_ENGINE_INPROC_EVENT_BUS_ADDRESS", "inproc://webx-engine/event-bus")),
         sessionId(envOrDefault("WEBX_ENGINE_SESSION_ID", ""))
     {}
@@ -46,8 +47,10 @@ public:
     int collectorPort;
     int publisherPort;
 
-    std::string ipcMessageProxyAddress;
-    std::string ipcInstructionProxyAddress;
+    std::string ipcMessageProxyPath;
+    std::string ipcInstructionProxyPath;
+    std::string ipcSessionConnectorPath;
+    
     std::string inprocEventBusAddress;
 
     std::string sessionId;
