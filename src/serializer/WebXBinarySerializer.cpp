@@ -2,8 +2,8 @@
 #include "WebXInstructionDecoder.h"
 #include "WebXMessageEncoder.h"
 
-WebXBinarySerializer::WebXBinarySerializer() :
-     _messageEncoder(new WebXMessageEncoder()),
+WebXBinarySerializer::WebXBinarySerializer(WebXSettings * settings) :
+     _messageEncoder(new WebXMessageEncoder(settings)),
      _instructionDecoder(new WebXInstructionDecoder()) {
 }
 

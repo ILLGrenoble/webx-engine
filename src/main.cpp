@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     setKeyboardLayout(keyboardLayout);
 
     // Start transport
-    WebXTransport * transport = new WebXTransport(settings, standAlone);
+    WebXTransport * transport = new WebXTransport(&settings, standAlone);
     transport->start();
 
     // Start the controller (blocking)

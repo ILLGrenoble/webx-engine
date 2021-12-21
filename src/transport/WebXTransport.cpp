@@ -6,10 +6,10 @@
 #include <serializer/WebXBinarySerializer.h>
 #include <utils/WebXSettings.h>
 
-WebXTransport::WebXTransport(const WebXSettings & settings, bool standAlone) :
+WebXTransport::WebXTransport(WebXSettings * settings, bool standAlone) :
     _settings(settings),
     _standAlone(standAlone),
-    _serializer(new WebXBinarySerializer()),
+    _serializer(new WebXBinarySerializer(settings)),
     _context(1),
     _connector(new WebXClientConnector()),
     _publisher(new WebXClientMessagePublisher()),
@@ -30,29 +30,29 @@ void WebXTransport::start() {
 
     if (this->_standAlone) {
         // Create connector
-        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings.connectorPort);
-        _connector->run(this->_serializer, &this->_context, clientResponderAddr, _settings.inprocEventBusAddress, _settings);
+        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings->connectorPort);
+        _connector->run(this->_serializer, &this->_context, clientResponderAddr, _settings->inprocEventBusAddress, _settings);
 
         // Create publisher
-        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings.publisherPort);
-        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, true, _settings.inprocEventBusAddress);
+        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings->publisherPort);
+        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, true, _settings->inprocEventBusAddress);
 
         // Create instruction collector
-        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", _settings.collectorPort);
-        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, true, _settings.inprocEventBusAddress);
+        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", _settings->collectorPort);
+        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, true, _settings->inprocEventBusAddress, _settings);
     
     } else {
         // Create connector
-        std::string sessionConnectorAddr = fmt::format("ipc://{}", _settings.ipcSessionConnectorPath);
-        _connector->run(this->_serializer, &this->_context, sessionConnectorAddr, _settings.inprocEventBusAddress, _settings);
+        std::string sessionConnectorAddr = fmt::format("ipc://{}", _settings->ipcSessionConnectorPath);
+        _connector->run(this->_serializer, &this->_context, sessionConnectorAddr, _settings->inprocEventBusAddress, _settings);
 
         // Create publisher
-        std::string clientPublisherAddr = fmt::format("ipc://{}", _settings.ipcMessageProxyPath);
-        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, false, _settings.inprocEventBusAddress);
+        std::string clientPublisherAddr = fmt::format("ipc://{}", _settings->ipcMessageProxyPath);
+        _publisher->run(this->_serializer, &this->_context, clientPublisherAddr, false, _settings->inprocEventBusAddress);
 
         // Create instruction collector
-        std::string clientCollectorAddr = fmt::format("ipc://{}", _settings.ipcInstructionProxyPath);
-        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, false, _settings.inprocEventBusAddress);
+        std::string clientCollectorAddr = fmt::format("ipc://{}", _settings->ipcInstructionProxyPath);
+        _collector->run(this->_serializer, &this->_context, clientCollectorAddr, false, _settings->inprocEventBusAddress, _settings);
     }
 
     WebXController::instance()->setConnection(this->_publisher);
@@ -76,11 +76,11 @@ zmq::socket_t WebXTransport::createEventBusPublisher() {
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
     try {
-        socket.bind(_settings.inprocEventBusAddress);
+        socket.bind(_settings->inprocEventBusAddress);
         return socket;
     
     } catch (zmq::error_t& e) {
-        spdlog::error("failed to bind Event Bus socket to {:s}", _settings.inprocEventBusAddress);
+        spdlog::error("failed to bind Event Bus socket to {:s}", _settings->inprocEventBusAddress);
         exit(1);
     }       
 }

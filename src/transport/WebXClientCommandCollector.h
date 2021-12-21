@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 
+class WebXSettings;
 class WebXInstruction;
 class WebXBinarySerializer;
 namespace zmq {
@@ -16,7 +17,7 @@ public:
     WebXClientCommandCollector();
     virtual ~WebXClientCommandCollector();
 
-    void run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr);
+    void run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, WebXSettings * settings);
     void stop();
 
 private:
@@ -32,6 +33,7 @@ private:
     std::string _clientAddr;
     bool _bindToClientAddr;
     std::string _eventBusAddr;
+    unsigned char _sessionId[16];
 };
 
 

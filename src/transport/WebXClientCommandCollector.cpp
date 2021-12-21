@@ -2,6 +2,7 @@
 #include "instruction/WebXInstruction.h"
 #include "serializer/WebXBinarySerializer.h"
 #include <controller/WebXController.h>
+#include <utils/WebXSettings.h>
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
@@ -16,12 +17,13 @@ WebXClientCommandCollector::~WebXClientCommandCollector() {
     }
 }
 
-void WebXClientCommandCollector::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr) {
+void WebXClientCommandCollector::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, WebXSettings * settings) {
     this->_serializer = serializer;
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
     this->_eventBusAddr = eventBusAddr;
+    memcpy(this->_sessionId, settings->sessionId, 16);
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientCommandCollector::mainLoop, this);
     }
@@ -106,15 +108,18 @@ void WebXClientCommandCollector::mainLoop() {
 zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
     // Create instruction subscriber
     zmq::socket_t socket(*this->_context, ZMQ_SUB);
-    // Listen to all topics
-    socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
 
     try {
         if (this->_bindToClientAddr) {
+            // Listen to all instructions
+            socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
             socket.bind(this->_clientAddr);
+
         } else {
+            // Subscribe only to instructions that have the correct sessionId
+            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId, 16);
             socket.connect(this->_clientAddr);
         }
 

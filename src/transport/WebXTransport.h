@@ -2,8 +2,8 @@
 #define WEBX_TRANSPORT_H
 
 #include "WebXZMQ.h"
-#include <utils/WebXSettings.h>
 
+class WebXSettings;
 class WebXBinarySerializer;
 class WebXClientConnector;
 class WebXClientMessagePublisher;
@@ -11,7 +11,7 @@ class WebXClientCommandCollector;
 
 class WebXTransport {
 public:
-    WebXTransport(const WebXSettings & settings, bool standAlone);
+    WebXTransport(WebXSettings * settings, bool standAlone);
     virtual ~WebXTransport();
 
     void start();
@@ -21,7 +21,7 @@ private:
     zmq::socket_t createEventBusPublisher();
 
 private:
-    const WebXSettings & _settings;
+    WebXSettings * _settings;
     bool _standAlone;
 
     WebXBinarySerializer * _serializer;

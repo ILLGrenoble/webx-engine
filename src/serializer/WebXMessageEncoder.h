@@ -8,6 +8,7 @@ namespace zmq {
 class message_t;
 }
 
+class WebXSettings;
 class WebXMessage;
 class WebXCursorImageMessage;
 class WebXImageMessage;
@@ -20,7 +21,8 @@ class WebXWindowsMessage;
 
 class WebXMessageEncoder {
     public:
-    WebXMessageEncoder() {}
+    WebXMessageEncoder(WebXSettings * settings) :
+        _settings(settings) {}
     ~WebXMessageEncoder() {}
 
     zmq::message_t * encode(std::shared_ptr<WebXMessage> message);
@@ -28,7 +30,8 @@ class WebXMessageEncoder {
 private:
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -45,7 +48,8 @@ private:
     zmq::message_t * createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message);
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -63,7 +67,8 @@ private:
 
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -76,7 +81,8 @@ private:
     zmq::message_t * createMouseMessage(std::shared_ptr<WebXMouseMessage> message);
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -88,7 +94,8 @@ private:
     zmq::message_t * createScreenMessage(std::shared_ptr<WebXScreenMessage> message);
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -111,7 +118,8 @@ private:
     zmq::message_t * createSubImagesMessage(std::shared_ptr<WebXSubImagesMessage> message);
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -121,7 +129,8 @@ private:
     zmq::message_t * createVoidMessage(std::shared_ptr<WebXVoidMessage> message);
 
     // Structure:
-    // Header: 16 bytes
+    // Header: 32 bytes
+    //   sessionId: 16 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -137,6 +146,8 @@ private:
     //      height: 4 bytes
     zmq::message_t * createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message);
 
+private:
+    WebXSettings * _settings;
 };
 
 

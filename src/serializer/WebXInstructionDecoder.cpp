@@ -17,6 +17,9 @@ WebXInstructionDecoder::~WebXInstructionDecoder() {
 
 std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned char * instructionData, size_t instructionDataSize) {
     WebXBinaryBuffer buffer((unsigned char *)instructionData, instructionDataSize);
+    
+    // Ignore sessionId (this is filtered already by the ZMQ subscription)
+    buffer.advanceReadOffset(16);
 
     uint32_t details = buffer.read<uint32_t>();
     uint32_t type = details & ~0x80000000;
@@ -24,14 +27,19 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     if (type == WebXInstruction::Mouse) {
         return this->createMouseInstruction(instructionId, buffer);
+
     } else if (type == WebXInstruction::Keyboard) {
         return this->createKeyboardInstruction(instructionId, buffer);
+
     } else if (type == WebXInstruction::Cursor) {
         return this->createCursorImageInstruction(instructionId, buffer);
+
     } else if (type == WebXInstruction::Image) {
         return this->createImageInstruction(instructionId, buffer);
+
     } else if (type == WebXInstruction::Screen) {
         return this->createScreenInstruction(instructionId, buffer);
+
     } else if (type == WebXInstruction::Windows) {
         return this->createWindowsInstruction(instructionId, buffer);
     }
