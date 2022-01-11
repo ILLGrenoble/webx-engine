@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
             case 's':
                 {
                     standAlone = true;
-                    spdlog::info("Starting WebX in Stand Alone mode");
+                    spdlog::info("Starting WebX in stand-alone mode");
                 }
                 break;
 
