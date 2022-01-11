@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <X11/Xatom.h>
 #include <spdlog/spdlog.h>
-#include <X11/extensions/XTest.h>
 #include <input/WebXMouse.h>
 #include <input/WebXKeyboard.h>
 
