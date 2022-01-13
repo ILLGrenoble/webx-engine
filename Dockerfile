@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . .
 
 RUN cmake .
-RUN cmake --build . -j 4 --target webx
+RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
 # to obtain built deb package:

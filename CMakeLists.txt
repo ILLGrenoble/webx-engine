@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(webx)
+project(webx-engine)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
