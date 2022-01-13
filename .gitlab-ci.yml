@@ -1,0 +1,20 @@
+stages:
+  - build-dev
+
+build-dev:
+  stage: build-dev
+  # only:
+  #   - dev
+  tags:
+    - debian
+    - dss
+  script:
+    - docker build -t webx-engine-builder .
+    - docker create -ti --name webx-engine-builder webx-engine-builder bash
+    - docker cp webx-engine-builder:/app/target/debian/. .
+    - docker rm -f webx-engine-builder
+    - PACKAGE_VERSION=`awk '/CPACK_PACKAGE_VERSION/{ gsub(/[()]/, " "); gsub(/[\"]/, ""); print $3}' CMakeLists.txt`
+    - cp webx-engine_${PACKAGE_VERSION}_amd64.deb webx-engine_dev_amd64.deb
+  artifacts:
+    paths:
+      - webx-engine_dev_amd64.deb
