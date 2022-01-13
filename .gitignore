@@ -4,6 +4,8 @@ CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
+CPack*
+_CPack_Packages
 Testing
 Makefile
 cmake_install.cmake
@@ -28,3 +30,5 @@ test/output/*.png
 gmon.out
 gprof.out
 .vagrant
+
+*.deb
