@@ -10,6 +10,7 @@ build-dev:
     - dss
   script:
     - docker build -t webx-engine-builder .
+    - docker rm -f webx-engine-builder || true
     - docker create -ti --name webx-engine-builder webx-engine-builder bash
     - docker cp webx-engine-builder:/app/packages/. .
     - docker rm -f webx-engine-builder
