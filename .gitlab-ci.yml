@@ -1,5 +1,6 @@
 stages:
   - build-dev
+  - deploy-dev
 
 build-dev:
   stage: build-dev
