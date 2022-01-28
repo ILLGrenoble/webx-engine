@@ -19,3 +19,14 @@ build-dev:
   artifacts:
     paths:
       - webx-engine_dev_amd64.deb
+
+deploy-dev:
+  stage: deploy-dev
+  # only:
+  #   - dev
+  tags:
+    - debian
+    - dss
+  script:
+    - scp webx-engine_dev_amd64.deb webx@webx-dev.ill.fr:/data/deb/
+    - ssh webx@webx-dev.ill.fr "cd /data/apps/webx-deploy; git pull --rebase origin dev; ./deploy-deb.sh"
