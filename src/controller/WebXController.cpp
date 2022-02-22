@@ -215,11 +215,11 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                             if (newAlphaChecksum == oldAlphaChecksum) {
                                 bool removed = image->removeAlpha();
                                 if (removed) {
-                                    spdlog::debug("Removing alpha from image for window 0x{:01x}", windowDamage.windowId);
+                                    spdlog::trace("Removed alpha from image for window 0x{:01x}", windowDamage.windowId);
                                 }
                             }
 
-                            spdlog::debug("Sending encoded image {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                            spdlog::trace("Sending encoded image {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
                             auto message = std::make_shared<WebXImageMessage>(windowDamage.windowId, image);
                             this->sendMessage(message);
@@ -242,7 +242,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                 if (subImages.size() > 0) {
                     for (auto it = subImages.begin(); it != subImages.end(); it++) {
                         const WebXSubImage & subImage = *it;
-                        spdlog::debug("Sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                        spdlog::trace("Sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB ({:d}ms)", subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     }
     
                     auto message = std::make_shared<WebXSubImagesMessage>(windowDamage.windowId, subImages);

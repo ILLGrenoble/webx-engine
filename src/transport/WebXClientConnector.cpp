@@ -83,7 +83,7 @@ void WebXClientConnector::mainLoop() {
                 bool sendRequired = true;
                 if (retVal) {
                     std::string instruction = std::string(static_cast<char *>(message.data()), message.size());
-                    spdlog::debug("Received {} message", instruction);
+                    spdlog::trace("Received {} message", instruction);
                     if (instruction == "comm") {
                         const std::string ports = fmt::format("{},{}", this->_publisherPort, this->_collectorPort);
                         zmq::message_t replyMessage(ports.c_str(), ports.size());
