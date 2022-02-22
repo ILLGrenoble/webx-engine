@@ -25,6 +25,8 @@ bool WebXKB::setKeyboardLayout(Display * display, const std::string & layout) co
 
     // set the desired layout
     settings.layout = layout;
+    settings.rules = "evdev";
+    settings.model = "pc105";
 
     // Apply the rules with the new layout
     if (!this->applyRules(settings)) {
