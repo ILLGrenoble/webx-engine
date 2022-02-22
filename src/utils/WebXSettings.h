@@ -55,7 +55,7 @@ public:
             }
 
         } else if (sessionIdString.length() == 0) {
-            for (unsigned int i = 0; i < 8; i++) {
+            for (unsigned int i = 0; i < 16; i++) {
                 sessionId[i] = 0;
             }
 
