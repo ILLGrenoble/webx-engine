@@ -18,7 +18,7 @@ _deps
 # External projects
 *-prefix/
 
-.vscode
+# .vscode
 .idea
 .DS_Store
 bin

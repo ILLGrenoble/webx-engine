@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch guacd-kbd-translator",
+      "program": "${workspaceRoot}/utils/guacd-kbd-translator/index.js",
+      "args": [ "-o", "../../src/input/WebXKeyboardSymbolMapping.h" ],
+      "cwd": "${workspaceRoot}/utils/guacd-kbd-translator",
+      "request": "launch",
+      "type": "pwa-node",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug WebX Standalone (:20)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/webx-engine",
+      "args": [ "-k", "fr", "-s" ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        { "name": "WEBX_ENGINE_LOG", "value": "debug" },
+        { "name": "DISPLAY", "value": ":20" },
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
