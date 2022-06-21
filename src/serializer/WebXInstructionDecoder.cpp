@@ -44,7 +44,7 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
     } else if (type == WebXInstruction::Windows) {
         return this->createWindowsInstruction(instructionId, buffer);
 
-    } else if (type == WebXInstruction::Windows) {
+    } else if (type == WebXInstruction::Quality) {
         return this->createQualityInstruction(instructionId, buffer);
     }
 
