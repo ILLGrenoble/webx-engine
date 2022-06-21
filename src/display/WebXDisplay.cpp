@@ -10,7 +10,7 @@
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
     _rootWindow(NULL),
-    _imageConverter(NULL),
+    _imageConverter(new WebXJPGImageConverter()),
     _mouse(NULL) {
 
 }
@@ -23,10 +23,8 @@ WebXDisplay::~WebXDisplay() {
 
     this->_rootWindow = NULL;
 
-    if (this->_imageConverter) {
-        delete this->_imageConverter;
-        this->_imageConverter = NULL;
-    }
+    delete this->_imageConverter;
+    this->_imageConverter = NULL;
 
     if (this->_mouse) {
         delete this->_mouse;
@@ -41,8 +39,6 @@ WebXDisplay::~WebXDisplay() {
 }
 
 void WebXDisplay::init() {
-    this->_imageConverter = new WebXJPGImageConverter();
-
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
     this->_rootWindow = this->createWindow(rootX11Window, true);
     if (this->_rootWindow) {
@@ -355,6 +351,10 @@ void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
 
 bool WebXDisplay::loadKeyboardLayout(const std::string & layout) {
     return this->_keyboard->loadKeyboardLayout(layout);
+}
+
+void WebXDisplay::setImageQuality(float imageQuality) {
+    this->_imageConverter->setQuality(imageQuality);
 }
 
 void WebXDisplay::updateManagedWindows() {

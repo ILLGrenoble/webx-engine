@@ -49,8 +49,8 @@ void WebXClientCommandCollector::mainLoop() {
     zmq::socket_t eventBus = this->createEventBusSubscriber();
 
     zmq::pollitem_t pollItems [] = {
-        { eventBus, 0, ZMQ_POLLIN, 0 },
-        { clientInstructionSocket, 0, ZMQ_POLLIN, 0 }
+        { (void *)eventBus, 0, ZMQ_POLLIN, 0 },
+        { (void *)clientInstructionSocket, 0, ZMQ_POLLIN, 0 }
     };
 
     bool running = true;

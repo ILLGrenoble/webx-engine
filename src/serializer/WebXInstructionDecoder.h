@@ -91,7 +91,20 @@ private:
      *    length: 4 bytes
      *    padding: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer);
+    std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
+
+    /**
+     * Create a quality instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    qualityIndex: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createQualityInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer);
 
 private:
 

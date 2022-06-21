@@ -17,6 +17,13 @@ class WebXMessage;
 
 class WebXController {
 private:
+    struct WebXQuality {
+        int imageFPS;
+        float imageQuality;
+    };
+
+
+private:
     WebXController();
     virtual ~WebXController();
 
@@ -66,6 +73,7 @@ public:
     }
 
 private:
+    void setQualityIndex(uint32_t qualityIndex);
 
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
@@ -79,9 +87,11 @@ private:
     static WebXController * _instance;
 
     static unsigned int THREAD_RATE;
-    static unsigned int IMAGE_REFRESH_RATE;
+    static unsigned int DEFAULT_IMAGE_REFRESH_RATE;
     static unsigned int MOUSE_MIN_REFRESH_RATE;
     static unsigned int MOUSE_MAX_REFRESH_RATE;
+
+    static std::vector<WebXQuality> QUALITY_SETTINGS;
 
     WebXManager * _manager;
 
@@ -92,6 +102,7 @@ private:
     bool _mouseDirty;
 
     long _imageRefreshUs;
+    uint32_t _qualityIndex;
 
     long _threadSleepUs;
     std::mutex _stateMutex;

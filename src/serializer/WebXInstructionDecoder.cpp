@@ -7,6 +7,7 @@
 #include <instruction/WebXKeyboardInstruction.h>
 #include <instruction/WebXCursorImageInstruction.h>
 #include <instruction/WebXMouseInstruction.h>
+#include <instruction/WebXQualityInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {
@@ -42,6 +43,9 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     } else if (type == WebXInstruction::Windows) {
         return this->createWindowsInstruction(instructionId, buffer);
+
+    } else if (type == WebXInstruction::Windows) {
+        return this->createQualityInstruction(instructionId, buffer);
     }
 
     return nullptr;
@@ -74,6 +78,11 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createScreenInstruction
     return std::make_shared<WebXScreenInstruction>(instructionId);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsInstruction(uint32_t instructionId,WebXBinaryBuffer & buffer) {
+std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) {
     return std::make_shared<WebXWindowsInstruction>(instructionId);
+}
+
+std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createQualityInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) {
+    uint32_t qualityIndex = buffer.read<uint32_t>();
+    return std::make_shared<WebXQualityInstruction>(instructionId, qualityIndex);
 }

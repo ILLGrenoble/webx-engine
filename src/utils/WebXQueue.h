@@ -48,6 +48,10 @@ public:
 	 */
 	void stop();
 
+	int size() {
+		return this->_queue.size();
+	}
+
 private:
 
 	struct Item {

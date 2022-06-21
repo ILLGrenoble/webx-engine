@@ -53,9 +53,10 @@ if [ "$xorg_proc" != "" ]; then
         exit 1
 
     elif [ $FORCE_START == 1 ]; then
-        echo "Xorg is already running on display $DISPLAY: forcing restart"
+        echo "Xorg is already running on display $DISPLAY: stopping current process..."
         kill -9 $xorg_proc
-    
+        sleep 3
+
     fi
 
 fi

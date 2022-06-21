@@ -155,7 +155,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         std::chrono::duration<double, std::milli> encodeDuration = end - grab;
         std::chrono::duration<double, std::milli> duration = end - start;
 
-        spdlog::debug("Grabbed WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s}) in {:.2f}ms (grab = {:.2f}ms, encoding = {:.2f}ms)", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, (isFull ? "full window" : "sub window"), duration.count(), grabDuration.count(), encodeDuration.count());
+        spdlog::trace("Grabbed WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s}) in {:.2f}ms (grab = {:.2f}ms, encoding = {:.2f}ms)", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, (isFull ? "full window" : "sub window"), duration.count(), grabDuration.count(), encodeDuration.count());
 
     } else {
         // See if ErrorHandler has this window as it's last error source and determine exact error

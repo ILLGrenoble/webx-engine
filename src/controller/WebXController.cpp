@@ -6,6 +6,7 @@
 #include <instruction/WebXKeyboardInstruction.h>
 #include <instruction/WebXImageInstruction.h>
 #include <instruction/WebXCursorImageInstruction.h>
+#include <instruction/WebXQualityInstruction.h>
 #include <message/WebXScreenMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <message/WebXImageMessage.h>
@@ -22,15 +23,28 @@
 WebXController * WebXController::_instance = NULL;
 
 unsigned int WebXController::THREAD_RATE = 60;
-unsigned int WebXController::IMAGE_REFRESH_RATE = 30;
+unsigned int WebXController::DEFAULT_IMAGE_REFRESH_RATE = 30;
 unsigned int WebXController::MOUSE_MAX_REFRESH_RATE = 60;
 unsigned int WebXController::MOUSE_MIN_REFRESH_RATE = 10;
+
+std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
+    {imageFPS: 2, imageQuality: 0.1},
+    {imageFPS: 4, imageQuality: 0.1},
+    {imageFPS: 8, imageQuality: 0.1},
+    {imageFPS: 10, imageQuality: 0.2},
+    {imageFPS: 15, imageQuality: 0.2},
+    {imageFPS: 30, imageQuality: 0.2},
+    {imageFPS: 30, imageQuality: 0.3},
+    {imageFPS: 30, imageQuality: 0.5},
+    {imageFPS: 30, imageQuality: 0.7},
+    {imageFPS: 30, imageQuality: 0.9},
+};
 
 WebXController::WebXController() :
     _manager(new WebXManager()),
     _displayDirty(true),
     _mouseDirty(true),
-    _imageRefreshUs(1000000.0 / WebXController::IMAGE_REFRESH_RATE),
+    _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
     _connection(NULL),
@@ -66,6 +80,8 @@ void WebXController::shutdown() {
 
 void WebXController::init() {
     this->_manager->init();
+
+    this->setQualityIndex(10);
 }
 
 void WebXController::stop() {
@@ -138,6 +154,22 @@ void WebXController::run() {
     spdlog::info("Stopped WebX Controller");
 }
 
+void WebXController::setQualityIndex(uint32_t qualityIndex) {
+    if (qualityIndex >=1 && qualityIndex <= 10) {
+        WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
+        
+        // Set refresh rate
+        this->_imageRefreshUs = 1000000.0 / quality.imageFPS;
+
+        // Set image quality
+        WebXDisplay * display = this->_manager->getDisplay();
+        display->setImageQuality(quality.imageQuality);
+
+    } else {
+        spdlog::warn("Attempt to set the quality index to an invalid value ({})", qualityIndex);
+    }
+}
+
 void WebXController::handleClientInstructions(WebXDisplay * display) {
     std::lock_guard<std::mutex> lock(this->_instructionsMutex);
 
@@ -175,6 +207,11 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             
             auto message = std::make_shared<WebXCursorImageMessage>(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
             this->sendMessage(message, instruction->id);
+
+        } else if (instruction->type == WebXInstruction::Type::Quality) {
+            auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
+            uint32_t qualityIndex = qualityInstruction->qualityIndex;
+            this->setQualityIndex(qualityIndex);
         }
     }
 
