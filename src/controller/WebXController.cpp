@@ -28,14 +28,14 @@ unsigned int WebXController::MOUSE_MAX_REFRESH_RATE = 60;
 unsigned int WebXController::MOUSE_MIN_REFRESH_RATE = 10;
 
 std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
-    {imageFPS: 2, imageQuality: 0.1},
-    {imageFPS: 4, imageQuality: 0.1},
-    {imageFPS: 8, imageQuality: 0.1},
-    {imageFPS: 10, imageQuality: 0.2},
-    {imageFPS: 15, imageQuality: 0.2},
-    {imageFPS: 30, imageQuality: 0.2},
-    {imageFPS: 30, imageQuality: 0.3},
-    {imageFPS: 30, imageQuality: 0.5},
+    {imageFPS: 2, imageQuality: 0.2},
+    {imageFPS: 4, imageQuality: 0.2},
+    {imageFPS: 8, imageQuality: 0.2},
+    {imageFPS: 10, imageQuality: 0.3},
+    {imageFPS: 15, imageQuality: 0.4},
+    {imageFPS: 15, imageQuality: 0.6},
+    {imageFPS: 20, imageQuality: 0.6},
+    {imageFPS: 20, imageQuality: 0.7},
     {imageFPS: 30, imageQuality: 0.7},
     {imageFPS: 30, imageQuality: 0.9},
 };
