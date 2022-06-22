@@ -13,17 +13,17 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 
 }
 
-WebXImage * WebXJPGImageConverter::convert(XImage * image) const {
-    return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth);
+WebXImage * WebXJPGImageConverter::convert(XImage * image, float quality) const {
+    return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth, quality);
 }
 
-WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     WebXImage * webXImage = nullptr;
 
-    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine);
+    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, quality);
     WebXDataBuffer * alphaData = nullptr;
 
     if (imageDepth == 32) {
@@ -41,7 +41,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
         spdlog::trace("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
-        alphaData = this->_convert(data + 2, width, height, bytesPerLine);
+        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -52,7 +52,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     return webXImage;
 }
 
-WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine) const {
+WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine, float quality) const {
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -73,7 +73,7 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
 	cinfo.dct_method = JDCT_IFAST;
 
-    jpeg_set_quality(&cinfo, this->_quality * 100, TRUE);
+    jpeg_set_quality(&cinfo, (quality == 0 ? this->_quality : quality) * 100, TRUE);
 
     JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
     for (int i = 0; i < height; i++) {

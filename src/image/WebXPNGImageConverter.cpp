@@ -15,11 +15,11 @@ WebXPNGImageConverter::WebXPNGImageConverter() {
 WebXPNGImageConverter::~WebXPNGImageConverter() {
 }
 
-WebXImage * WebXPNGImageConverter::convert(XImage * image) const {
-    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth);
+WebXImage * WebXPNGImageConverter::convert(XImage * image, float quality) const {
+    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth, quality);
 }
 
-WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const {
+WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 

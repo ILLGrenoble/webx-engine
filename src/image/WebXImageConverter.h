@@ -11,8 +11,8 @@ public:
     WebXImageConverter() {}
     virtual ~WebXImageConverter() {}
 
-    virtual WebXImage * convert(XImage * image) const = 0;
-    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const = 0;
+    virtual WebXImage * convert(XImage * image, float quality = 0) const = 0;
+    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality = 0) const = 0;
 
     void setQuality(float quality) {
         if (quality > 0.0 && quality <= 1.0) {

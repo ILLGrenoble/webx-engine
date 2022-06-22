@@ -95,7 +95,7 @@ WebXRectangle WebXWindow::getSubWindowRectangle() const {
     return subWindowRectangle;
 }
 
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     Status status = this->updateAttributes();
@@ -142,7 +142,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
 
         // bool hasConvertedAlpha = WebXImageAlphaUtils::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
         // webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
-        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image));
+        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 
         if (isFull) {
             this->_windowChecksum = calculateImageChecksum(webXImage);

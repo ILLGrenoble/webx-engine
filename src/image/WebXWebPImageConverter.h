@@ -11,8 +11,8 @@ public:
     WebXWebPImageConverter();
     virtual ~WebXWebPImageConverter();
 
-    virtual WebXImage * convert(XImage * image) const;
-    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth) const;
+    virtual WebXImage * convert(XImage * image, float quality = 0) const;
+    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality = 0) const;
 
 };
 

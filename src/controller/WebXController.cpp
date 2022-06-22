@@ -193,7 +193,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
-            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId);
+            // Client request full window image: make it the best quality 
+            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, 10);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);
@@ -269,7 +270,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, &area);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, 0, &area);
                     // Check image not null
                     if (image) {
                         subImages.push_back(WebXSubImage(area, image));

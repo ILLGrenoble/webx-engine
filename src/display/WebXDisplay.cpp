@@ -247,7 +247,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
     }
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, WebXRectangle * imageRectangle) {
+std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, float quality , WebXRectangle * imageRectangle) {
     std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
     // Find visible window
@@ -260,7 +260,7 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, WebXRectangle
     if (itWin != this->_visibleWindows.end()) {
         WebXWindow * window = *itWin;
 
-        return this->getImage(window, imageRectangle);
+        return this->getImage(window, quality, imageRectangle);
 
     } else {
         return nullptr;
@@ -476,15 +476,15 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
     return parent;
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(WebXWindow * window, WebXRectangle * imageRectangle) const {
+std::shared_ptr<WebXImage> WebXDisplay::getImage(WebXWindow * window, float quality, WebXRectangle * imageRectangle) const {
     WebXRectangle subWindowRectangle = window->getRectangle();
     WebXWindow * managedWindow = this->getManagedWindow(window);
     if (managedWindow != NULL) {
         subWindowRectangle = managedWindow->getSubWindowRectangle();
-        return window->getImage(&subWindowRectangle, imageRectangle, this->_imageConverter);
+        return window->getImage(&subWindowRectangle, imageRectangle, this->_imageConverter, quality);
 
     } else {
-        return window->getImage(NULL, imageRectangle, this->_imageConverter);
+        return window->getImage(NULL, imageRectangle, this->_imageConverter, quality);
     }
 }
 
