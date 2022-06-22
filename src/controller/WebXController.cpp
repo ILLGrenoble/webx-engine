@@ -32,10 +32,10 @@ std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
     {imageFPS: 2, imageQuality: 0.6},
     {imageFPS: 4, imageQuality: 0.6},
     {imageFPS: 6, imageQuality: 0.6},
-    {imageFPS: 8, imageQuality: 0.7},
+    {imageFPS: 8, imageQuality: 0.6},
     {imageFPS: 10, imageQuality: 0.7},
     {imageFPS: 15, imageQuality: 0.7},
-    {imageFPS: 20, imageQuality: 0.75},
+    {imageFPS: 20, imageQuality: 0.7},
     {imageFPS: 25, imageQuality: 0.8},
     {imageFPS: 30, imageQuality: 0.9},
 };
