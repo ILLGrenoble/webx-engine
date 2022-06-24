@@ -46,10 +46,17 @@ void WebXClientConnector::mainLoop() {
     // Create the event bus socket
     zmq::socket_t eventBus = this->createEventBusSubscriber();
 
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+    zmq::pollitem_t pollItems [] = {
+        { static_cast<void *>(eventBus), 0, ZMQ_POLLIN, 0 },
+        { static_cast<void *>(clientResponder), 0, ZMQ_POLLIN, 0 }
+    };
+#else
     zmq::pollitem_t pollItems [] = {
         { eventBus, 0, ZMQ_POLLIN, 0 },
         { clientResponder, 0, ZMQ_POLLIN, 0 }
     };
+#endif
 
     bool running = true;
     while (running) {
@@ -94,10 +101,10 @@ void WebXClientConnector::mainLoop() {
 #endif            
                         sendRequired = false;
                     } else if (instruction == "ping") {
+                        zmq::message_t replyMessage("pong", 4);
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
                         clientResponder.send(replyMessage);
 #else
-                        zmq::message_t replyMessage("pong", 4);
                         clientResponder.send(replyMessage, zmq::send_flags::none);
 #endif            
                     }

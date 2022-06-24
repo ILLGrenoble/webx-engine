@@ -11,6 +11,7 @@ WebXTransport::WebXTransport(WebXSettings * settings, bool standAlone) :
     _standAlone(standAlone),
     _serializer(new WebXBinarySerializer(settings)),
     _context(1),
+    _eventBusPublisher(this->createEventBusPublisher()),
     _connector(new WebXClientConnector()),
     _publisher(new WebXClientMessagePublisher()),
     _collector(new WebXClientCommandCollector()) {
@@ -24,9 +25,6 @@ WebXTransport::~WebXTransport() {
 }
 
 void WebXTransport::start() {
-
-    // Create event bus publisher
-    this->_eventBusPublisher = this->createEventBusPublisher();
 
     if (this->_standAlone) {
         // Create connector
@@ -64,7 +62,11 @@ void WebXTransport::stop() {
     // Send shutdown message
     std::string messageString = "shutdown";
     zmq::message_t message(messageString.c_str(), messageString.size());
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
+    this->_eventBusPublisher.send(message);
+#else
     this->_eventBusPublisher.send(message, zmq::send_flags::none);
+#endif
 
     _connector->stop();
     _publisher->stop();
