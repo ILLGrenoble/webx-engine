@@ -91,7 +91,7 @@ void WebXClientCommandCollector::mainLoop() {
                     // Deserialize instruction
                     auto instruction = this->_serializer->deserialize((const unsigned char *)message.data(), message.size());
                     if (instruction != NULL) {
-                        spdlog::trace("Received instruction type {}", instruction->type);
+                        spdlog::debug("Received instruction type {}", instruction->type);
                         // Handle message
                         WebXController::instance()->onClientInstruction(instruction);
                     }

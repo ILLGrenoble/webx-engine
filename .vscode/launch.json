@@ -7,7 +7,7 @@
       "args": [ "-o", "../../src/input/WebXKeyboardSymbolMapping.h" ],
       "cwd": "${workspaceRoot}/utils/guacd-kbd-translator",
       "request": "launch",
-      "type": "pwa-node",
+      "type": "node",
       "console": "integratedTerminal"
     },
     {
