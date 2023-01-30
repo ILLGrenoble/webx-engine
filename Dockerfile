@@ -12,8 +12,15 @@ RUN cmake .
 RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
+# Save the version to a file
+RUN awk '/CPACK_PACKAGE_VERSION /{ gsub(/[()]/, " "); gsub(/[\"]/, ""); print $3}' CMakeLists.txt > VERSION
+
+# Copy package to standard directory
+RUN mkdir -p target/debian
+RUN cp packages/* target/debian
+
 # to obtain built deb package:
 # docker build -t webx-engine-builder .
 # docker create -ti --name webx-engine-builder webx-engine-builder bash
-# docker cp webx-engine-builder:/app/packages/. .
+# docker cp webx-engine-builder:/app/target/debian/. .
 # docker rm -f webx-engine-builder
