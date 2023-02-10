@@ -32,8 +32,8 @@ FROM alpine:3
 WORKDIR /app
 
 # Copy package to standard directory
-RUN mkdir -p target/debian11
-RUN mkdir -p target/ubuntu22
+RUN mkdir -p target/debian
+RUN mkdir -p target/ubuntu
 COPY --from=debian /app/packages/* target/debian
 COPY --from=ubuntu /app/packages/* target/ubuntu
 COPY --from=debian /app/VERSION .
