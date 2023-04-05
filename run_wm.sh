@@ -36,6 +36,18 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
 
+        -w|--width)
+        XRDP_START_WIDTH="$2"
+        shift
+        shift
+        ;;
+
+        -h|--height)
+        XRDP_START_HEIGHT="$2"
+        shift
+        shift
+        ;;
+
         *)
         break
         ;;
