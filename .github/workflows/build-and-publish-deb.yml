@@ -37,7 +37,6 @@ jobs:
           docker rm -f $CONTAINER_ID
           PACKAGE_VERSION=$(cat ./debian-package/VERSION)
           mv ./debian-package/webx-engine_${PACKAGE_VERSION}_amd64.deb ./debian-package/webx-engine_${PACKAGE_VERSION}_ubuntu_22.04_amd64.deb
-          echo "::set-output name=version::${PACKAGE_VERSION}"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
 
       - name: Upload Debian package to GHCR
