@@ -11,9 +11,6 @@ RUN cmake .
 RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
-# Save the version to a file
-RUN awk '/CPACK_PACKAGE_VERSION /{ gsub(/[()]/, " "); gsub(/[\"]/, ""); print $3}' CMakeLists.txt > VERSION
-
 FROM ubuntu:22.04 AS ubuntu
 
 RUN apt update
@@ -36,7 +33,6 @@ RUN mkdir -p target/debian
 RUN mkdir -p target/ubuntu
 COPY --from=debian /app/packages/* target/debian
 COPY --from=ubuntu /app/packages/* target/ubuntu
-COPY --from=debian /app/VERSION .
 
 # to obtain built deb package:
 # docker build -t webx-engine-builder .

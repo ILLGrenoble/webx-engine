@@ -156,7 +156,6 @@ install(TARGETS ${PROJECT_NAME} DESTINATION "/usr/bin")
 
 SET(CPACK_GENERATOR "DEB")
 set(CPACK_CMAKE_GENERATOR Ninja)
-set(CPACK_PACKAGE_VERSION "0.1.0")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Stuart Caunt <caunt@ill.fr>, Jamie Hall <hall@ill.fr>")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The WebX Engine hooks on to an X11 display and provides a protocol to obtain X11 windows, receive display events and forward mouse and keyboard events.")

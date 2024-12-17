@@ -2,9 +2,8 @@ name: Build and Publish Debian Package
 
 on:
   push:
-    branches:
-      - feature/package-action
-  workflow_dispatch:
+    tags:
+      - '*'
 
 jobs:
   build-debian-package:
@@ -29,15 +28,11 @@ jobs:
           docker build -t webx-engine-builder -f docker/Dockerfile.ubuntu .
 
       - name: Extract Debian package
-        id: docker_build
         run: |
           CONTAINER_ID=$(docker create webx-engine-builder)
           docker cp $CONTAINER_ID:/app/target/ubuntu/. ./debian-package
-          docker cp $CONTAINER_ID:/app/VERSION ./debian-package
           docker rm -f $CONTAINER_ID
-          PACKAGE_VERSION=$(cat ./debian-package/VERSION)
-          mv ./debian-package/webx-engine_${PACKAGE_VERSION}_amd64.deb ./debian-package/webx-engine_${PACKAGE_VERSION}_ubuntu_22.04_amd64.deb
-          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+          mv ./debian-package/webx-engine__amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb
 
       - name: Upload Debian package to GHCR
         uses: actions/upload-artifact@v3
@@ -46,11 +41,10 @@ jobs:
           path: ./debian-package/
 
       - name: Upload Debian package as Release asset
-        if: github.event_name == 'workflow_dispatch'
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: debian-package/*.deb
-          tag: ${{ env.PACKAGE_VERSION }}
+          tag: ${{ github.ref_name }}
           name: "WebX Engine Debian Packages"
-          body: "Automatically built and uploaded Debian packages for release ${{ env.PACKAGE_VERSION }}."
+          body: "Automatically built and uploaded Debian packages for release ${{ github.ref_name }}."
