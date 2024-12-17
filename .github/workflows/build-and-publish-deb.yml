@@ -1,0 +1,46 @@
+name: Build and Publish Debian Package
+
+on:
+  push:
+    branches:
+      - feature/package-action
+  workflow_dispatch:
+
+jobs:
+  build-debian-package:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t webx-engine-builder -f docker/Dockerfile.ubuntu .
+
+      - name: Extract Debian package
+        run: |
+          CONTAINER_ID=$(docker create webx-engine-builder)
+          docker cp CONTAINER_ID:/app/target/ubuntu/. ./debian-package
+          docker cp CONTAINER_ID:/app/VERSION ./debian-package
+          docker rm -f CONTAINER_ID
+          PACKAGE_VERSION=$(cat ./debian-package/VERSION)
+          mv ./debian-package/webx-engine_${PACKAGE_VERSION}_amd64.deb ./debian_package/webx-engine_${PACKAGE_VERSION}_ubuntu_22.04_amd64.deb
+          rm ./debian-package/VERSION
+
+      - name: Upload Debian package to GHCR
+        uses: actions/upload-artifact@v3
+        with:
+          name: debian-package
+          path: ./debian-package/
+
