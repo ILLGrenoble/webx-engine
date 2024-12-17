@@ -38,6 +38,7 @@ jobs:
           PACKAGE_VERSION=$(cat ./debian-package/VERSION)
           mv ./debian-package/webx-engine_${PACKAGE_VERSION}_amd64.deb ./debian-package/webx-engine_${PACKAGE_VERSION}_ubuntu_22.04_amd64.deb
           echo "::set-output name=version::${PACKAGE_VERSION}"
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
 
       - name: Upload Debian package to GHCR
         uses: actions/upload-artifact@v3
@@ -51,6 +52,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: debian-package/*.deb
-          tag: ${{ steps.docker_build.outputs.version }}
+          tag: ${{ env.PACKAGE_VERSION }}
           name: "WebX Engine Debian Packages"
-          body: "Automatically built and uploaded Debian packages."
+          body: "Automatically built and uploaded Debian packages for release ${{ env.PACKAGE_VERSION }}."
