@@ -35,7 +35,7 @@ jobs:
           docker cp $CONTAINER_ID:/app/VERSION ./debian-package
           docker rm -f $CONTAINER_ID
           PACKAGE_VERSION=$(cat ./debian-package/VERSION)
-          mv ./debian-package/webx-engine_$PACKAGE_VERSION_amd64.deb ./debian_package/webx-engine_$PACKAGE_VERSION_ubuntu_22.04_amd64.deb
+          mv ./debian-package/webx-engine_${PACKAGE_VERSION}_amd64.deb ./debian_package/webx-engine_${PACKAGE_VERSION}_ubuntu_22.04_amd64.deb
           rm ./debian-package/VERSION
 
       - name: Upload Debian package to GHCR
