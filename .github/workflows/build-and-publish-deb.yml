@@ -32,7 +32,7 @@ jobs:
           docker rm -f $CONTAINER_ID
           mv ./debian-package/webx-engine__amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb
 
-      - name: Upload Debian package to GHCR
+      - name: Upload Debian artifacts
         uses: actions/upload-artifact@v3
         with:
           name: debian-package
@@ -42,11 +42,3 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: debian-package/*.deb
-
-#        uses: ncipollo/release-action@v1
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          artifacts: debian-package/*.deb
-#          tag: ${{ github.ref_name }}
-#          name: "WebX Engine Debian Packages"
-#          body: "Automatically built and uploaded Debian packages for release ${{ github.ref_name }}."
