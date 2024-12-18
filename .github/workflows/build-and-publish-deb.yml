@@ -23,14 +23,16 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t webx-engine-builder -f docker/Dockerfile.ubuntu .
+          docker build -t webx-engine-builder -f docker/Dockerfile .
 
       - name: Extract Debian package
         run: |
           CONTAINER_ID=$(docker create webx-engine-builder)
-          docker cp $CONTAINER_ID:/app/target/ubuntu/. ./debian-package
+          docker cp $CONTAINER_ID:/app/target/debian/. ./debian-package
+          docker cp $CONTAINER_ID:/app/target/ubuntu/. ./ubuntu-package
           docker rm -f $CONTAINER_ID
-          mv ./debian-package/webx-engine__amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb
+          mv ./debian-package/webx-engine__amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_debian_11_amd64.deb
+          mv ./ubuntu-package/webx-engine__amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb
 
       - name: Upload Debian artifacts
         uses: actions/upload-artifact@v3
