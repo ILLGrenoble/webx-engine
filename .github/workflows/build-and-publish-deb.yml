@@ -41,10 +41,9 @@ jobs:
           path: ./debian-package/
 
       - name: Upload Debian package as Release asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload ${{ github.ref_name }} debian-package/*.deb
+        uses: softprops/action-gh-release@v1
+        with:
+          files: debian-package/*.deb
 
 #        uses: ncipollo/release-action@v1
 #        with:
