@@ -23,7 +23,7 @@ void WebXClientCommandCollector::run(WebXBinarySerializer * serializer, zmq::con
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
     this->_eventBusAddr = eventBusAddr;
-    memcpy(this->_sessionId, settings->sessionId, 16);
+    this->_sessionId = std::string(reinterpret_cast<char*>(settings->sessionId), 16);
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientCommandCollector::mainLoop, this);
     }
@@ -65,8 +65,11 @@ void WebXClientCommandCollector::mainLoop() {
         zmq::message_t message;
 
         try {
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
             zmq::poll(&pollItems[0], 2, -1);
-
+#else
+            zmq::poll(&pollItems[0], 2); // Defaults to timeout = -1
+#endif
             // Check for event bus message
             if (pollItems[0].revents & ZMQ_POLLIN) {
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
@@ -115,18 +118,31 @@ void WebXClientCommandCollector::mainLoop() {
 zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
     // Create instruction subscriber
     zmq::socket_t socket(*this->_context, ZMQ_SUB);
+
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+#else
+    socket.set(zmq::sockopt::linger, 0);
+#endif
 
     try {
         if (this->_bindToClientAddr) {
             // Listen to all instructions
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
             socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+#else
+            socket.set(zmq::sockopt::subscribe, "");
+#endif
             socket.bind(this->_clientAddr);
 
         } else {
             // Subscribe only to instructions that have the correct sessionId
-            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId, 16);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
+            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId);
+#else
+            socket.set(zmq::sockopt::subscribe, this->_sessionId);
+#endif
             socket.connect(this->_clientAddr);
         }
 
@@ -142,7 +158,11 @@ zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
 
 zmq::socket_t WebXClientCommandCollector::createEventBusSubscriber() {
     zmq::socket_t eventBus(*this->_context, ZMQ_SUB);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     eventBus.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+#else
+    eventBus.set(zmq::sockopt::subscribe, "");
+#endif
 
     try {
         eventBus.connect(this->_eventBusAddr);

@@ -89,6 +89,7 @@ bool WebXKB::applyRules(WebXKBSettings & settings) const {
         rdefs.model = settings.model.empty() ? NULL : (char *)settings.model.c_str();
         rdefs.layout = settings.layout.empty() ? NULL : (char *)settings.layout.c_str();
         rdefs.variant = settings.variant.empty() ? NULL : (char *)settings.variant.c_str();
+        rdefs.options = NULL;
 
         XkbRF_GetComponents(rules, &rdefs, &rnames);
         if (rnames.keycodes) {

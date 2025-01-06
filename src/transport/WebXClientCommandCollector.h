@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <mutex>
+#include <string>
 
 class WebXSettings;
 class WebXInstruction;
@@ -33,7 +34,7 @@ private:
     std::string _clientAddr;
     bool _bindToClientAddr;
     std::string _eventBusAddr;
-    unsigned char _sessionId[16];
+    std::string _sessionId;
 };
 
 

@@ -65,7 +65,11 @@ void WebXClientConnector::mainLoop() {
 
         //  Wait for next message from client
         try {
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
             zmq::poll(&pollItems[0], 2, -1);
+#else
+            zmq::poll(&pollItems[0], 2); // Defaults to timeout = -1
+#endif
 
             // Check for event bus message
             if (pollItems[0].revents & ZMQ_POLLIN) {
@@ -137,8 +141,12 @@ void WebXClientConnector::mainLoop() {
 zmq::socket_t WebXClientConnector::createClientResponder() {
     //  Prepare our context and socket
     zmq::socket_t socket(*this->_context, ZMQ_REP);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+#else
+    socket.set(zmq::sockopt::linger, 0);
+#endif
 
     try {
         socket.bind(this->_clientAddr);
@@ -156,7 +164,11 @@ zmq::socket_t WebXClientConnector::createClientResponder() {
 zmq::socket_t WebXClientConnector::createEventBusSubscriber() {
     // Create the event bus socket
     zmq::socket_t eventBus(*this->_context, ZMQ_SUB);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     eventBus.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+#else
+    eventBus.set(zmq::sockopt::subscribe, "");
+#endif
 
     try {
         eventBus.connect(this->_eventBusAddr);

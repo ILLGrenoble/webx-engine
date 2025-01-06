@@ -2,6 +2,7 @@
 #define WEBX_MESSAGE_H
 
 #include <string>
+#include <cstdint>
 
 class WebXMessage {
 public:

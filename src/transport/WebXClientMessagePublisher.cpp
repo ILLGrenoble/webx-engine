@@ -72,8 +72,12 @@ void WebXClientMessagePublisher::mainLoop() {
 zmq::socket_t WebXClientMessagePublisher::createClientMessagePublisher() {
     // Start zeroMQ publisher
     zmq::socket_t socket(*this->_context, ZMQ_PUB);
+#ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     int linger = 0;
     socket.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
+#else
+    socket.set(zmq::sockopt::linger, 0);
+#endif
 
     try {
         if (this->_bindToClientAddr) {
