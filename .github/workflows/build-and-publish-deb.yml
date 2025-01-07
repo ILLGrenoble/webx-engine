@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          sed -i "s/X\.Y\.Z/${{ github.ref_name }}/g" CMakeLists.txt 
+          sed -i "s/0\.0\.0-dev/${{ github.ref_name }}/g" CMakeLists.txt 
           docker build -t webx-engine-builder -f docker/Dockerfile .
 
       - name: Extract Debian package
@@ -32,8 +32,14 @@ jobs:
           docker cp $CONTAINER_ID:/app/target/debian/. ./debian-package
           docker cp $CONTAINER_ID:/app/target/ubuntu/. ./ubuntu-package
           docker rm -f $CONTAINER_ID
-          mv ./debian-package/webx-engine_${{ github.ref_name }}_amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_debian_11_amd64.deb
-          mv ./ubuntu-package/webx-engine_${{ github.ref_name }}_amd64.deb ./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb
+          
+          # Find the actual Debian package filename in the `./debian-package` directory
+          DEB_FILE=$(find ./debian-package -name "webx-engine_*_amd64.deb")
+          UBUNTU_FILE=$(find ./ubuntu-package -name "webx-engine_*_amd64.deb")
+          
+          # Move and rename the files
+          mv "$DEB_FILE" "./debian-package/webx-engine_${{ github.ref_name }}_debian_11_amd64.deb"
+          mv "$UBUNTU_FILE" "./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb"
 
       - name: Upload Debian artifacts
         uses: actions/upload-artifact@v4
