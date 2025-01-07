@@ -139,7 +139,8 @@ zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
         } else {
             // Subscribe only to instructions that have the correct sessionId
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
-            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId, 16);
+            std::string sessionId(reinterpret_cast<char*>(this->_sessionId), 16);
+            socket.setsockopt(ZMQ_SUBSCRIBE, sessionId);
 #else
             socket.set(zmq::sockopt::subscribe, this->_sessionId);
 #endif
