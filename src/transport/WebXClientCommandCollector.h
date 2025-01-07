@@ -34,7 +34,7 @@ private:
     std::string _clientAddr;
     bool _bindToClientAddr;
     std::string _eventBusAddr;
-    std::string _sessionId;
+    unsigned char _sessionId[16];
 };
 
 

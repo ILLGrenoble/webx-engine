@@ -23,7 +23,7 @@ void WebXClientCommandCollector::run(WebXBinarySerializer * serializer, zmq::con
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
     this->_eventBusAddr = eventBusAddr;
-    this->_sessionId = std::string(reinterpret_cast<char*>(settings->sessionId), 16);
+    memcpy(this->_sessionId, settings->sessionId, 16);
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientCommandCollector::mainLoop, this);
     }
@@ -139,7 +139,7 @@ zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
         } else {
             // Subscribe only to instructions that have the correct sessionId
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
-            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId);
+            socket.setsockopt(ZMQ_SUBSCRIBE, this->_sessionId, 16);
 #else
             socket.set(zmq::sockopt::subscribe, this->_sessionId);
 #endif
