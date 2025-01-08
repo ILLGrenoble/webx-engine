@@ -4,8 +4,8 @@
         {
             "label": "build-webx",
             "type": "shell",
-            "command": "make",
-            "args": ["-j", "8"],
+            "command": "cmake",
+            "args": ["--build", ".", "-j", "4", "--target", "webx-engine"],
             "group": {
                 "kind": "build",
                 "isDefault": true
