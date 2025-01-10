@@ -1,0 +1,17 @@
+{
+  "image": "ghcr.io/illgrenoble/webx-dev-env-ubuntu:22.04",
+  "overrideCommand": false,
+  "postStartCommand": ".devcontainer/multiuser/install.sh",
+  "forwardPorts": [5555, 5556, 5557, 5558],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.tabSize": 4
+      },
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack"
+      ]
+    }
+  }
+}

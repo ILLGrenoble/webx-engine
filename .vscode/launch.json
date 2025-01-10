@@ -32,6 +32,21 @@
         }
       ],
       "preLaunchTask": "build-webx"
+    },
+    {
+      "name": "Debug Running WebX Process",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "${workspaceFolder}/bin/webx-engine",
+      "processId": "${command:pickProcess}",
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }
