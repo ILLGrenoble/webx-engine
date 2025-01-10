@@ -93,3 +93,64 @@ bin/webx-engine -s
 ```
 
 You then configure a relay to run in standalone too by giving it the IP address of the VISA instance.
+
+## Building, running and debugging in a devcontainer
+
+This project includes a `.devcontainer` folder for developing and debugging the WebX Engine in a devcontainer (primarily focussing on using the cpptools extension in VSCode, but potentially accessible too under other IDEs).
+
+Two development environments are available: standalone and multiuser.
+
+### Standalone devcontainer environment
+
+The <em>standalone</em> devcontainer environment is the simplest way to develop the WebX Engine. 
+
+The devcontainer spins up the `ghcr.io/illgrenoble/webx-dev-env-ubuntu` environment which automatically launches Xorg and the Xfce4 desktop manager on DISPLAY=:20. 
+
+The VSCode launch command <em>Debug WebX Standalone (:20)</em> will compile and run the WebX Engine in standalone mode and attach the X11 Server. You can debug the source directly by adding breakpoints to the source files.
+
+### Multiuser devcontainer environment
+
+If you want to debug the full WebX stack with both the WebX Router and WebX Session Manager running then you should run the <em>multiuser</em> devcontainer environment.
+
+This environment installs extra packages on top of the `ghcr.io/illgrenoble/webx-dev-env-ubuntu` image:
+ - Rust development tools are installed
+ - The latest stable source of webx-session-manager and webx-router and downloaded and built
+ - webx-session-manager and webx-router are launched automatically
+ - The container is configured with several standard users (mario, luigi, peach, toad, yoshi and bowser - username and password identical)
+ - webx-router is configured to launch the webx-engine built from the local sources
+
+Running in this mode means you have to build the webx-engine manually (as described above).
+
+The webx-engine is launched by the WebX Router when a login is requested. To debug the process you have to attach to it: Run the VSCode launch command <em>Debug Running WebX Process</em> and search for the `webx-engine` process in the list proposed by VSCode.
+
+### Running the WebX Demo to test the WebX Engine
+
+In a terminal on the host computer the WebX Engine the simplest way to test the WebX Engine is by running the [WebX Demo Deploy](https://github.com/ILLGrenoble/webx-demo-deploy) project. This runs the WebX Demo in a docker compose stack and can attach to the WebX Engine (or WebX Router in multi-user mode) running in the dev container.
+
+#### Running in standalone mode
+
+If you are just developing the WebX Engine on its own, within the webx-demo-deploy project run the command
+
+```
+./deploy.sh -sh host.docker.internal
+```
+
+This allows the demo to attach directly to a WebX Engine that you launch in the devcontainer.
+
+In a browser open https://localhost
+
+#### Running in multiuser mode
+
+To fully test the WebX Stack run the demo as follows:
+
+```
+./deploy.sh
+```
+
+In a browser open https://localhost
+
+You need to set the host of the WebX Server: running in a local devcontainer, set this to `host.docker.internal`.
+
+Log in with any of the pre-defined users (mario, luigi, peach, toad, yoshi and bowser), the password is the same as the username.
+
+This will send the request to the WebX Router: the WebX Session Manager will authenticate the user and run Xorg and Xfce4 for the user; WebX Router then launches the locally-built webx-engine. You can debug the webx-engine process as described above by attaching to the process in the VSCode launch command.
