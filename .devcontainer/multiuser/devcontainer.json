@@ -1,5 +1,7 @@
 {
-  "image": "ghcr.io/illgrenoble/webx-dev-env-ubuntu:22.04",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "postCreateCommand": ".devcontainer/multiuser/install.sh",
   "forwardPorts": [5555, 5556, 5557, 5558],
   "customizations": {
