@@ -31,10 +31,8 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        // // Generate alphaMap (reuse original data): remove all other components (keep only alpha)
-        for (int i = 0; i < 10; i++) {
-            webx_convertToAlpha((u_int32_t *)data, imageSize);
-        }
+        // Generate alphaMap (reuse original data): remove all other components (keep only alpha)
+        webx_convertToAlpha((u_int32_t *)data, imageSize);
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;
