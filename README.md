@@ -205,3 +205,141 @@ You need to set the host of the WebX Server: running in a local devcontainer, se
 Log in with any of the pre-defined users (mario, luigi, peach, toad, yoshi and bowser), the password is the same as the username.
 
 This will send the request to the WebX Router: the WebX Session Manager will authenticate the user and run Xorg and Xfce4 for the user; WebX Router then launches the locally-built webx-engine. You can debug the webx-engine process as described above by attaching to the process in the VSCode launch command.
+
+## Design
+
+The WebX Engine is designed as an interface to enable Remote Desktop connections to an X11 display. The server starts by connecting as a client to a running X11 server. Clients can connect to the engine through ZeroMQ sockets.
+
+As an X11 display client it can:
+ - obtain display characteristics and window metadata, storing this information in an internal state structure
+ - listen to X11 server events, update the state (window layout for example) and propagate visual data (window contents) to WebX clients
+ - send keyboard and mouse actions
+
+Clients connect to the WebX Engine on different ZeroMQ sockets.
+
+A <em>controller</em> thread is used to manage th connection between the WebX Engine clients and the X11 display: at a specific frequency it will forward X11 event data to the clients (display and window parameters, image data, etc) and forward instructions from the clients. The frequency of this loop is determined by the requested quality of the Remote Desktop display: lower quality implies lower frequency.
+
+The following sections provide more details on the architecture of the engine.
+
+### Threading
+
+The main thread of the WebX Engine runs a control loop in the WebXController. At a given frequency the control loop forwards mouse and keyboard instructions from clients to the X11 display, handles qny queued X11 events and publishes event data to the transport layer (connected ZMQ clients). The frequency at which the loop runs at is determined by the quality of the Remote Desktop (set by the client): lower frequency for lower quality.
+
+Three other threads are used: one for each ZMQ socket. Events received from the sockets or sent to the sockets are managed asynchronously to the main controller loop allowing the WebXController to maintain a regular frequency.
+
+### X11 Client
+
+Each WebX Engine contains a single WebXManager which is used to propagate requests to the X11 display (via the WebXDisplay) and handle X11 events (through the WebXEventListener).
+
+#### X11 Display and Windows
+
+When the WebX Engine starts it will automatically attempt to connect the X11 display set by the DISPLAY environment variable. Secure X11 Displays require also the XAUTHORITY environment variable to be correctly set. The WebXDisplay is used to connect to the X11 display and maintain a equivalent state structure of the X11 windows. X11 returns a tree structure of windows on some of which are useful for WebX: some are not visible and only a few are <em>parent</em> windows that can be moved or resized.
+
+Window image data is received through the WebXDisplay for a given X11 window Id. Window image data can either be for a full window or a sub-rectangle for partial updates.
+
+#### Event listener
+
+X11 events are registered with the WebXEventListener. These events are queued until released manually during the WebXController loop.
+
+The events cover:
+ - creation and deletion of X11 windows
+ - changed to windows properties (position and size)
+ - changes to window visibility
+ - changes to window content (XDamage event)
+ - changes to cursor type (XFixes event)
+
+Events are handled by the WebXManager which will either notify directly the WebXController (to propagate event data to clients) or update the WebXDisplay. 
+
+#### Keyboard layout
+
+The WebXDisplay is used also to forward keyboard and mouse events to the X11 display. The requested <em>keysym</em> value is converted into a keyboard code. Due to the architecture of X11 not all keysyms can be converted for a given keyboard. For example characters with accents are generally not available on a US keyboard and so will not result in a successful keypress in the X11 server. 
+
+### Image data
+
+Raw image data for an X11 window can be received from the X11 server for either a full window or a sub-rectangle of the window.
+
+The raw image needs to be converted and compressed for it to be usable over a network. After many test JPEG has been found to be the most optimal conversion format, especially through the use of libjpeg-turbo library to take advantage of accelerated encoding. Typically less than 10 milliseconds is required to encode a window image. PNG conversions were several hundred milliseconds.    
+
+The generation of image data and transport is the most demanding part of WebX. Optimisations have been attempted whenever possible to reduce the amount of time needed to generate image data. Other optimisations may yet be possible.
+
+The X11 XDamage event is used to determine which parts of a window has been updated. The <em>damaged</em> rectangles of a window or stored until the WebXController loop handles them and requests image data for each rectangle. WebX will automatically determine when two rectangles are touching or overlapping and generate a single encompassing rectangle to avoid multiple requests of identical image data. 
+
+#### Transparency
+
+Full managed windows generally contain transparency (for example the corners of the windows can be curved, or some applications - eg terminator - allow for semi-transparent contents). However, the JPEG format does not contain a transparency value. To account for transparent windows using JPEG images WebX sends the transparency as a separate grey-scale image. Transparency is detected from window image data and the case being, WebX will separate the alpha channel into a new image data and perform the JPEG conversion for both the color image and the alpha image.
+
+The WebX Client uses these images for color map and alpha map texture mapping: both images are combined in WebGL to render and window on the screen with the required transparency.
+
+#### Image quality
+
+The quality of the JPEG image is determined by the quality of Remote Desktop specified by the client. The best image quality is 90% and the quality goes down to 30% at the worst.
+
+### Transport layer
+
+The transport layer allows for clients to connect to the WebX Engine to send instructions to the X11 display, request display information (window layout for example) and receive notifications of display updates.
+
+#### Sockets
+
+Connections are made using sockets. ZeroMQ is used to provide a layer of abstraction above the sockets and enable different communication patterns.
+
+Three sockets are used to communicate with WebX Engine:
+- Connector: Obtain connection parameters (configured sockets) and determine liveliness
+- CommandCollector: Receive instructions from the client which can (if required) provoke response messages
+- MessagePublisher: Asynchronous messages about the screen, windows, images, mouse and cursor
+
+Running in <em>standalone</em> mode, these sockets are TCP sockets defaulting to port numbers 5555, 5556 and 5557 respectively. When used by the WebX Router (which is running on the same host machine), these sockets are unix file sockets specified by a file path (IPC sockets).
+
+The Connector socket, running in response-request (`ZMQ_REP`) mode, is used to obtain the ports of CommandCollector and the MessagePublisher. It also is used to ensure that the WebX Engine is still running using ping-pong events.
+
+The CommandCollector, running with the subscriber pattern (`ZMQ_SUB`), listens to instructions and requests published by the client. Instructions can be to update the mouse position, send keyboard command, modify remote desktop quality, etc. Request require a response and can be for example to get the windows layout, window image, etc. The commands are forwarded to WebXController and queued until the control loop runs.
+
+The MessagePublisher, running with the publisher pattern (`ZMQ_PUB`) forwards messages to clients. Messages can either be responses to client requests or asynchronous events such as display updates. Messages are passed to MessagePublisher from the WebXController during it's control loop and sent asynchronously to avoid any latency withing the control loop.
+
+#### Binary serialization
+
+All instructions received and messages sent through the sockets have a binary format. The binary data contains a header including a session Id - used by WebX Router to distinguish messages from multiple engines, a message/instruction type, a unique message Id. Message headers sent from the server also include the length of data to be sent (instructions received from the client always have pre-determined lengths). After the header there is the specific instruction/message content data.  
+
+Using the WebXBinaryBuffer, the content data can be composed of floating point or integer data of variable sizes. Values are easily written to and read from the buffer. Byte alignment is managed automatically.
+
+Image (JPEG) data is copied directly into the binary buffer making for an efficient transfer of data. 
+
+The Javascript WebX Client library decodes messages from the server into json objects or JPEG image data depending on the type specified in the header.
+
+### Controller
+
+The WebXController is the central part of the application, running on the main thread. It performs a control loop at fixed intervals (determined by the quality required of the Remote Desktop). 
+
+At the best quality, the controller loop runs 30 times a second with the aim of updating clients at 30 frames per second (FPS) with an image quality of 90%.
+
+At the worst quality, the controller runs twice a second with an image quality of 30%.
+
+The control loop has different stages:
+ - Sleep: sleep for specified time to obtain predefined frequency (related to Remote Desktop quality) 
+ - Client Instructions: handle instructions from the client (mouse events and keyboard events)
+ - Flush X11: flush X11 events with the WebXDisplay (this will cause all pending X11 events to be queued for use by the WebXEventListener)
+ - Window Layout: If the window layout has changed, send up-to-date window information to the publisher
+ - Window Images: send all window image updates to the publisher
+ - Mouse: send mouse position and cursor type to the publisher 
+
+messages sent to the publisher are sent to clients in a separate thread to assist the controller in maintaining a regular frequency.
+
+#### Window Image Updates 
+
+Window image changes are determined by the XDamage X11 extension. This allows us to better know the region of windows that has changed. A window may have several updates during the control loop sleep stage. The changed regions are stored by each window  (and as mentioned previously, regions that are touching or overlapping are regrouped into a single region).
+
+During the <em>Window Images</em> stage, the controller retrieves all the <em>damaged</em> windows (image data required updating). For each window it will determine if the damaged area covers at least 90% of the window: if so it will update the full window, if not it will send individual sub-window updates
+
+For full window updates it then:
+ - Verify that the window is visible
+ - Obtain a WebXImage object containing both color data and alpha (transparency) data
+ - Verify that the color data and alpha (transparency) data have really changed - the XDamage X11 event is sometimes sent for a full window even if the data hasn't changed. To avoid sending image data unnecessarily a rapid test of pixel data is performed.
+ - Create a window image message to sent to the client
+ - Send the window image message to the transport layer publisher if the color data has changed (including alpha data only if it has changed)
+
+For sub-window updates, the controller:
+ - Create WebXImage for each sub-rectangle of the window that has changed
+ - Concatenate the images into a single sub-window image message
+ - Send the sub-window image message to the transport layer publisher to send to clients
+
+The window image updates accounts for the most time spent withing the control loop and so several optimisations have been made. Potentially other optimisations can be made still.
+
