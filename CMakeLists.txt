@@ -8,7 +8,7 @@ endif()
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -pg")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ftree-vectorize -mavx")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_STANDARD 11)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
