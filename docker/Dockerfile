@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN cmake .
+RUN cmake -DCMAKE_BUILD_TYPE=Release .
 RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
@@ -20,7 +20,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN cmake .
+RUN cmake -DCMAKE_BUILD_TYPE=Release .
 RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
