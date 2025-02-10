@@ -14,6 +14,11 @@ png_byte color_type;
 png_byte bit_depth;
 png_bytep *row_pointers;
 
+struct TestResult {
+    double cummulativeTimeUs;
+    size_t fileSize;
+};
+
 void read_png_file(const char * filename) {
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
@@ -84,6 +89,31 @@ void read_png_file(const char * filename) {
     fclose(fp);
 }
 
+TestResult test_convert(XImage & xImage, WebXImageConverter & converter, int nIter) {
+    double cummulativeTimeUs = 0;
+    size_t fileSize = 0;
+    TestResult result;
+
+    for (int i = 0; i < nIter; i++) {
+        WebXImage * image = converter.convert(&xImage);
+        cummulativeTimeUs += image->getEncodingTimeUs();
+
+        if (i == 0) {
+            fileSize = image->getRawDataSize();
+            std::string outputFilename = "test/output/screenshotOut";
+            if (image->save(outputFilename)) {
+                printf("Output image saved to %s\n", outputFilename.c_str());
+            } else {
+                printf("Failed to save image\n");
+            }
+        }
+    }
+
+    result.cummulativeTimeUs = cummulativeTimeUs;
+    result.fileSize = fileSize;
+    return result;
+}
+
 int main() {
     const char * filename = "test/resources/screenshot.png";
     read_png_file(filename);
@@ -113,27 +143,16 @@ int main() {
     xImage.bytes_per_line = bytes_per_line;
     xImage.depth = 24;
 
-    // WebXPNGImageConverter converter;
-    WebXWebPImageConverter converter;
+    WebXJPGImageConverter jpgConverter;
+    WebXPNGImageConverter pngConverter;
+    WebXWebPImageConverter webPConverter;
     int nIter = 10;
-    double cummulativeTimeUs = 0;
-    size_t fileSize = 0;
-    for (int i = 0; i < nIter; i++) {
-        WebXImage * image = converter.convert(&xImage);
-        cummulativeTimeUs += image->getEncodingTimeUs();
-
-        if (i == 0) {
-            fileSize = image->getRawDataSize();
-            std::string outputFilename = "test/output/screenshotOut";
-            if (image->save(outputFilename)) {
-                printf("Output image saved to %s\n", outputFilename.c_str());
-            } else {
-                printf("Failed to save image\n");
-            }
-        }
-    }
-
-    printf("Text completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, cummulativeTimeUs / 1000, (cummulativeTimeUs / nIter) / 1000, fileSize / 1024);
+    TestResult result = test_convert(xImage, jpgConverter, nIter);
+    printf("JPG  test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
+    result = test_convert(xImage, pngConverter, nIter);
+    printf("PNG test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
+    result = test_convert(xImage, webPConverter, nIter);
+    printf("WebP test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
 
 
 }

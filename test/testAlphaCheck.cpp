@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <chrono>
-#include <emmintrin.h>
-#include <tmmintrin.h>
 #include <utils/WebXImageUtils.h>
 
 

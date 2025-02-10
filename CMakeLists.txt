@@ -67,16 +67,6 @@ target_link_libraries(
     -lX11
 )
 
-file(GLOB_RECURSE TEST_SQUISH_SOURCES test/testSquish.cpp)
-add_executable(testSquish ${TEST_SQUISH_SOURCES})
-target_link_libraries(
-    testSquish
-    ${LIBPNG_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    -lpng
-    -lsquish
-)
-
 file(GLOB_RECURSE TEST_ALPHA_SOURCES test/testAlpha.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
 add_executable(testAlpha ${TEST_ALPHA_SOURCES})
 target_link_libraries(
@@ -85,22 +75,6 @@ target_link_libraries(
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
     -lwebp
-)
-
-file(GLOB_RECURSE TEST_MOUSE_SOURCES test/testMouse.cpp)
-add_executable(testMouse ${TEST_MOUSE_SOURCES})
-target_link_libraries(
-    testMouse
-    -lXtst
-    -lX11
-)
-
-file(GLOB_RECURSE TEST_KEYBOARD_SOURCES test/testKeyboard.cpp)
-add_executable(testKeyboard ${TEST_KEYBOARD_SOURCES})
-target_link_libraries(
-    testKeyboard
-    -lXtst
-    -lX11
 )
 
 file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/image/* lib/crc32/*)
@@ -116,28 +90,10 @@ target_link_libraries(
     -lpng
 )
 
-file(GLOB_RECURSE TEST_PUSH_SOURCES test/testPush.cpp)
-add_executable(testPush ${TEST_PUSH_SOURCES})
+file(GLOB_RECURSE TEST_IMAGE_COMPARE_SOURCES test/testImageCompare.cpp)
+add_executable(testImageCompare ${TEST_IMAGE_COMPARE_SOURCES})
 target_link_libraries(
-    testPush
-    -lzmq
-)
-
-file(GLOB_RECURSE TEST_PUSH_PULL_SOURCES test/testPushPull.cpp)
-add_executable(testPushPull ${TEST_PUSH_PULL_SOURCES})
-target_link_libraries(
-    testPushPull
-    ${CMAKE_THREAD_LIBS_INIT}
-    -lzmq
-)
-
-file(GLOB_RECURSE TEST_DAMAGE_SOURCES test/testDamage.cpp src/events/*)
-add_executable(testDamage ${TEST_DAMAGE_SOURCES})
-target_link_libraries(
-    testDamage
-    -lX11
-    -lXfixes
-    -lXdamage
+    testImageCompare
 )
 
 file(GLOB_RECURSE TEST_ALPHA_CHECK_SOURCES test/testAlphaCheck.cpp)

@@ -113,7 +113,6 @@ int main() {
     xImage.bytes_per_line = bytes_per_line;
     xImage.depth = 24;
 
-    // WebXPNGImageConverter converter;
     WebXJPGImageConverter converter;
     int nIter = 10;
     double cummulativeTimeUs = 0;

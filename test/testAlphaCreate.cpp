@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <chrono>
-#include <emmintrin.h>
-#include <tmmintrin.h>
 #include <utils/WebXImageUtils.h>
 
 
@@ -87,6 +85,18 @@ int main() {
 
     for (int it = 0; it < nIter; it++) {
         convertToAlpha2((u_int32_t *)data, length);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = end - start;
+    cummulativeTimeUs = duration.count();
+
+    printf("Test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+    
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int it = 0; it < nIter; it++) {
+        webx_convertToAlpha((u_int32_t *)data, length);
     }
 
     end = std::chrono::high_resolution_clock::now();

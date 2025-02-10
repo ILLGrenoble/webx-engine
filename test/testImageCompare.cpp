@@ -2,9 +2,6 @@
 #include <stdio.h>
 #include <cstring>
 #include <chrono>
-#include <emmintrin.h>
-#include <tmmintrin.h>
-#include <utils/WebXImageUtils.h>
 
 
 int comparePixels1(const u_int32_t * data1, const u_int32_t * data2, size_t length) {
@@ -92,6 +89,8 @@ int comparePixels3(const u_int32_t * data1, const u_int32_t * data2, size_t leng
 
 
 int main() {
+
+    printf("NOTE! This test must be run when compiled for Release!\n");
 
     srand(time(NULL));
 

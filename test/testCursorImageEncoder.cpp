@@ -31,5 +31,5 @@ int main() {
         }
     }
 
-    printf("Text completed: %d iterations in %fms\n%fms / iteration for %lu bytes\n", nIter, cummulativeTimeUs / 1000,(cummulativeTimeUs / nIter) / 1000, fileSize);
+    printf("Test completed: %d iterations in %fms\n%fms / iteration for %lu bytes\n", nIter, cummulativeTimeUs / 1000,(cummulativeTimeUs / nIter) / 1000, fileSize);
 }
