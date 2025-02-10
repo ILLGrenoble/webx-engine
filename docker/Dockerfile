@@ -63,8 +63,10 @@ FROM alpine:3
 WORKDIR /app
 
 # Copy package to standard directory
-RUN mkdir -p target/debian
-RUN mkdir -p target/ubuntu
+RUN mkdir -p target/debian11
+RUN mkdir -p target/debian12
+RUN mkdir -p target/ubuntu22
+RUN mkdir -p target/ubuntu24
 COPY --from=debian11 /app/packages/* target/debian11
 COPY --from=debian12 /app/packages/* target/debian12
 COPY --from=ubuntu22 /app/packages/* target/ubuntu22
