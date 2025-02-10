@@ -1,3 +1,10 @@
+0.1.4 10/02/2025
+================
+ * Build releases versions also for Debian 12 and Ubuntu 24
+ * Remove WebXKeyboardConnection and unused libraries
+ * Update spdlog to 1.15.1
+ * Cleanup tests
+
 0.1.3 28/01/2025
 ================
  * Fix subscriber filtering for newer versions of zmq
