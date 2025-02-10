@@ -29,25 +29,33 @@ jobs:
       - name: Extract Debian package
         run: |
           CONTAINER_ID=$(docker create webx-engine-builder)
-          docker cp $CONTAINER_ID:/app/target/debian/. ./debian-package
-          docker cp $CONTAINER_ID:/app/target/ubuntu/. ./ubuntu-package
+          docker cp $CONTAINER_ID:/app/target/debian11/. ./debian11
+          docker cp $CONTAINER_ID:/app/target/debian12/. ./debian12
+          docker cp $CONTAINER_ID:/app/target/ubuntu22/. ./ubuntu22
+          docker cp $CONTAINER_ID:/app/target/ubuntu24/. ./ubuntu24
           docker rm -f $CONTAINER_ID
           
           # Find the actual Debian package filename in the `./debian-package` directory
-          DEB_FILE=$(find ./debian-package -name "webx-engine_*_amd64.deb")
-          UBUNTU_FILE=$(find ./ubuntu-package -name "webx-engine_*_amd64.deb")
+          DEB11_FILE=$(find ./debian11 -name "webx-engine_*_amd64.deb")
+          DEB12_FILE=$(find ./debian12 -name "webx-engine_*_amd64.deb")
+          UBUNTU22_FILE=$(find ./ubuntu22 -name "webx-engine_*_amd64.deb")
+          UBUNTU24_FILE=$(find ./ubuntu24 -name "webx-engine_*_amd64.deb")
           
+          mkdir debian-packages
+
           # Move and rename the files
-          mv "$DEB_FILE" "./debian-package/webx-engine_${{ github.ref_name }}_debian_11_amd64.deb"
-          mv "$UBUNTU_FILE" "./debian-package/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb"
+          mv "$DEB11_FILE" "./debian-packages/webx-engine_${{ github.ref_name }}_debian_11_amd64.deb"
+          mv "$DEB12_FILE" "./debian-packages/webx-engine_${{ github.ref_name }}_debian_12_amd64.deb"
+          mv "$UBUNTU22_FILE" "./debian-packages/webx-engine_${{ github.ref_name }}_ubuntu_22.04_amd64.deb"
+          mv "$UBUNTU24_FILE" "./debian-packages/webx-engine_${{ github.ref_name }}_ubuntu_24.04_amd64.deb"
 
       - name: Upload Debian artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: debian-package
-          path: ./debian-package/
+          name: debian-packages
+          path: ./debian-packages/
 
-      - name: Upload Debian package as Release asset
+      - name: Upload Debian packages as Release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: debian-package/*.deb
+          files: debian-packages/*.deb
