@@ -25,9 +25,9 @@ endif ()
 find_package(Threads REQUIRED)
 
 pkg_check_modules(LIBPNG libpng)
-pkg_check_modules(WEBP REQUIRED libwebp )
-
+pkg_check_modules(WEBP REQUIRED libwebp)
 pkg_check_modules(X11 REQUIRED x11)
+
 include_directories(src lib)
 
 
