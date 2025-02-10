@@ -1,6 +1,5 @@
 #include <display/WebXManager.h>
 #include <controller/WebXController.h>
-#include <controller/WebXKeyboardConnection.h>
 #include <transport/WebXTransport.h>
 #include <display/WebXDisplay.h>
 #include <utils/WebXSettings.h>
@@ -41,21 +40,12 @@ int main(int argc, char *argv[]) {
     }
 
     int opt;
-    WebXKeyboardConnection * keyboardConnection = NULL;
     std::string keyboardLayout = "";
     bool standAlone = false;
 
     while((opt = getopt(argc, argv, "ik:s")) != -1) {  
         switch(opt)  
         {  
-            case 'i':
-                {
-                    keyboardConnection = new WebXKeyboardConnection();
-                    keyboardConnection->run();
-                    spdlog::info("Initialised WebX interactive keyboard connection");
-                }
-                break;
-             
             case 's':
                 {
                     standAlone = true;
@@ -87,10 +77,6 @@ int main(int argc, char *argv[]) {
 
     // stop transport
     transport->stop();
-
-    if (keyboardConnection != NULL) {
-        keyboardConnection->stop();
-    } 
 
     spdlog::info("WebX terminated");
 }
