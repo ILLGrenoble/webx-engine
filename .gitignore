@@ -27,6 +27,7 @@ node_modules
 package-lock.json
 test/output/*.jpg
 test/output/*.png
+test/output/*.webp
 gmon.out
 gprof.out
 .vagrant
