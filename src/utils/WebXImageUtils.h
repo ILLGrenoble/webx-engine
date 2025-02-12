@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-inline int webx_countTransparentPixels(const u_int32_t * data, size_t length) {
+inline int webx_countTransparentPixels(const u_int32_t * data, size_t length, bool exitOnFound = false) {
 
     int alphaCount = 0;
 
@@ -16,8 +16,9 @@ inline int webx_countTransparentPixels(const u_int32_t * data, size_t length) {
     const u_int32_t mask = 0xFF000000;
 
     size_t remaining = length;
+    bool exit = false;
 
-    while (remaining >= PixelsAtOnce) {
+    while (remaining >= PixelsAtOnce && !exit) {
         for (size_t unrolling = 0; unrolling < Unroll; unrolling++) {
 
             u_int32_t one   = *current++;
@@ -29,15 +30,18 @@ inline int webx_countTransparentPixels(const u_int32_t * data, size_t length) {
             alphaCount += (two & mask) != mask;
             alphaCount += (three & mask) != mask;
             alphaCount += (four & mask) != mask;
+
+            exit = alphaCount > 0 && exitOnFound;
         }
 
         remaining -= PixelsAtOnce;
     }
 
     // remaining 1 to 15 uint32
-    while (remaining-- != 0) {
+    while (remaining-- != 0 && !exit) {
         u_int32_t value  = *current++;
         alphaCount += (value & mask) != mask;
+        exit = alphaCount > 0 && exitOnFound;
     }
 
     return alphaCount;
@@ -45,44 +49,23 @@ inline int webx_countTransparentPixels(const u_int32_t * data, size_t length) {
 
 inline void webx_convertToAlpha(u_int32_t * data, size_t length) {
 
-    u_int32_t * pixel = (u_int32_t *)data;
-    for (int i = 0; i < length; i++) {
-        *pixel = (*pixel & 0xFF000000);
-        pixel++;
-    }
-
-}
-
-inline int webx_comparePixels(const u_int32_t * data1, const u_int32_t * data2, size_t length) {
-
-    int diffCount = 0;
-
-    const u_int32_t * current1 = data1;
-    const u_int32_t * current2 = data2;
+    u_int32_t * src = data;
+    u_int32_t * dst = data;
 
     // enabling optimization (at least -O2) automatically unrolls the inner for-loop
     const size_t Unroll = 4;
     const size_t PixelsAtOnce = 4 * Unroll;
+    const u_int32_t mask = 0xFF000000;
 
     size_t remaining = length;
 
     while (remaining >= PixelsAtOnce) {
         for (size_t unrolling = 0; unrolling < Unroll; unrolling++) {
 
-            u_int32_t d1one   = *current1++;
-            u_int32_t d1two   = *current1++;
-            u_int32_t d1three = *current1++;
-            u_int32_t d1four  = *current1++;
-
-            u_int32_t d2one   = *current2++;
-            u_int32_t d2two   = *current2++;
-            u_int32_t d2three = *current2++;
-            u_int32_t d2four  = *current2++;
-
-            diffCount += d1one != d2one;
-            diffCount += d1two != d2two;
-            diffCount += d1three != d2three;
-            diffCount += d1four != d2four;
+            *dst++ = *src++ & mask;
+            *dst++ = *src++ & mask;
+            *dst++ = *src++ & mask;
+            *dst++ = *src++ & mask;
         }
 
         remaining -= PixelsAtOnce;
@@ -90,14 +73,18 @@ inline int webx_comparePixels(const u_int32_t * data1, const u_int32_t * data2, 
 
     // remaining 1 to 15 uint32
     while (remaining-- != 0) {
-        u_int32_t d1value = *current1++;
-        u_int32_t d2value = *current2++;
-        diffCount += d1value != d2value;
+        *dst++ = *src++ & mask;
     }
 
-    return diffCount;
+    // slow (check testAlphaCreate)
+    // Simple pixel iteration test completed: 1000 iterations in 297582.459000ms, 297.582459us / iteration for 6890KB
+    // Loop unrolling test completed: 1000 iterations in 38340.459000ms, 38.340459us / iteration for 6890KB
+    // u_int32_t * pixel = (u_int32_t *)data;
+    // for (int i = 0; i < length; i++) {
+    //     *pixel = (*pixel & 0xFF000000);
+    //     pixel++;
+    // }
+
 }
-
-
 
 #endif /* WEBX_IMAGE_UTILS_H */

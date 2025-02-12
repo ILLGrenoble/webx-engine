@@ -21,7 +21,7 @@ inline bool checkTransparent(XImage * image) {
     const size_t height = image->height;
     const size_t length = width * height;
 
-    int transparencyCount = webx_countTransparentPixels(data, length);
+    int transparencyCount = webx_countTransparentPixels(data, length, true);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
@@ -29,23 +29,6 @@ inline bool checkTransparent(XImage * image) {
     spdlog::trace("Transparency check {:d} x {:d} ({:d}KB) in {:f}us", width, height, length * 4 / 1024, duration.count());
 
     return transparencyCount > 0;
-}
-
-inline uint32_t compareWindowImages(XImage * image1, XImage * image2) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-    const u_int32_t * data1 = (u_int32_t *)image1->data;
-    const u_int32_t * data2 = (u_int32_t *)image2->data;
-    const size_t width = image1->width;
-    const size_t height = image1->height;
-    const size_t length = width * height;
-
-    int nChanges = webx_comparePixels(data1, data2, length);
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::trace("Compared windows pixels {:d} x {:d} ({:d} differences) in {:f}us", width, height, nChanges, duration.count());
-    return nChanges;
 }
 
 inline uint32_t calculateImageChecksum(std::shared_ptr<WebXImage> image) {

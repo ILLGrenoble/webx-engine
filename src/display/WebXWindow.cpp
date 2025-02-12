@@ -140,8 +140,6 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
-        // bool hasConvertedAlpha = WebXImageAlphaUtils::convert(image, &this->_rectangle, subWindowRectangle, &rectangle);
-        // webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, hasConvertedAlpha));
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 
         if (isFull) {
