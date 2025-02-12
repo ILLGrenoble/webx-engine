@@ -93,8 +93,8 @@ private:
 
     const static unsigned int THREAD_RATE = 60;
     const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
-    const static unsigned int MOUSE_MIN_REFRESH_RATE = 60;
-    const static unsigned int MOUSE_MAX_REFRESH_RATE = 10;
+    const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
+    const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
     const static size_t FRAME_DATA_STORE_SIZE = 30;
 
     static std::vector<WebXQuality> QUALITY_SETTINGS;
