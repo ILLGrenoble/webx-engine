@@ -79,7 +79,7 @@ int main() {
     std::chrono::duration<double, std::micro> duration = end - start;
     double cummulativeTimeUs = duration.count();
 
-    printf("Test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+    printf("Simple pixel iteration test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
     
     start = std::chrono::high_resolution_clock::now();
 
@@ -91,7 +91,7 @@ int main() {
     duration = end - start;
     cummulativeTimeUs = duration.count();
 
-    printf("Test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+    printf("Loop unrolling test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
     
     start = std::chrono::high_resolution_clock::now();
 
@@ -103,7 +103,7 @@ int main() {
     duration = end - start;
     cummulativeTimeUs = duration.count();
 
-    printf("Test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+    printf("WebX integrated test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
 
     free(data);
 }
