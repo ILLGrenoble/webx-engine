@@ -22,6 +22,11 @@ private:
         float imageQuality;
     };
 
+    struct WebXFrameData {
+        double fps;
+        double duration;
+    };
+
 
 private:
     WebXController();
@@ -81,15 +86,16 @@ private:
     void notifyMouseChanged(WebXDisplay * display);
 
     void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);
-    void updateFps(double fps);
+    void updateFrameData(double fps, double duration);
 
 private:
     static WebXController * _instance;
 
-    static unsigned int THREAD_RATE;
-    static unsigned int DEFAULT_IMAGE_REFRESH_RATE;
-    static unsigned int MOUSE_MIN_REFRESH_RATE;
-    static unsigned int MOUSE_MAX_REFRESH_RATE;
+    const static unsigned int THREAD_RATE = 60;
+    const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
+    const static unsigned int MOUSE_MIN_REFRESH_RATE = 60;
+    const static unsigned int MOUSE_MAX_REFRESH_RATE = 10;
+    const static size_t FRAME_DATA_STORE_SIZE = 30;
 
     static std::vector<WebXQuality> QUALITY_SETTINGS;
 
@@ -112,9 +118,8 @@ private:
     WebXControllerState _state;
 
     WebXConnection * _connection;
-    std::vector<double> _fpsStore;
-    const static size_t FPS_STORE_SIZE = 30;
-    int _fpsStoreIndex;
+    std::vector<WebXFrameData> _frameDataStore;
+    int _frameDataStoreIndex;
 
 };
 

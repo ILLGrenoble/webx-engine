@@ -22,11 +22,6 @@
 
 WebXController * WebXController::_instance = NULL;
 
-unsigned int WebXController::THREAD_RATE = 60;
-unsigned int WebXController::DEFAULT_IMAGE_REFRESH_RATE = 30;
-unsigned int WebXController::MOUSE_MAX_REFRESH_RATE = 60;
-unsigned int WebXController::MOUSE_MIN_REFRESH_RATE = 10;
-
 std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
     {imageFPS: 2, imageQuality: 0.3},
     {imageFPS: 2, imageQuality: 0.6},
@@ -48,10 +43,10 @@ WebXController::WebXController() :
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
     _connection(NULL),
-    _fpsStoreIndex(0) {
+    _frameDataStoreIndex(0) {
 
-    for (int i = 0; i < WebXController::FPS_STORE_SIZE; i++) {
-        this->_fpsStore.push_back(0.0);
+    for (int i = 0; i < WebXController::FRAME_DATA_STORE_SIZE; i++) {
+        this->_frameDataStore.push_back({.fps = 0.0, .duration = 0.0});
     }
 }
 
@@ -110,8 +105,6 @@ void WebXController::run() {
             std::chrono::duration<double, std::micro> delayUs = start - lastTime;
             std::chrono::duration<double, std::micro> timeSinceMouseRefreshUs = start - lastMouseRefreshTime;
             lastTime = start;
-            double fps = 1000000 / delayUs.count();
-            this->updateFps(fps);
 
             // Handling of mouse movement
             WebXPosition initialMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
@@ -148,6 +141,9 @@ void WebXController::run() {
             std::chrono::duration<double, std::micro> durationUs = end - start;
             long duration = durationUs.count();
             calculateThreadSleepUs = duration > this->_threadSleepUs ? 0 : this->_threadSleepUs - duration;
+
+            double fps = 1000000 / delayUs.count();
+            this->updateFrameData(fps, duration);
         }
     }
 
@@ -309,18 +305,21 @@ void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t 
     }
 }
 
-void WebXController::updateFps(double fps) {
-    this->_fpsStore[this->_fpsStoreIndex++] = fps;
-    if (this->_fpsStoreIndex == WebXController::FPS_STORE_SIZE) {
-        this->_fpsStoreIndex = 0;
+void WebXController::updateFrameData(double fps, double duration) {
+    this->_frameDataStore[this->_frameDataStoreIndex++] = { .fps = fps, .duration = duration };
+    if (this->_frameDataStoreIndex == WebXController::FRAME_DATA_STORE_SIZE) {
+        this->_frameDataStoreIndex = 0;
 
         double averageFps = 0;
-        for (auto it = this->_fpsStore.begin(); it != this->_fpsStore.end(); it++) {
-            averageFps += *it;
+        double averageDuration = 0;
+        for (auto it = this->_frameDataStore.begin(); it != this->_frameDataStore.end(); it++) {
+            averageFps += (*it).fps;
+            averageDuration += (*it).duration;
         }
-        averageFps /= WebXController::FPS_STORE_SIZE;
+        averageFps /= WebXController::FRAME_DATA_STORE_SIZE;
+        averageDuration = 0.001 * averageDuration / WebXController::FRAME_DATA_STORE_SIZE;
 
-        spdlog::trace("Average FPS = {:f}", averageFps);
+        spdlog::trace("Average FPS = {:f}, average frame duration = {:f}ms", averageFps, averageDuration);
     }
 }
 
