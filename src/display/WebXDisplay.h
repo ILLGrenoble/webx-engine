@@ -39,9 +39,15 @@ public:
         return this->_visibleWindows;
     }
 
-    const std::vector<WebXWindowProperties> & getVisibleWindowsProperties() {
+    const std::vector<WebXWindowProperties> getVisibleWindowsProperties() {
         const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
-        return this->_visibleWindowsProperties;
+        std::vector<WebXWindowProperties> visibleWindowsProperties;
+
+        std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(visibleWindowsProperties), [](WebXWindow * window) { 
+            return WebXWindowProperties(window);
+        });
+
+        return visibleWindowsProperties;
     }
 
     WebXWindow * getRootWindow() const {
@@ -118,7 +124,6 @@ private:
     std::map<Window, WebXWindow *> _allWindows;
     std::map<const WebXWindow *, WebXWindow *> _managedWindows;
     std::vector<WebXWindow *> _visibleWindows;
-    std::vector<WebXWindowProperties> _visibleWindowsProperties;
 
     std::mutex _visibleWindowsMutex;
 

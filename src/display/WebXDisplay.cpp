@@ -125,21 +125,6 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
             this->_visibleWindows.erase(it);
         }
 
-        // Remove window properties
-        std::vector<WebXWindowProperties>::iterator it2 = this->_visibleWindowsProperties.begin();
-        bool found = false;
-        while (!found && it2 != this->_visibleWindowsProperties.end()) {
-            if ((*it2).id == (unsigned long)window->getX11Window()) {
-                found = true;
-
-            } else {
-                it2++;
-            }
-        }
-        if (found) {
-            this->_visibleWindowsProperties.erase(it2);
-        }
-
         // Remove from parent
         WebXWindow * parent = window->getParent();
         parent->removeChild(window);
@@ -182,7 +167,6 @@ void WebXDisplay::updateVisibleWindows() {
 
     // Clear current list
     this->_visibleWindows.clear();
-    this->_visibleWindowsProperties.clear();
 
     WebXTreeDetails tree;
     if (queryTree(this->_x11Display, this->_rootWindow->getX11Window(), tree)) {
@@ -198,9 +182,6 @@ void WebXDisplay::updateVisibleWindows() {
 
                     child->enableDamage();
                     this->_visibleWindows.push_back(child);
-
-                    // Add window properties
-                    this->_visibleWindowsProperties.push_back(WebXWindowProperties(child));
                 } 
             }
         }
