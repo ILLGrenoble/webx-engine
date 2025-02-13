@@ -31,28 +31,6 @@ inline bool checkTransparent(XImage * image) {
     return transparencyCount > 0;
 }
 
-inline uint32_t calculateImageChecksum(std::shared_ptr<WebXImage> image) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-    uint32_t checksum = image->getRawChecksum();
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::trace("Checksum for window image {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getRawDataSize(), duration.count());
-    return checksum;
-}
-
-inline uint32_t calculateAlphaChecksum(std::shared_ptr<WebXImage> image) {
-    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-    uint32_t checksum = image->getAlphaChecksum();
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::micro> duration = end - start;
-    spdlog::trace("Checksum for window alpha {:d} x {:d} ({:d} bytes) in {:f}us", image->getWidth(), image->getHeight(), image->getAlphaDataSize(), duration.count());
-    return checksum;
-}
-
 inline bool makeOpaque(XImage * image, WebXRectangle * mainWindowRectangle, WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle) {
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 

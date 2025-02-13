@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <string>
 #include <utils/WebXDataBuffer.h>
+#include <spdlog/spdlog.h>
 
 class WebXDataBuffer;
 
@@ -73,16 +74,28 @@ public:
         }
     }
 
-    uint32_t getRawChecksum() {
+    uint32_t calculateImageChecksum() {
         if (this->_rawChecksum == 0 && this->_rawData != nullptr) {
+            std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
             this->_rawChecksum = this->_rawData->calculateChecksum();
+        
+            std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::micro> duration = end - start;
+            spdlog::trace("Checksum for window image {:d} x {:d} ({:d} bytes) in {:f}us", this->_width, this->_height, this->getRawDataSize(), duration.count());
         }
         return this->_rawChecksum;
     }
 
-    uint32_t getAlphaChecksum() {
+    uint32_t calculateAlphaChecksum() {
         if (this->_alphaChecksum == 0 && this->_alphaData != nullptr) {
+            std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
             this->_alphaChecksum = this->_alphaData->calculateChecksum();
+        
+            std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::micro> duration = end - start;
+            spdlog::trace("Checksum for window alpha {:d} x {:d} ({:d} bytes) in {:f}us", this->_width, this->_height, this->getAlphaDataSize(), duration.count());
         }
         return this->_alphaChecksum;
     }

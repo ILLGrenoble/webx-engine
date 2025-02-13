@@ -143,8 +143,8 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectang
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 
         if (isFull) {
-            this->_windowChecksum = calculateImageChecksum(webXImage);
-            this->_windowAlphaChecksum = calculateAlphaChecksum(webXImage);
+            this->_windowChecksum = webXImage->calculateImageChecksum();
+            this->_windowAlphaChecksum = webXImage->calculateAlphaChecksum();
         }
 
         XDestroyImage(image);

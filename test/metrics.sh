@@ -120,7 +120,8 @@ calculate_frame_metrics() {
 
 echo "Starting webx-engine and sleep 2 seconds"
 
-WEBX_ENGINE_LOG=trace ./bin/webx-engine -s > webx-engine.log &
+OUTPUT_LOG="test/output/web-engine.log"
+WEBX_ENGINE_LOG=trace ./bin/webx-engine -s > "$OUTPUT_LOG" &
 ENGINE_PID=$!
 disown $ENGINE_PID
 
@@ -145,7 +146,7 @@ cat <<EOF > $HOME/.config/terminator/config
 [plugins]
 EOF
 
-echo "Running top -d 0.1 in terminator for 5 seconds"
+echo 'Running "top -d 0.01" in terminator for 5 seconds'
 timeout 5 terminator -e "top -d 0.01" 2> /dev/null
 
 echo "Stopping webx-engine"
@@ -154,10 +155,10 @@ kill -9 $ENGINE_PID
 echo -e "\nResults:\n"
 
 # Calculate metrics
-calculate_transparency_stats "webx-engine.log"
-calculate_alphamap_creation_stats "webx-engine.log"
-calculate_grab_metrics "webx-engine.log"
-calculate_frame_metrics "webx-engine.log"
+calculate_transparency_stats "$OUTPUT_LOG"
+calculate_alphamap_creation_stats "$OUTPUT_LOG"
+calculate_grab_metrics "$OUTPUT_LOG"
+calculate_frame_metrics "$OUTPUT_LOG"
 
 echo -e "\n"
 

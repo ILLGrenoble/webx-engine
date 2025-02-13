@@ -28,10 +28,10 @@ package-lock.json
 test/output/*.jpg
 test/output/*.png
 test/output/*.webp
+test/output/*.log
 gmon.out
 gprof.out
 .vagrant
 
 *.deb
 VERSION
-webx-engine.log
