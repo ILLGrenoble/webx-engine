@@ -6,15 +6,17 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <string>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
+#include <display/WebXDisplayEventType.h>
 
+class WebXGateway;
 class WebXManager;
 class WebXDisplay;
 class WebXConnection;
 class WebXInstruction;
 class WebXMessage;
-class WebXGateway;
 
 class WebXController {
 private:
@@ -29,36 +31,27 @@ private:
     };
 
 
-private:
-    WebXController();
+public:
+    WebXController(WebXGateway * gateway, const std::string & keyboardLayout = "");
     virtual ~WebXController();
 
-public:
-    static WebXController * instance();
-    static void shutdown();
+    void run();
+    void stop();
 
+private:
     enum WebXControllerState {
         Stopped = 0,
         Running
     };
 
-    WebXManager * getManager() const {
-        return this->_manager;
+    void onDisplayEvent(WebXDisplayEventType eventType) {
+        if (eventType == WebXDisplayEventType::CursorEvent) {
+            this->_cursorDirty = true;
+        } else if (eventType == WebXDisplayEventType::WindowLayoutEvent) {
+            this->_displayDirty = true;
+        }
     }
 
-    void onDisplayChanged() {
-        this->_displayDirty = true;
-    }
-
-    void onMouseChanged() {
-        this->_mouseDirty = true;
-    }
-
-    void init(WebXGateway * gateway);
-    void run();
-    void stop();
-
-private:
     void setQualityIndex(uint32_t qualityIndex);
 
     void handleClientInstructions(WebXDisplay * display);
@@ -70,8 +63,6 @@ private:
     void updateFrameData(double fps, double duration);
 
 private:
-    static WebXController * _instance;
-
     const static unsigned int THREAD_RATE = 60;
     const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
     const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
@@ -80,13 +71,13 @@ private:
 
     static std::vector<WebXQuality> QUALITY_SETTINGS;
 
-    WebXManager * _manager;
     WebXGateway * _gateway;
+    WebXManager * _manager;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
 
     bool _displayDirty;
-    bool _mouseDirty;
+    bool _cursorDirty;
 
     long _imageRefreshUs;
     uint32_t _qualityIndex;

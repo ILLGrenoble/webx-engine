@@ -330,8 +330,15 @@ void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
     this->_keyboard->handleKeySym(keysym, pressed, true);
 }
 
-bool WebXDisplay::loadKeyboardLayout(const std::string & layout) {
-    return this->_keyboard->loadKeyboardLayout(layout);
+void WebXDisplay::loadKeyboardLayout(const std::string & layout) {
+    if (!layout.empty()) {
+        if (this->_keyboard->loadKeyboardLayout(layout)) {
+            spdlog::info("Loaded '{:s}' keyboard layout", layout);
+    
+        } else {
+            spdlog::error("Failed to load '{:s}' keyboard layout", layout);
+        }
+    }
 }
 
 void WebXDisplay::setImageQuality(float imageQuality) {

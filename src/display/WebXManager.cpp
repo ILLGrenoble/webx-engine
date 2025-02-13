@@ -2,7 +2,6 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
-#include <controller/WebXController.h>
 #include <events/WebXEventListener.h>
 #include <X11/extensions/Xfixes.h>
 
@@ -14,12 +13,12 @@ int WebXManager::IO_ERROR_HANDLER(Display *display) {
     return 0;
 }
 
-WebXManager::WebXManager() :
+WebXManager::WebXManager(const std::string & keyboardLayout) :
     _x11Display(NULL),
     _display(NULL),
     _eventListener(NULL) {
 
-    this->init();
+    this->init(keyboardLayout);
 }
 
 WebXManager::~WebXManager() {
@@ -42,7 +41,7 @@ WebXManager::~WebXManager() {
 }
 
 
-void WebXManager::init() {
+void WebXManager::init(const std::string & keyboardLayout) {
     using namespace std::placeholders;
 
     XInitThreads();
@@ -70,6 +69,8 @@ void WebXManager::init() {
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
+
+    this->_display->loadKeyboardLayout(keyboardLayout);
 }
 
 void WebXManager::flushEventListener() {
@@ -139,11 +140,11 @@ void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
 void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
     spdlog::trace("Got new mouse cursor event");
     this->_display->updateMouseCursor();
-    WebXController::instance()->onMouseChanged();
+    this->sendDisplayEvent(CursorEvent);
 }
 
 void WebXManager::updateDisplay() {
     this->_display->updateVisibleWindows();
-    WebXController::instance()->onDisplayChanged();
+    this->sendDisplayEvent(WindowLayoutEvent);
 }
 

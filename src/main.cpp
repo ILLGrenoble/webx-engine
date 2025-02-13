@@ -8,22 +8,14 @@
 #include <string>
 #include <csignal>
 
+static WebXController * controller = nullptr;
+
 static void signalHandler(int signal) {
     if (signal == SIGINT) {
         spdlog::info("Shutdown");
 
-        WebXController::instance()->stop();
-    }
-}
-
-void setKeyboardLayout(const std::string & keyboardLayout) {
-    if (!keyboardLayout.empty()) {
-        WebXDisplay * webXDisplay = WebXController::instance()->getManager()->getDisplay();
-        if (webXDisplay->loadKeyboardLayout(keyboardLayout)) {
-            spdlog::info("Loaded '{:s}' keyboard layout", keyboardLayout);
-
-        } else {
-            spdlog::error("Failed to load '{:s}' keyboard layout", keyboardLayout);
+        if (controller) {
+            controller->stop();
         }
     }
 }
@@ -67,22 +59,21 @@ int main(int argc, char *argv[]) {
     WebXGateway * gateway = new WebXGateway();
 
     // Initialise Manager, Display and Event Listener
-    WebXController::instance()->init(gateway);
-
-    // Set keyboard layout
-    setKeyboardLayout(keyboardLayout);
+    controller = new WebXController(gateway, keyboardLayout);
 
     // Start transport
     WebXTransport * transport = new WebXTransport(gateway, &settings, standAlone);
     transport->start();
 
     // Start the controller (blocking)
-    WebXController::instance()->run();
+    controller->run();
 
     // stop transport
     transport->stop();
 
     delete transport;
+    delete controller;
+    controller = nullptr;
     delete gateway;
 
     spdlog::info("WebX terminated");

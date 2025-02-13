@@ -79,7 +79,7 @@ public:
 
     void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
     void sendKeyboard(int keysym, bool pressed);
-    bool loadKeyboardLayout(const std::string & layout);
+    void loadKeyboardLayout(const std::string & layout);
 
     void setImageQuality(float imageQuality);
     

@@ -20,8 +20,6 @@
 #include <thread>
 #include <spdlog/spdlog.h>
 
-WebXController * WebXController::_instance = NULL;
-
 std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
     {imageFPS: 2, imageQuality: 0.3},
     {imageFPS: 2, imageQuality: 0.6},
@@ -35,11 +33,11 @@ std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
     {imageFPS: 30, imageQuality: 0.9},
 };
 
-WebXController::WebXController() :
-    _manager(new WebXManager()),
-    _gateway(nullptr),
+WebXController::WebXController(WebXGateway * gateway, const std::string & keyboardLayout) :
+    _gateway(gateway),
+    _manager(new WebXManager(keyboardLayout)),
     _displayDirty(true),
-    _mouseDirty(true),
+    _cursorDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
     _qualityIndex(10),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
@@ -49,45 +47,25 @@ WebXController::WebXController() :
     for (int i = 0; i < WebXController::FRAME_DATA_STORE_SIZE; i++) {
         this->_frameDataStore.push_back({.fps = 0.0, .duration = 0.0});
     }
+
+    // Set the instruction handler function in the gateway
+    this->_gateway->setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
+        const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
+        this->_instructions.push_back(instruction);
+    });
+
+    // Listen to events from the display
+    this->_manager->setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
 }
 
 WebXController::~WebXController() {
     delete _manager;
 }
 
-WebXController * WebXController::instance() {
-    if (_instance == NULL) {
-        _instance = new WebXController();
-    }
-    return _instance;
-}
-
-void WebXController::shutdown() {
-    spdlog::info("Shutdown");
-
-    if (_instance) {
-        _instance->stop();
-        _instance = NULL;
-    }
-}
-
-void WebXController::init(WebXGateway * gateway) {
-    this->_gateway = gateway;
-    
-    // Set the instruction handler function in the gateway
-    this->_gateway->setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
-        const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
-        this->_instructions.push_back(instruction);
-    });
-}
-
 void WebXController::stop() {
-    // Remove the instruction handler function in the gateway
-    this->_gateway->setInstructionHandlerFunc(nullptr);
-
+    spdlog::info("Shutdown");
     this->_state = WebXControllerState::Stopped;
 }
-
 
 void WebXController::run() {
     long calculateThreadSleepUs = this->_threadSleepUs;
@@ -137,7 +115,7 @@ void WebXController::run() {
             this->notifyImagesChanged(display);
 
             WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
-            if (this->_mouseDirty || finalMousePosition != initialMousePosition) {
+            if (this->_cursorDirty || finalMousePosition != initialMousePosition) {
                 this->notifyMouseChanged(display);
                 mouseRefreshUs = WebXController::MOUSE_MIN_REFRESH_DELAY_US;
             }
@@ -290,7 +268,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
 }
 
 void WebXController::notifyMouseChanged(WebXDisplay * display) {
-    this->_mouseDirty = false;
+    this->_cursorDirty = false;
 
     const WebXMouseState  * mouseState = display->getMouse()->getState();
 
