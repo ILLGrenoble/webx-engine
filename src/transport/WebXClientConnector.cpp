@@ -4,8 +4,9 @@
 #include <string>
 #include <spdlog/spdlog.h>
 
-WebXClientConnector::WebXClientConnector() :
-    _thread(NULL) {
+WebXClientConnector::WebXClientConnector(WebXBinarySerializer * serializer) :
+    _thread(NULL),
+    _serializer(serializer) {
 }
 
 WebXClientConnector::~WebXClientConnector() {
@@ -15,8 +16,7 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-void WebXClientConnector::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings) {
-    this->_serializer = serializer;
+void WebXClientConnector::run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_eventBusAddr = eventBusAddr;

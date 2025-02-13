@@ -3,18 +3,18 @@
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientMessagePublisher::WebXClientMessagePublisher() :
+WebXClientMessagePublisher::WebXClientMessagePublisher(WebXBinarySerializer * serializer) :
     _thread(NULL),
     _running(false),
-    _messageQueue() {
+    _messageQueue(),
+    _serializer(serializer) {
 }
 
 WebXClientMessagePublisher::~WebXClientMessagePublisher() {
     this->stop();
 }
 
-void WebXClientMessagePublisher::run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr) {
-    this->_serializer = serializer;
+void WebXClientMessagePublisher::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;

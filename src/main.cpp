@@ -1,5 +1,6 @@
 #include <display/WebXManager.h>
 #include <controller/WebXController.h>
+#include <gateway/WebXGateway.h>
 #include <transport/WebXTransport.h>
 #include <display/WebXDisplay.h>
 #include <utils/WebXSettings.h>
@@ -62,14 +63,17 @@ int main(int argc, char *argv[]) {
       
     spdlog::info("Starting WebX server");
 
+    // Create the Gateway (connection between transport layer and controller)
+    WebXGateway * gateway = new WebXGateway();
+
     // Initialise Manager, Display and Event Listener
-    WebXController::instance()->init();
+    WebXController::instance()->init(gateway);
 
     // Set keyboard layout
     setKeyboardLayout(keyboardLayout);
 
     // Start transport
-    WebXTransport * transport = new WebXTransport(&settings, standAlone);
+    WebXTransport * transport = new WebXTransport(gateway, &settings, standAlone);
     transport->start();
 
     // Start the controller (blocking)
@@ -77,6 +81,9 @@ int main(int argc, char *argv[]) {
 
     // stop transport
     transport->stop();
+
+    delete transport;
+    delete gateway;
 
     spdlog::info("WebX terminated");
 }

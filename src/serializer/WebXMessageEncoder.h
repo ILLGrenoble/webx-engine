@@ -138,7 +138,7 @@ private:
     // Content:
     //   commandId: 4 bytes
     //   # windows: 4 bytes
-    //   Window: 24 bytes
+    //   Window: 20 bytes
     //      id: 4 bytes
     //      x: 4 bytes
     //      y: 4 bytes

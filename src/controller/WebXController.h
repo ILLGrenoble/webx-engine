@@ -14,6 +14,7 @@ class WebXDisplay;
 class WebXConnection;
 class WebXInstruction;
 class WebXMessage;
+class WebXGateway;
 
 class WebXController {
 private:
@@ -53,29 +54,9 @@ public:
         this->_mouseDirty = true;
     }
 
-    void init();
+    void init(WebXGateway * gateway);
     void run();
     void stop();
-
-    void setConnection(WebXConnection * connection) {
-        const std::lock_guard<std::mutex> lock(this->_connectionMutex);
-        this->_connection = connection;
-    } 
-
-    void removeConnection() {
-        const std::lock_guard<std::mutex> lock(this->_connectionMutex);
-        this->_connection = NULL;
-    }
-
-    const std::vector<WebXWindowProperties> & getWindows() {
-        const std::lock_guard<std::mutex> lock(this->_windowsMutex);
-        return this->_windows;
-    }
-
-    void onClientInstruction(std::shared_ptr<WebXInstruction> instruction) {
-        const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
-        this->_instructions.push_back(instruction);
-    }
 
 private:
     void setQualityIndex(uint32_t qualityIndex);
@@ -100,8 +81,8 @@ private:
     static std::vector<WebXQuality> QUALITY_SETTINGS;
 
     WebXManager * _manager;
+    WebXGateway * _gateway;
 
-    std::vector<WebXWindowProperties> _windows;
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
 
     bool _displayDirty;
@@ -111,13 +92,9 @@ private:
     uint32_t _qualityIndex;
 
     long _threadSleepUs;
-    std::mutex _stateMutex;
-    std::mutex _connectionMutex;
-    std::mutex _windowsMutex;
     std::mutex _instructionsMutex;
     WebXControllerState _state;
 
-    WebXConnection * _connection;
     std::vector<WebXFrameData> _frameDataStore;
     int _frameDataStoreIndex;
 

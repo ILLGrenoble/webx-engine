@@ -1,5 +1,5 @@
 #include "WebXController.h"
-#include "WebXConnection.h"
+#include <gateway/WebXGateway.h>
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <instruction/WebXMouseInstruction.h>
@@ -37,12 +37,13 @@ std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
 
 WebXController::WebXController() :
     _manager(new WebXManager()),
+    _gateway(nullptr),
     _displayDirty(true),
     _mouseDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
+    _qualityIndex(10),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
-    _connection(NULL),
     _frameDataStoreIndex(0) {
 
     for (int i = 0; i < WebXController::FRAME_DATA_STORE_SIZE; i++) {
@@ -51,10 +52,7 @@ WebXController::WebXController() :
 }
 
 WebXController::~WebXController() {
-    if (_manager != NULL) {
-        delete _manager;
-        _manager = NULL;
-    }
+    delete _manager;
 }
 
 WebXController * WebXController::instance() {
@@ -73,14 +71,20 @@ void WebXController::shutdown() {
     }
 }
 
-void WebXController::init() {
-    this->_manager->init();
-
-    this->setQualityIndex(10);
+void WebXController::init(WebXGateway * gateway) {
+    this->_gateway = gateway;
+    
+    // Set the instruction handler function in the gateway
+    this->_gateway->setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
+        const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
+        this->_instructions.push_back(instruction);
+    });
 }
 
 void WebXController::stop() {
-    std::lock_guard<std::mutex> lock(this->_stateMutex);
+    // Remove the instruction handler function in the gateway
+    this->_gateway->setInstructionHandlerFunc(nullptr);
+
     this->_state = WebXControllerState::Stopped;
 }
 
@@ -185,7 +189,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             this->sendMessage(message, instruction->id);
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
-            auto message = std::make_shared<WebXWindowsMessage>(this->getWindows());
+            auto message = std::make_shared<WebXWindowsMessage>(display->getVisibleWindowsProperties());
             this->sendMessage(message, instruction->id);
         
         } else if (instruction->type == WebXInstruction::Type::Image) {
@@ -217,12 +221,9 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 }
 
 void WebXController::notifyDisplayChanged(WebXDisplay * display) {
-    std::lock_guard<std::mutex> windowsLock(this->_windowsMutex);
-    this->_windows = display->getVisibleWindowsProperties();
     this->_displayDirty = false;
 
-    auto message = std::make_shared<WebXWindowsMessage>(this->_windows);
-
+    auto message = std::make_shared<WebXWindowsMessage>(display->getVisibleWindowsProperties());
     this->sendMessage(message);
 }
 
@@ -300,10 +301,7 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
 
 void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
     message->commandId = commandId;
-    std::lock_guard<std::mutex> connectionLock(this->_connectionMutex);
-    if (this->_connection) {
-        this->_connection->onMessage(message);
-    }
+    this->_gateway->publishMessage(message);
 }
 
 void WebXController::updateFrameData(double fps, double duration) {
@@ -323,6 +321,4 @@ void WebXController::updateFrameData(double fps, double duration) {
         spdlog::trace("Average FPS = {:f}, average frame duration = {:f}ms", averageFps, averageDuration);
     }
 }
-
-
 

@@ -18,6 +18,8 @@ WebXManager::WebXManager() :
     _x11Display(NULL),
     _display(NULL),
     _eventListener(NULL) {
+
+    this->init();
 }
 
 WebXManager::~WebXManager() {

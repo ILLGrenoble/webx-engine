@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 
+class WebXGateway;
 class WebXSettings;
 class WebXInstruction;
 class WebXBinarySerializer;
@@ -15,10 +16,10 @@ class socket_t;
 
 class WebXClientCommandCollector {
 public:
-    WebXClientCommandCollector();
+    WebXClientCommandCollector(WebXGateway * gateway, WebXBinarySerializer * serializer);
     virtual ~WebXClientCommandCollector();
 
-    void run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, WebXSettings * settings);
+    void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, WebXSettings * settings);
     void stop();
 
 private:
@@ -29,6 +30,7 @@ private:
 private:
     std::thread * _thread;
 
+    WebXGateway * _gateway;
     WebXBinarySerializer * _serializer;
     zmq::context_t * _context;
     std::string _clientAddr;

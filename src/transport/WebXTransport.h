@@ -3,6 +3,7 @@
 
 #include "WebXZMQ.h"
 
+class WebXGateway;
 class WebXSettings;
 class WebXBinarySerializer;
 class WebXClientConnector;
@@ -11,7 +12,7 @@ class WebXClientCommandCollector;
 
 class WebXTransport {
 public:
-    WebXTransport(WebXSettings * settings, bool standAlone);
+    WebXTransport(WebXGateway * gateway, WebXSettings * settings, bool standAlone);
     virtual ~WebXTransport();
 
     void start();
@@ -22,6 +23,7 @@ private:
 
 private:
     WebXSettings * _settings;
+    WebXGateway * _gateway;
     bool _standAlone;
 
     WebXBinarySerializer * _serializer;

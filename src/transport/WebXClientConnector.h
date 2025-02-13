@@ -16,11 +16,11 @@ class socket_t;
 
 class WebXClientConnector {
 public:
-    WebXClientConnector();
+    WebXClientConnector(WebXBinarySerializer * serializer);
     virtual ~WebXClientConnector();
     void init();
 
-    void run(WebXBinarySerializer * serializer, zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings);
+    void run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings);
     void stop();
 
 private:
