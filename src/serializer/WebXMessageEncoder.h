@@ -15,7 +15,6 @@ class WebXImageMessage;
 class WebXMouseMessage;
 class WebXScreenMessage;
 class WebXSubImagesMessage;
-class WebXVoidMessage;
 class WebXMessageEncoder;
 class WebXWindowsMessage;
 
@@ -116,17 +115,6 @@ private:
     //     imageData: n bytes
     //     alphaData: n bytes (optional)
     zmq::message_t * createSubImagesMessage(std::shared_ptr<WebXSubImagesMessage> message);
-
-    // Structure:
-    // Header: 32 bytes
-    //   sessionId: 16 bytes
-    //   type: 4 bytes
-    //   id: 4 bytes
-    //   length: 4 bytes
-    //   padding: 4 bytes
-    // Content:
-    //   commandId: 4 bytes
-    zmq::message_t * createVoidMessage(std::shared_ptr<WebXVoidMessage> message);
 
     // Structure:
     // Header: 32 bytes

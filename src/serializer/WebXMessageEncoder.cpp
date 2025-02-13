@@ -6,7 +6,6 @@
 #include <message/WebXMouseMessage.h>
 #include <message/WebXScreenMessage.h>
 #include <message/WebXSubImagesMessage.h>
-#include <message/WebXVoidMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <utils/WebXSettings.h>
@@ -37,10 +36,6 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::CursorImage: {
             auto cursorImageMessage = std::static_pointer_cast<WebXCursorImageMessage>(message);
             return this->createCursorImageMessage(cursorImageMessage);
-        }
-        case WebXMessage::Void: {
-            auto voidMessage = std::static_pointer_cast<WebXVoidMessage>(message);
-            return this->createVoidMessage(voidMessage);
         }
 
         default:
@@ -172,16 +167,6 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
 
     return output;
 
-}
-
-zmq::message_t * WebXMessageEncoder::createVoidMessage(std::shared_ptr<WebXVoidMessage> message) {
-    size_t dataSize = 32 + 4;
-    zmq::message_t * output= new zmq::message_t(dataSize);
-
-    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_settings->sessionId, (uint32_t)message->type);
-    buffer.write<uint32_t>(message->commandId);
-
-    return output;
 }
 
 zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) {

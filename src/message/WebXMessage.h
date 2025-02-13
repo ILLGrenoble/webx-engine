@@ -13,7 +13,6 @@ public:
         Subimages,
         Mouse,
         CursorImage,
-        Void
     };
 
     WebXMessage(Type type) :
