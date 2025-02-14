@@ -11,20 +11,8 @@ public:
     WebXImageConverter() {}
     virtual ~WebXImageConverter() {}
 
-    virtual WebXImage * convert(XImage * image, float quality = 0) const = 0;
-    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality = 0) const = 0;
-
-    void setQuality(float quality) {
-        if (quality > 0.0 && quality <= 1.0) {
-            this->_quality = quality;
-        
-        } else {
-            spdlog::warn("Invalid quality {} sent to WebXImageConverter", quality);
-        }
-    }
-
-protected:
-    float _quality = 0.9;
+    virtual WebXImage * convert(XImage * image, float quality) const = 0;
+    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const = 0;
 };
 
 

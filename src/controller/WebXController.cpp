@@ -16,22 +16,10 @@
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
+#include <utils/WebXQualityHelper.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
-
-std::vector<WebXController::WebXQuality> WebXController::QUALITY_SETTINGS = {
-    {imageFPS: 2, imageQuality: 0.3},
-    {imageFPS: 2, imageQuality: 0.6},
-    {imageFPS: 4, imageQuality: 0.6},
-    {imageFPS: 6, imageQuality: 0.6},
-    {imageFPS: 8, imageQuality: 0.6},
-    {imageFPS: 10, imageQuality: 0.7},
-    {imageFPS: 15, imageQuality: 0.7},
-    {imageFPS: 20, imageQuality: 0.7},
-    {imageFPS: 25, imageQuality: 0.8},
-    {imageFPS: 30, imageQuality: 0.9},
-};
 
 WebXController::WebXController(WebXGateway * gateway, const std::string & keyboardLayout) :
     _gateway(gateway),
@@ -39,7 +27,7 @@ WebXController::WebXController(WebXGateway * gateway, const std::string & keyboa
     _displayDirty(true),
     _cursorDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
-    _qualityIndex(10),
+    _quality(webx_quality_for_index(10)),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
     _frameDataStoreIndex(0) {
@@ -133,22 +121,6 @@ void WebXController::run() {
     spdlog::info("Stopped WebX Controller");
 }
 
-void WebXController::setQualityIndex(uint32_t qualityIndex) {
-    if (qualityIndex >=1 && qualityIndex <= 10) {
-        WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
-        
-        // Set refresh rate
-        this->_imageRefreshUs = 1000000.0 / quality.imageFPS;
-
-        // Set image quality
-        WebXDisplay * display = this->_manager->getDisplay();
-        display->setImageQuality(quality.imageQuality);
-
-    } else {
-        spdlog::warn("Attempt to set the quality index to an invalid value ({})", qualityIndex);
-    }
-}
-
 void WebXController::handleClientInstructions(WebXDisplay * display) {
     std::lock_guard<std::mutex> lock(this->_instructionsMutex);
 
@@ -173,7 +145,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
             // Client request full window image: make it the best quality 
-            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, 10);
+            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, 1.0);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);
@@ -191,7 +163,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
             uint32_t qualityIndex = qualityInstruction->qualityIndex;
-            this->setQualityIndex(qualityIndex);
+            this->setQuality(qualityIndex);
         }
     }
 
@@ -206,7 +178,7 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
 }
 
 void WebXController::notifyImagesChanged(WebXDisplay * display) {
-    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_imageRefreshUs);
+    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_quality);
     if (damagedWindows.size() > 0) {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
@@ -217,7 +189,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                     // Get checksums before and after updating the window image
                     uint64_t oldChecksum = window->getWindowChecksum();
                     uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality.imageQuality);
                     if (image) {
                         uint64_t newChecksum = window->getWindowChecksum();
                         uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
@@ -246,7 +218,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, 0, &area);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality.imageQuality, &area);
                     // Check image not null
                     if (image) {
                         subImages.push_back(WebXSubImage(area, image));

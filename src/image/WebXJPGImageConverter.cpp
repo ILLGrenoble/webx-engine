@@ -71,7 +71,9 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
 	cinfo.dct_method = JDCT_IFAST;
 
-    jpeg_set_quality(&cinfo, (quality == 0 ? this->_quality : quality) * 100, TRUE);
+    // Max quality of 9.7
+    quality = quality < 0.0 ? 0.0 : quality > 9.7 ? 9.7 : quality;
+    jpeg_set_quality(&cinfo, quality * 100, TRUE);
 
     JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
     for (int i = 0; i < height; i++) {

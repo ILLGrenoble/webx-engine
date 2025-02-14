@@ -3,6 +3,7 @@
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
 #include <events/WebXDamageOverride.h>
+#include <utils/WebXQualityHelper.h>
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
@@ -16,6 +17,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _rectangle(WebXRectangle(x, y, width, height)),
     _isViewable(isViewable),
     _coverage(0.0),
+    _quality(webx_quality_for_index(10)),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
 }
@@ -115,6 +117,9 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
         // Check if image has transparency and modify image depth accordingly
         bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
+
+        // If quality requested is max then keep max, otherwise choose min between requested and calculated quality
+        quality = quality == 1.0 ? quality : this->_quality.imageQuality < quality ? this->_quality.imageQuality : quality;
 
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 

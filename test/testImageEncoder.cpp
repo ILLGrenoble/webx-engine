@@ -95,7 +95,7 @@ TestResult test_convert(XImage & xImage, WebXImageConverter & converter, int nIt
     TestResult result;
 
     for (int i = 0; i < nIter; i++) {
-        WebXImage * image = converter.convert(&xImage);
+        WebXImage * image = converter.convert(&xImage, 0.95);
         cummulativeTimeUs += image->getEncodingTimeUs();
 
         if (i == 0) {

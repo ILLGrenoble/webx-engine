@@ -10,6 +10,7 @@
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
+#include <utils/WebXQualityHelper.h>
 
 class WebXGateway;
 class WebXManager;
@@ -20,11 +21,6 @@ class WebXMessage;
 
 class WebXController {
 private:
-    struct WebXQuality {
-        int imageFPS;
-        float imageQuality;
-    };
-
     struct WebXFrameData {
         double fps;
         double duration;
@@ -52,8 +48,10 @@ private:
         }
     }
 
-    void setQualityIndex(uint32_t qualityIndex);
-
+    void setQuality(uint32_t qualityIndex) {
+        this->_quality = webx_quality_for_index(qualityIndex);
+    }
+    
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
     void notifyImagesChanged(WebXDisplay * display);
@@ -69,8 +67,6 @@ private:
     const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
     const static size_t FRAME_DATA_STORE_SIZE = 30;
 
-    static std::vector<WebXQuality> QUALITY_SETTINGS;
-
     WebXGateway * _gateway;
     WebXManager * _manager;
 
@@ -80,7 +76,7 @@ private:
     bool _cursorDirty;
 
     long _imageRefreshUs;
-    uint32_t _qualityIndex;
+    WebXQuality _quality;
 
     long _threadSleepUs;
     std::mutex _instructionsMutex;

@@ -10,6 +10,7 @@
 #include <mutex>
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
+#include <utils/WebXQuality.h>
 
 class WebXWindow;
 class WebXImageConverter;
@@ -57,10 +58,10 @@ public:
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 
-    std::shared_ptr<WebXImage> getImage(Window x11Window, float quality = 0, WebXRectangle * imageRectangle = NULL);
+    std::shared_ptr<WebXImage> getImage(Window x11Window, float quality, WebXRectangle * imageRectangle = NULL);
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh = false);
-    std::vector<WebXWindowDamageProperties> getDamagedWindows(long imageUpdateUs);
+    std::vector<WebXWindowDamageProperties> getDamagedWindows(const WebXQuality & quality);
     
     WebXMouse * getMouse() const {
         return this->_mouse;
@@ -72,8 +73,6 @@ public:
     void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
     void sendKeyboard(int keysym, bool pressed);
     void loadKeyboardLayout(const std::string & layout);
-
-    void setImageQuality(float imageQuality);
     
 private:
     struct WebXTreeDetails {

@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <input/WebXMouse.h>
 #include <input/WebXKeyboard.h>
+#include <utils/WebXQualityHelper.h>
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
@@ -215,6 +216,9 @@ void WebXDisplay::updateVisibleWindows() {
 
         float coverage = window->getRectangle().overlapCoeff(coveringRectangles);
         window->setCoverage(coverage);
+
+        const WebXQuality & quality = webx_quality_for_image_coverage(coverage);
+        window->setQuality(quality);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -311,7 +315,7 @@ void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damag
     }
 }
 
-std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imageUpdateUs) {
+std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(const WebXQuality & quality) {
     std::lock_guard<std::mutex> lock(this->_damagedWindowsMutex);
 
     std::vector<WebXWindowDamageProperties> windowDamageToRepair;
@@ -320,14 +324,28 @@ std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(long imag
     for (auto it = this->_damagedWindows.begin(); it != this->_damagedWindows.end();) {
         WebXWindowDamageProperties & windowDamage = *it;
 
-        std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - windowDamage.imageCaptureTime;
-        if (timeSinceImageUpdateUs.count() > imageUpdateUs) {
-            windowDamageToRepair.push_back(windowDamage);
-            it = this->_damagedWindows.erase(it);
+        // Verify that the window still exists
+        WebXWindow * window = this->getWindow(windowDamage.windowId);
+        float imageUpdateTimeUs = quality.imageUpdateTimeUs;
+        if (window != NULL) {
+            // Modify quality to be poorest between requested and calculated
+            if (window->getQuality().index < quality.index) {
+                imageUpdateTimeUs = window->getQuality().imageUpdateTimeUs;
+            }
+
+            std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - windowDamage.imageCaptureTime;
+            if (timeSinceImageUpdateUs.count() > imageUpdateTimeUs) {
+                windowDamageToRepair.push_back(windowDamage);
+                it = this->_damagedWindows.erase(it);
+    
+            } else {
+                it++;
+            }
 
         } else {
-            it++;
+            it = this->_damagedWindows.erase(it);
         }
+
     }
 
     return windowDamageToRepair;
@@ -360,10 +378,6 @@ void WebXDisplay::loadKeyboardLayout(const std::string & layout) {
             spdlog::error("Failed to load '{:s}' keyboard layout", layout);
         }
     }
-}
-
-void WebXDisplay::setImageQuality(float imageQuality) {
-    this->_imageConverter->setQuality(imageQuality);
 }
 
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {

@@ -9,6 +9,7 @@
 #include <chrono>
 #include <mutex>
 #include <utils/WebXRectangle.h>
+#include <utils/WebXQuality.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
 
@@ -75,6 +76,14 @@ public:
         return this->_coverage;
     }
 
+    void setQuality(const WebXQuality & quality) {
+        this->_quality = quality;
+    }
+
+    const WebXQuality & getQuality() const {
+        return this->_quality;
+    }
+
     void enableDamage();
     void disableDamage();
 
@@ -98,6 +107,7 @@ private:
     WebXRectangle _rectangle;
     bool _isViewable;
     float _coverage;
+    WebXQuality _quality;
 
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 

@@ -19,7 +19,8 @@ WebXImage * WebXWebPImageConverter::convert(unsigned char * data, int width, int
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint8_t *output = 0;
-    size_t size = WebPEncodeBGRA((uint8_t *)data, width, height, bytesPerLine, (quality == 0 ? this->_quality : quality) * 100, &output);
+    quality = quality < 0.0 ? 0.0 : quality > 10.0 ? 10.0 : quality;
+    size_t size = WebPEncodeBGRA((uint8_t *)data, width, height, bytesPerLine, quality * 100, &output);
     // size_t size = WebPEncodeLosslessBGRA((uint8_t *)image->data, image->width, image->height, bytesPerLine, &output);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

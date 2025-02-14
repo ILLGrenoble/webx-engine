@@ -79,7 +79,7 @@ std::shared_ptr<WebXImage> WebXMouseCursorFactory::convertCursorImage(XFixesCurs
         offset += 4;
     }
 
-    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32);
+    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32, 0.95);
     free(imageData);
 
     return std::shared_ptr<WebXImage>(image);
