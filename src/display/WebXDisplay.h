@@ -57,14 +57,6 @@ public:
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 
-    WebXWindow * getManagedWindow(const WebXWindow * window) const {
-        std::map<const WebXWindow *, WebXWindow *>::const_iterator it = this->_managedWindows.find(window);
-        if (it != this->_managedWindows.end()) {
-            return it->second;
-        }
-        return NULL;
-    }
-
     std::shared_ptr<WebXImage> getImage(Window x11Window, float quality = 0, WebXRectangle * imageRectangle = NULL);
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh = false);
@@ -108,13 +100,11 @@ private:
     }
 
 private:
-    void updateManagedWindows();
     WebXWindow * createWindow(Window x11Window, bool isRoot = false);
     void deleteWindow(WebXWindow * window);
     void createTree(WebXWindow * root);
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
-    std::shared_ptr<WebXImage> getImage(WebXWindow * window, float quality = 0, WebXRectangle * imageRectangle = NULL) const;
 
 private:
     Display * _x11Display;
@@ -122,15 +112,15 @@ private:
 
     WebXWindow * _rootWindow;
     std::map<Window, WebXWindow *> _allWindows;
-    std::map<const WebXWindow *, WebXWindow *> _managedWindows;
-    std::vector<WebXWindow *> _visibleWindows;
 
+    std::vector<WebXWindow *> _visibleWindows;
     std::mutex _visibleWindowsMutex;
 
     WebXImageConverter * _imageConverter;
 
     std::vector<WebXWindowDamageProperties> _damagedWindows;
     std::mutex _damagedWindowsMutex;
+
     WebXMouse * _mouse;
     WebXKeyboard * _keyboard;
 };

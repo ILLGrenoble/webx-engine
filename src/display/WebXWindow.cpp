@@ -70,32 +70,7 @@ void WebXWindow::printInfo() const {
     printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height);
 }
 
-WebXWindow * WebXWindow::getTopParent() const {
-    WebXWindow * child = (WebXWindow *)this;
-    while (!child->parentIsRoot()) {
-        child = this->getParent();
-    }
-
-    return child;
-}
-
-WebXRectangle WebXWindow::getSubWindowRectangle() const {
-    const WebXRectangle & initialRectangle = this->getRectangle();
-    const WebXWindow * child = this;
-    WebXRectangle subWindowRectangle(0, 0, initialRectangle.size.width, initialRectangle.size.height);
-
-    while (!child->parentIsRoot()) {
-        const WebXRectangle & childRectangle = child->getRectangle();
-        subWindowRectangle.x += childRectangle.x;
-        subWindowRectangle.y += childRectangle.y;
-
-        child = child->getParent();
-    }
-
-    return subWindowRectangle;
-}
-
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     Status status = this->updateAttributes();

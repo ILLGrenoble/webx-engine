@@ -38,10 +38,7 @@ public:
 
     void printInfo() const;
 
-    WebXWindow * getTopParent() const;
-    WebXRectangle getSubWindowRectangle() const;
-
-    std::shared_ptr<WebXImage> getImage(WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality = 0);
+    std::shared_ptr<WebXImage> getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality = 0);
 
     std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
         return this->_imageCaptureTime;
@@ -55,10 +52,6 @@ public:
         this->_parent = parent;
     }
 
-    bool parentIsRoot() const {
-        return this->_parent == NULL || this->_parent->isRoot();
-    }
-    
     void addChild(WebXWindow * child);
     void removeChild(WebXWindow * child);
     

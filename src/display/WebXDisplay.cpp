@@ -154,9 +154,6 @@ void WebXDisplay::reparentWindow(Window x11Window, Window parentX11Window) {
 
 
 void WebXDisplay::updateVisibleWindows() {
-    // Update list of managed windows
-    this->updateManagedWindows();
-
     this->_rootWindow->updateAttributes();
 
     std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
@@ -240,8 +237,7 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, float quality
     // Ignore damage if window is not visible
     if (itWin != this->_visibleWindows.end()) {
         WebXWindow * window = *itWin;
-
-        return this->getImage(window, quality, imageRectangle);
+        return window->getImage(imageRectangle, this->_imageConverter, quality);
 
     } else {
         return nullptr;
@@ -345,38 +341,6 @@ void WebXDisplay::setImageQuality(float imageQuality) {
     this->_imageConverter->setQuality(imageQuality);
 }
 
-void WebXDisplay::updateManagedWindows() {
-    Window root = this->_rootWindow->getX11Window();
-    Atom atom = XInternAtom(this->_x11Display, "_NET_CLIENT_LIST", True);
-    Atom type;
-    
-    int form;
-    unsigned long remain;
-    Window * windowIds;
-    unsigned long numberOfWindows;
-
-    // Clear current list
-    this->_managedWindows.clear();
-
-    // Get list of managed IDs
-    Status status = XGetWindowProperty(this->_x11Display, root, atom, 0, 1024, False, XA_WINDOW, &type, &form, &numberOfWindows, &remain, (unsigned char **)&windowIds);
-    if (status == Success) {
-        for (unsigned long i = 0; i < numberOfWindows; i++) {
-            WebXWindow * window = this->getWindow(windowIds[i]);
-            if (window == NULL) {
-                window = this->createWindowInTree(windowIds[i]);
-            }
-
-            if (window != NULL) {
-                WebXWindow * top = window->getTopParent();
-                this->_managedWindows[top] = window;
-            }
-        }
-    }
-
-    XFree(windowIds);
-}
-
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);
@@ -464,16 +428,5 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
     return parent;
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(WebXWindow * window, float quality, WebXRectangle * imageRectangle) const {
-    WebXRectangle subWindowRectangle = window->getRectangle();
-    WebXWindow * managedWindow = this->getManagedWindow(window);
-    if (managedWindow != NULL) {
-        subWindowRectangle = managedWindow->getSubWindowRectangle();
-        return window->getImage(&subWindowRectangle, imageRectangle, this->_imageConverter, quality);
-
-    } else {
-        return window->getImage(NULL, imageRectangle, this->_imageConverter, quality);
-    }
-}
 
 
