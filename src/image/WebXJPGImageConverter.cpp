@@ -39,7 +39,8 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
         spdlog::trace("Converted raw image data for alpha map jpeg creation {:d} x {:d} ({:d} pixels) in {:f}us", width, height,width * height, duration.count());
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
-        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality);
+        // Use low quality alpha map
+        alphaData = this->_convert(data + 2, width, height, bytesPerLine, 0.05);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

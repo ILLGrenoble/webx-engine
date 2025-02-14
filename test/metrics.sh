@@ -118,6 +118,45 @@ calculate_frame_metrics() {
   fi
 }
 
+calculate_network_metrics() {
+  local log_file="$1"
+  local count=0
+  local sum_width=0
+  local sum_height=0
+  local sum_full_kb=0
+  local sum_rgb_kb=0
+  local sum_alpha_kb=0
+
+  # Process each matching log line
+  while IFS= read -r line; do
+    # Extract width, height, grab time, and encoding time using awk
+    full_kb=$(echo "$line" | awk -F '[ =@x,()]+' '{gsub("KB", "", $(NF-7)); print $(NF-7)}')
+    rgb_kb=$(echo "$line" | awk -F '[ =@x,()]+' '{gsub("KB", "", $(NF-5)); print $(NF-5)}')
+    alpha_kb=$(echo "$line" | awk -F '[ =@x,()]+' '{gsub("KB", "", $(NF-3)); print $(NF-3)}')
+    width=$(echo "$line" | awk -F '[ =@x,()]+' '{print $(NF-10)}')
+    height=$(echo "$line" | awk -F '[ =@x,()]+' '{print $(NF-9)}')
+
+    # Accumulate values
+    sum_width=$((sum_width + width))
+    sum_height=$((sum_height + height))
+    sum_full_kb=$(awk -v sum="$sum_full_kb" -v kb="$full_kb" 'BEGIN {print sum + kb}')
+    sum_rgb_kb=$(awk -v sum="$sum_rgb_kb" -v kb="$rgb_kb" 'BEGIN {print sum + kb}')
+    sum_alpha_kb=$(awk -v sum="$sum_alpha_kb" -v kb="$alpha_kb" 'BEGIN {print sum + kb}')
+    count=$((count + 1))
+  done < <(grep "Sending encoded" "$log_file")
+
+  # Compute averages
+  if [ "$count" -gt 0 ]; then
+    avg_width=$((sum_width / count))
+    avg_height=$((sum_height / count))
+
+    # Print results
+    echo "Network transfers: $count, avg size: ${avg_width} x ${avg_height}, total transfer: $sum_full_kb KB, rgb transfer: $sum_rgb_kb KB, alpha transfer: $sum_alpha_kb KB"
+  else
+    echo "No Network entries found."
+  fi
+}
+
 echo "Starting webx-engine and sleep 2 seconds"
 
 OUTPUT_LOG="test/output/web-engine.log"
@@ -159,6 +198,7 @@ calculate_transparency_stats "$OUTPUT_LOG"
 calculate_alphamap_creation_stats "$OUTPUT_LOG"
 calculate_grab_metrics "$OUTPUT_LOG"
 calculate_frame_metrics "$OUTPUT_LOG"
+calculate_network_metrics "$OUTPUT_LOG"
 
 echo -e "\n"
 
