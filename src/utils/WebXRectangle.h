@@ -1,10 +1,22 @@
 #ifndef WEBX_RECTANGLE_H
 #define WEBX_RECTANGLE_H
 
-#include <stdio.h>
+#include <vector>
+#include <algorithm>
+#include <set>
 #include "WebXSize.h"
 
 class WebXRectangle {
+
+private:
+    // Event structure for the sweep line algorithm
+    struct SweepLineEvent {
+        int x, y1, y2, type; // x-coordinate, y range, event type (1 = entering, -1 = leaving)
+        bool operator<(const SweepLineEvent& e) const {
+            return x < e.x; // Sort by x-coordinate
+        }
+    };
+
 public:
     WebXRectangle() :
         x(0),
@@ -66,6 +78,79 @@ public:
             this->_right > rectangle._left &&
             this->_top > rectangle._bottom &&
             this->_bottom < rectangle._top);
+    }
+
+    float overlapCoeff(const WebXRectangle & rectangle) const {
+        int maxLeft = this->_left > rectangle._left ? this->_left : rectangle._left;
+        int minRight = this->_right < rectangle._right ? this->_right : rectangle._right;
+        int minTop = this->_top < rectangle._top ? this->_top : rectangle._top;
+        int maxBottom = this->_bottom > rectangle._bottom ? this->_bottom : rectangle._bottom;
+
+        int overlapWidth = minRight - maxLeft;
+        int overlapHeight = minTop - maxBottom;
+
+        if (overlapWidth <= 0 || overlapHeight <= 0) {
+            return 0.0;
+        }
+
+        int intersectionArea = overlapWidth * overlapHeight;
+
+        return (double)intersectionArea / this->area();
+    }
+
+    float overlapCoeff(const std::vector<WebXRectangle> & coveringRectangles) const {
+        std::vector<SweepLineEvent> events;
+
+        // Collect all vertical edges as events
+        for (const auto& rect : coveringRectangles) {
+            if (!this->overlap(rect)) {
+                 // Ignore completely outside rectangles
+                continue;
+            }
+    
+            events.push_back({std::max(rect._left, this->_left), std::max(rect._bottom, this->_bottom), std::min(rect._top, this->_top), 1});
+            events.push_back({std::min(rect._right, this->_right), std::max(rect._bottom, this->_bottom), std::min(rect._top, this->_top), -1});
+        }
+    
+        // Sort events by x-coordinate
+        std::sort(events.begin(), events.end());
+    
+        int prevX = this->_left;
+        int coveredArea = 0;
+        std::multiset<std::pair<int, int>> activeIntervals; // Stores active y-intervals
+    
+        for (const auto& event : events) {
+            int currentX = event.x;
+    
+            // Calculate the covered vertical range
+            int coveredHeight = 0;
+            int lastY = -1;
+    
+            for (const auto& interval : activeIntervals) {
+                int y1 = interval.first;
+                int y2 = interval.second;
+    
+                if (lastY < y1) {
+                    coveredHeight += (y2 - y1);
+                } else {
+                    coveredHeight += std::max(0, y2 - lastY);
+                }
+                lastY = std::max(lastY, y2);
+            }
+    
+            // Add the covered area from the last segment
+            coveredArea += coveredHeight * (currentX - prevX);
+            prevX = currentX;
+    
+            // Add or remove intervals based on event type
+            if (event.type == 1) {
+                activeIntervals.insert({event.y1, event.y2});
+            } else {
+                activeIntervals.erase(activeIntervals.find({event.y1, event.y2}));
+            }
+        }
+
+        return (double)coveredArea / this->area();;
     }
 
     bool contains(const WebXRectangle & rectangle) const {

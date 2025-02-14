@@ -15,6 +15,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _parent(NULL),
     _rectangle(WebXRectangle(x, y, width, height)),
     _isViewable(isViewable),
+    _coverage(0.0),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
 }

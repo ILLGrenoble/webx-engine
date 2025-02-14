@@ -154,6 +154,9 @@ void WebXDisplay::reparentWindow(Window x11Window, Window parentX11Window) {
 
 
 void WebXDisplay::updateVisibleWindows() {
+
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
     this->_rootWindow->updateAttributes();
 
     std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
@@ -197,6 +200,28 @@ void WebXDisplay::updateVisibleWindows() {
             }
         }
     }
+
+    std::chrono::high_resolution_clock::time_point updateTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> updateDuration = updateTime - start;
+
+    // Calculate visible areas of each visible window
+    for (auto it = _visibleWindows.begin(); it != _visibleWindows.end(); it++) {
+        WebXWindow * window = *it;
+
+        auto it2 = it;
+        it2++;
+        std::vector<WebXRectangle> coveringRectangles;
+        std::transform(it2, this->_visibleWindows.end(), std::back_inserter(coveringRectangles), [](WebXWindow * window) { return window->getRectangle(); });
+
+        float coverage = window->getRectangle().overlapCoeff(coveringRectangles);
+        window->setCoverage(coverage);
+    }
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> coverageDuration = end - updateTime;
+    std::chrono::duration<double, std::milli> duration = end - start;
+
+    spdlog::trace("Updated visible windows: {:d} windows in {:.2f}ms (update = {:.2f}ms, coverage = {:.2f}ms)", this->_visibleWindows.size(), duration.count(), updateDuration.count(), coverageDuration.count());
 }
 
 void WebXDisplay::debugTree(Window window, int indent) {

@@ -67,6 +67,14 @@ public:
         this->_isViewable = isViewable;
     }
 
+    void setCoverage(float coverage) {
+        this->_coverage = coverage;
+    }
+
+    float getCoverage() const {
+        return this->_coverage;
+    }
+
     void enableDamage();
     void disableDamage();
 
@@ -89,6 +97,7 @@ private:
 
     WebXRectangle _rectangle;
     bool _isViewable;
+    float _coverage;
 
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 
