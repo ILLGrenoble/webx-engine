@@ -16,7 +16,8 @@ int WebXManager::IO_ERROR_HANDLER(Display *display) {
 WebXManager::WebXManager(const std::string & keyboardLayout) :
     _x11Display(NULL),
     _display(NULL),
-    _eventListener(NULL) {
+    _eventListener(NULL),
+    _displayRequiresUpdate(false) {
 
     this->init(keyboardLayout);
 }
@@ -73,8 +74,9 @@ void WebXManager::init(const std::string & keyboardLayout) {
     this->_display->loadKeyboardLayout(keyboardLayout);
 }
 
-void WebXManager::flushEventListener() {
+void WebXManager::handlePendingEvents() {
     this->_eventListener->flushQueuedEvents();
+    this->updateDisplay();
 }
 
 void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
@@ -91,21 +93,21 @@ void WebXManager::handleWindowMapEvent(const WebXEvent & event) {
     spdlog::trace("Got Map Event for window 0x{:x}", event.getX11Window());
 
     this->_display->createWindowInTree(event.getX11Window());
-    this->updateDisplay();
+    this->_displayRequiresUpdate = true;
 }
 
 void WebXManager::handleWindowUnmapEvent(const WebXEvent & event) {
     spdlog::trace("Got Unmap Event for window 0x{:x}", event.getX11Window());
 
     this->_display->removeWindowFromTree(event.getX11Window());
-    this->updateDisplay();
+    this->_displayRequiresUpdate = true;
 }
 
 void WebXManager::handleWindowReparentEvent(const WebXEvent & event) {
     spdlog::trace("Got Reparent Event for window 0x{:x}", event.getX11Window());
 
     this->_display->reparentWindow(event.getX11Window(), event.getParent());
-    this->updateDisplay();
+    this->_displayRequiresUpdate = true;
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
@@ -121,7 +123,7 @@ void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
         }
     }
 
-    this->updateDisplay();
+    this->_displayRequiresUpdate = true;
 }
 
 void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
@@ -144,7 +146,10 @@ void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {
 }
 
 void WebXManager::updateDisplay() {
-    this->_display->updateVisibleWindows();
-    this->sendDisplayEvent(WindowLayoutEvent);
+    if (this->_displayRequiresUpdate) {
+        this->_display->updateVisibleWindows();
+        this->sendDisplayEvent(WindowLayoutEvent);
+        this->_displayRequiresUpdate = false;
+    }
 }
 

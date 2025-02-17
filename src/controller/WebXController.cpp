@@ -91,8 +91,8 @@ void WebXController::run() {
             // Handle all client instructions
             this->handleClientInstructions(display);
 
-            // Flush all X11 events
-            this->_manager->flushEventListener();
+            // Handle all pending X11 events
+            this->_manager->handlePendingEvents();
 
             if (this->_displayDirty) {
                 // Dispatch display event to connectors

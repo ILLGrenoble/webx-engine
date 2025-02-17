@@ -25,7 +25,7 @@ public:
         return this->_display;
     }
 
-    void flushEventListener();
+    void handlePendingEvents();
 
     void setDisplayEventHandler(std::function<void(WebXDisplayEventType eventType)> handler) {
         this->_onDisplayEvent = handler;
@@ -57,6 +57,7 @@ private:
     Display * _x11Display;
     WebXDisplay * _display;
     WebXEventListener * _eventListener;
+    bool _displayRequiresUpdate;
 
     std::function<void(WebXDisplayEventType eventType)> _onDisplayEvent;
 };
