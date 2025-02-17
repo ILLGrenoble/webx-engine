@@ -27,7 +27,7 @@ WebXController::WebXController(WebXGateway * gateway, const std::string & keyboa
     _displayDirty(true),
     _cursorDirty(true),
     _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
-    _quality(webx_quality_for_index(10)),
+    _quality(webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX)),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped),
     _frameDataStoreIndex(0) {
@@ -145,7 +145,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
             // Client request full window image: make it the best quality 
-            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, 1.0);
+            const WebXQuality & quality = webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX);
+            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality.imageQuality);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);

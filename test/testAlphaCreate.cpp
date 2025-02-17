@@ -45,6 +45,34 @@ inline void convertToAlpha2(u_int32_t * data, size_t length) {
     }
 }
 
+inline void convertToAlphaMono(u_int32_t * data, size_t length) {
+
+    u_int32_t * src = (u_int32_t *)data;
+    u_int8_t * dst = (u_int8_t *)data;
+
+    const size_t Unroll = 4;
+    const size_t PixelsAtOnce = 4 * Unroll;
+
+    size_t remaining = length;
+
+    while (remaining >= PixelsAtOnce) {
+        for (size_t unrolling = 0; unrolling < Unroll; unrolling++) {
+
+            *dst++ = *(u_int8_t *)src++;
+            *dst++ = *(u_int8_t *)src++;
+            *dst++ = *(u_int8_t *)src++;
+            *dst++ = *(u_int8_t *)src++;
+        }
+
+        remaining -= PixelsAtOnce;
+    }
+
+    // remaining 1 to 15 uint32
+    while (remaining-- != 0) {
+        *dst++ = *(u_int8_t *)src++;
+    }
+}
+
 int main() {
 
     srand(time(NULL));
@@ -93,6 +121,18 @@ int main() {
 
     printf("Loop unrolling test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
     
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int it = 0; it < nIter; it++) {
+        convertToAlphaMono((u_int32_t *)data, length);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = end - start;
+    cummulativeTimeUs = duration.count();
+
+    printf("Loop unrolling mono test completed: %d iterations in %fms, %fus / iteration for %luKB\n", nIter, cummulativeTimeUs, (cummulativeTimeUs / nIter), byteSize / 1024);
+
     start = std::chrono::high_resolution_clock::now();
 
     for (int it = 0; it < nIter; it++) {

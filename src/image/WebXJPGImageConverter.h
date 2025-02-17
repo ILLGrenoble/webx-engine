@@ -12,11 +12,12 @@ public:
     WebXJPGImageConverter();
     virtual ~WebXJPGImageConverter();
 
-    virtual WebXImage * convert(XImage * image, float quality = 0) const;
+    virtual WebXImage * convert(XImage * image, float quality) const;
     virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const;
 
 private:
     WebXDataBuffer * _convert(unsigned char * data, int width, int height, int bytesPerLine, float quality) const;
+    WebXDataBuffer * _convertMono(unsigned char * data, int width, int height, float quality) const;
 };
 
 

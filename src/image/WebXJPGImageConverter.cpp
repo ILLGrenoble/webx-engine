@@ -40,7 +40,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
         // Use low quality alpha map
-        alphaData = this->_convert(data + 2, width, height, bytesPerLine, 0.05);
+        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -72,13 +72,57 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
 	cinfo.dct_method = JDCT_IFAST;
 
-    // Max quality of 9.7
-    quality = quality < 0.0 ? 0.0 : quality > 9.7 ? 9.7 : quality;
+    // Max quality of 0.97
+    quality = quality < 0.0 ? 0.0 : quality > 0.97 ? 0.97 : quality;
     jpeg_set_quality(&cinfo, quality * 100, TRUE);
 
     JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
     for (int i = 0; i < height; i++) {
         row_pointer[i] = (JSAMPROW)&data[i * bytesPerLine];
+    }
+
+    jpeg_start_compress(&cinfo, TRUE);
+    while (cinfo.next_scanline < cinfo.image_height) {
+        jpeg_write_scanlines(&cinfo, &row_pointer[cinfo.next_scanline], cinfo.image_height - cinfo.next_scanline);
+    }
+    jpeg_finish_compress(&cinfo);
+
+    jpeg_destroy_compress(&cinfo);
+
+    free(row_pointer);
+
+    WebXDataBuffer * rawData = new WebXDataBuffer(jpegData, jpegDataSize);
+    return rawData;
+}
+
+WebXDataBuffer * WebXJPGImageConverter::_convertMono(unsigned char * data, int width, int height, float quality) const {
+
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    
+    unsigned char * jpegData = 0;
+    unsigned long jpegDataSize = 0;
+
+    jpeg_mem_dest(&cinfo, &jpegData, &jpegDataSize);
+
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = 1;
+    cinfo.in_color_space = JCS_GRAYSCALE;
+    
+    jpeg_set_defaults(&cinfo);
+
+	cinfo.dct_method = JDCT_IFAST;
+
+    // Max quality of 0.97
+    quality = quality < 0.0 ? 0.0 : quality > 0.97 ? 0.97 : quality;
+    jpeg_set_quality(&cinfo, quality * 100, TRUE);
+
+    JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
+    for (int i = 0; i < height; i++) {
+        row_pointer[i] = (JSAMPROW)&data[i * width];
     }
 
     jpeg_start_compress(&cinfo, TRUE);

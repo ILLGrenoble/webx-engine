@@ -17,7 +17,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _rectangle(WebXRectangle(x, y, width, height)),
     _isViewable(isViewable),
     _coverage(0.0),
-    _quality(webx_quality_for_index(10)),
+    _quality(webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX)),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
 }
@@ -73,7 +73,7 @@ void WebXWindow::printInfo() const {
     printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height);
 }
 
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float requestedQuality) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     Status status = this->updateAttributes();
@@ -118,8 +118,9 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
         bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
-        // If quality requested is max then keep max, otherwise choose min between requested and calculated quality
-        quality = quality == 1.0 ? quality : this->_quality.imageQuality < quality ? this->_quality.imageQuality : quality;
+        // Choose min quality between requested and calculated quality
+        float quality = this->_quality.imageQuality < requestedQuality ? this->_quality.imageQuality : requestedQuality;
+        // spdlog::info("Quality chosen = {}: window quality = {}, requested = {}", quality, this->_quality.imageQuality, requestedQuality);
 
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 

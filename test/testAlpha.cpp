@@ -111,7 +111,7 @@ int main() {
     xImage.height = height;
     xImage.data = (char *)imageData;
     xImage.bytes_per_line = bytes_per_line;
-    xImage.depth = 24;
+    xImage.depth = 32;
 
     WebXJPGImageConverter converter;
     int nIter = 10;
@@ -121,28 +121,7 @@ int main() {
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        WebXImage * image = converter.convert(&xImage);
-
-        unsigned char * alphaMap = (unsigned char *)malloc(width * height * 4);
-        unsigned char * srcPtr = imageData + 3; // alpha channel
-        unsigned char * destPtr = alphaMap;
-        for (int i = 0; i < imageSize; i++) {
-            *(destPtr) = 0;//*srcPtr;
-            *(destPtr + 1) = *srcPtr;
-            *(destPtr + 2) = 0;//*srcPtr;
-            // *(destPtr + 3) = 0;
-            srcPtr += 4;
-            destPtr += 4;
-        }
-
-        XImage xAlphaMap;
-        xAlphaMap.width = width;
-        xAlphaMap.height = height;
-        xAlphaMap.data = (char *)alphaMap;
-        xAlphaMap.bytes_per_line = bytes_per_line;
-        xAlphaMap.depth = 24;
-
-        WebXImage * alphaImage = converter.convert(&xAlphaMap);
+        WebXImage * image = converter.convert(&xImage, 0.9);
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;
@@ -157,16 +136,8 @@ int main() {
             } else {
                 printf("Failed to save image\n");
             }
-
-            std::string alphaMapFilename = "test/output/screenshotOut+alpha-alphamap";
-            if (alphaImage->save(alphaMapFilename)) {
-                printf("Output alphaMap saved to %s\n", alphaMapFilename.c_str());
-            } else {
-                printf("Failed to save alphaMap\n");
-            }
         }
 
-        delete alphaImage;
         delete image;
     }
 
