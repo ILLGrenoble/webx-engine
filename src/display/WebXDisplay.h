@@ -68,7 +68,6 @@ public:
     }
 
     void updateMouseCursor();
-    void updateMousePosition(int x, int y);
 
     void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
     void sendKeyboard(int keysym, bool pressed);
@@ -104,6 +103,7 @@ private:
     void createTree(WebXWindow * root);
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
+    void updateWindowQualities();
 
 private:
     Display * _x11Display;

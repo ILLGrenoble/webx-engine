@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <spdlog/spdlog.h>
 #include "WebXSize.h"
 
 class WebXRectangle {
@@ -18,6 +19,11 @@ private:
     };
 
 public:
+    struct WebXRectCoverage {
+        double coverage;
+        bool mouseOver;
+    };
+
     WebXRectangle() :
         x(0),
         y(0),
@@ -98,7 +104,7 @@ public:
         return (double)intersectionArea / this->area();
     }
 
-    float overlapCoeff(const std::vector<WebXRectangle> & coveringRectangles) const {
+    WebXRectCoverage overlapCalc(const std::vector<WebXRectangle> & coveringRectangles, int mouseX, int mouseY) const {
         std::vector<SweepLineEvent> events;
 
         // Collect all vertical edges as events
@@ -118,23 +124,29 @@ public:
         int prevX = this->_left;
         int coveredArea = 0;
         std::multiset<std::pair<int, int>> activeIntervals; // Stores active y-intervals
-    
+
+        // Check if mouse if over window
+        bool mouseOver = (this->_right >= mouseX && this->_left <= mouseX && this->_top >= mouseY && this->_bottom <= mouseY);
+
         for (const auto& event : events) {
             int currentX = event.x;
     
             // Calculate the covered vertical range
             int coveredHeight = 0;
-            int lastY = -1;
+            int lastY = 0;
     
             for (const auto& interval : activeIntervals) {
                 int y1 = interval.first;
                 int y2 = interval.second;
-    
-                if (lastY < y1) {
-                    coveredHeight += (y2 - y1);
-                } else {
-                    coveredHeight += std::max(0, y2 - lastY);
+
+                int lowerY = lastY < y1 ? y1 : lastY;
+                coveredHeight += (y2 - lowerY);
+
+                // Check if coverage includes the mouse position
+                if (currentX >= mouseX && prevX <= mouseX && y2 >= mouseY && lowerY <= mouseY) {
+                    mouseOver = false;
                 }
+    
                 lastY = std::max(lastY, y2);
             }
     
@@ -150,7 +162,7 @@ public:
             }
         }
 
-        return (double)coveredArea / this->area();;
+        return { .coverage = (double)coveredArea / this->area(), .mouseOver = mouseOver };
     }
 
     bool contains(const WebXRectangle & rectangle) const {

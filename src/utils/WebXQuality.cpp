@@ -1,8 +1,8 @@
 #include "WebXQuality.h"
 
 const std::vector<WebXQuality> WebXQuality::QUALITY_SETTINGS = {
-    WebXQuality(1, 0.5, 0.1),
-    WebXQuality(2, 0.5, 0.3),
+    WebXQuality(1, 0.5, 0.4),
+    WebXQuality(2, 0.5, 0.4),
     WebXQuality(3, 1, 0.6),
     WebXQuality(4, 3, 0.6),
     WebXQuality(5, 5, 0.6),

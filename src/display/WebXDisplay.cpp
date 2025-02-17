@@ -41,18 +41,18 @@ WebXDisplay::~WebXDisplay() {
 
 void WebXDisplay::init() {
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
+    Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
+    this->_screenSize = WebXSize(screen->width, screen->height);
+    this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
+    this->_keyboard = new WebXKeyboard(this->_x11Display);
+    this->_keyboard->init();
+
     this->_rootWindow = this->createWindow(rootX11Window, true);
     if (this->_rootWindow) {
         this->createTree(this->_rootWindow);
 
         this->updateVisibleWindows();
     }
-
-    Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
-    this->_screenSize = WebXSize(screen->width, screen->height);
-    this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
-    this->_keyboard = new WebXKeyboard(this->_x11Display);
-    this->_keyboard->init();
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
@@ -205,6 +205,19 @@ void WebXDisplay::updateVisibleWindows() {
     std::chrono::high_resolution_clock::time_point updateTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> updateDuration = updateTime - start;
 
+    this->updateWindowQualities();
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> coverageDuration = end - updateTime;
+    std::chrono::duration<double, std::milli> duration = end - start;
+
+    spdlog::trace("Updated visible windows: {:d} windows in {:.2f}ms (update = {:.2f}ms, coverage = {:.2f}ms)", this->_visibleWindows.size(), duration.count(), updateDuration.count(), coverageDuration.count());
+}
+
+void WebXDisplay::updateWindowQualities() {
+
+    const WebXMouseState * mouseState = this->getMouse()->getState();
+
     // Calculate visible areas of each visible window
     for (auto it = _visibleWindows.begin(); it != _visibleWindows.end(); it++) {
         WebXWindow * window = *it;
@@ -214,18 +227,17 @@ void WebXDisplay::updateVisibleWindows() {
         std::vector<WebXRectangle> coveringRectangles;
         std::transform(it2, this->_visibleWindows.end(), std::back_inserter(coveringRectangles), [](WebXWindow * window) { return window->getRectangle(); });
 
-        float coverage = window->getRectangle().overlapCoeff(coveringRectangles);
-        window->setCoverage(coverage);
+        WebXRectangle::WebXRectCoverage overlap = window->getRectangle().overlapCalc(coveringRectangles, mouseState->getX(), mouseState->getY());
+        window->setCoverage(overlap.coverage);
 
-        const WebXQuality & quality = webx_quality_for_image_coverage(coverage);
+        // quality dependent on coverage only
+        // const WebXQuality & quality = webx_quality_for_image_coverage(overlap.coverage);
+
+        // quality dependent on coverage, but mouse over visible part of window improves quality
+        const WebXQuality & quality = overlap.mouseOver ? webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX) : webx_quality_for_image_coverage(overlap.coverage);
+
         window->setQuality(quality);
     }
-
-    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> coverageDuration = end - updateTime;
-    std::chrono::duration<double, std::milli> duration = end - start;
-
-    spdlog::trace("Updated visible windows: {:d} windows in {:.2f}ms (update = {:.2f}ms, coverage = {:.2f}ms)", this->_visibleWindows.size(), duration.count(), updateDuration.count(), coverageDuration.count());
 }
 
 void WebXDisplay::debugTree(Window window, int indent) {
@@ -355,13 +367,10 @@ void WebXDisplay::updateMouseCursor() {
     this->_mouse->updateCursor();
 }
 
-void WebXDisplay::updateMousePosition(int x, int y) {
-    this->_mouse->updatePosition(x, y);
-}
-
 void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
     spdlog::trace("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
     this->_mouse->sendClientInstruction(x, y, buttonMask);
+    this->updateWindowQualities();
 }
 
 void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
