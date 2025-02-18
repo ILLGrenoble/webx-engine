@@ -5,16 +5,18 @@
 
 class WebXQuality {
 public:
-    WebXQuality(int index, float imageFPS, float imageQuality) :
+    WebXQuality(int index, float imageFPS, float rgbQuality, float alphaQuality) :
         index(index),
         imageFPS(imageFPS),
-        imageQuality(imageQuality),
+        rgbQuality(rgbQuality),
+        alphaQuality(alphaQuality),
         imageUpdateTimeUs(1000000.0 / imageFPS) {}
     virtual ~WebXQuality() {}
 
     int index;
     float imageFPS;
-    float imageQuality;
+    float rgbQuality;
+    float alphaQuality;
     double imageUpdateTimeUs;
 
     static const std::vector<WebXQuality> QUALITY_SETTINGS;

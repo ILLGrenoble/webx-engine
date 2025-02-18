@@ -10,17 +10,19 @@ WebXWebPImageConverter::WebXWebPImageConverter() {
 WebXWebPImageConverter::~WebXWebPImageConverter() {
 }
 
-WebXImage * WebXWebPImageConverter::convert(XImage * image, float quality) const {
+WebXImage * WebXWebPImageConverter::convert(XImage * image, const WebXQuality & quality) const {
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth, quality);
 }
 
-WebXImage * WebXWebPImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const {
+WebXImage * WebXWebPImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     uint8_t *output = 0;
-    quality = quality < 0.0 ? 0.0 : quality > 10.0 ? 10.0 : quality;
-    size_t size = WebPEncodeBGRA((uint8_t *)data, width, height, bytesPerLine, quality * 100, &output);
+
+    // Max quality of 0.97
+    float imageQuality = quality.rgbQuality < 0.0 ? 0.0 : quality.rgbQuality > 0.97 ? 0.97 : quality.rgbQuality;
+    size_t size = WebPEncodeBGRA((uint8_t *)data, width, height, bytesPerLine, imageQuality * 100, &output);
     // size_t size = WebPEncodeLosslessBGRA((uint8_t *)image->data, image->width, image->height, bytesPerLine, &output);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

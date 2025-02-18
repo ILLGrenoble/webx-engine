@@ -146,7 +146,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
             // Client request full window image: make it the best quality 
             const WebXQuality & quality = webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX);
-            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality.imageQuality);
+            std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);
@@ -190,7 +190,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                     // Get checksums before and after updating the window image
                     uint64_t oldChecksum = window->getWindowChecksum();
                     uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality.imageQuality);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality);
                     if (image) {
                         uint64_t newChecksum = window->getWindowChecksum();
                         uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
@@ -219,7 +219,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality.imageQuality, &area);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality, &area);
                     // Check image not null
                     if (image) {
                         subImages.push_back(WebXSubImage(area, image));

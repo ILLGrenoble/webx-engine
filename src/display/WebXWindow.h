@@ -39,7 +39,7 @@ public:
 
     void printInfo() const;
 
-    std::shared_ptr<WebXImage> getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float quality = 0);
+    std::shared_ptr<WebXImage> getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality);
 
     std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
         return this->_imageCaptureTime;

@@ -13,17 +13,17 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 
 }
 
-WebXImage * WebXJPGImageConverter::convert(XImage * image, float quality) const {
+WebXImage * WebXJPGImageConverter::convert(XImage * image, const WebXQuality & quality) const {
     return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth, quality);
 }
 
-WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const {
+WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     WebXImage * webXImage = nullptr;
 
-    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, quality);
+    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, quality.rgbQuality);
     WebXDataBuffer * alphaData = nullptr;
 
     if (imageDepth == 32) {
@@ -40,7 +40,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
         // Use low quality alpha map
-        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality);
+        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality.alphaQuality);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

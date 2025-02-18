@@ -2,6 +2,7 @@
 #include <image/WebXPNGImageConverter.h>
 #include <image/WebXJPGImageConverter.h>
 #include <image/WebXWebPImageConverter.h>
+#include <utils/WebXQualityHelper.h>
 
 #include <png.h>
 #include <stdlib.h>
@@ -95,7 +96,7 @@ TestResult test_convert(XImage & xImage, WebXImageConverter & converter, int nIt
     TestResult result;
 
     for (int i = 0; i < nIter; i++) {
-        WebXImage * image = converter.convert(&xImage, 0.95);
+        WebXImage * image = converter.convert(&xImage, webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX));
         cummulativeTimeUs += image->getEncodingTimeUs();
 
         if (i == 0) {

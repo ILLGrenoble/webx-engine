@@ -12,8 +12,8 @@ public:
     WebXPNGImageConverter();
     virtual ~WebXPNGImageConverter();
 
-    virtual WebXImage * convert(XImage * image, float quality) const;
-    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const;
+    virtual WebXImage * convert(XImage * image, const WebXQuality & quality) const;
+    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const;
 
 private:
     static void RawDataWriter(png_struct * png, png_byte * data, png_size_t length);

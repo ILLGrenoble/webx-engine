@@ -3,6 +3,7 @@
 
 #include <X11/Xlib.h>
 #include <spdlog/spdlog.h>
+#include <utils/WebXQuality.h>
 
 class WebXImage;
 
@@ -11,8 +12,8 @@ public:
     WebXImageConverter() {}
     virtual ~WebXImageConverter() {}
 
-    virtual WebXImage * convert(XImage * image, float quality) const = 0;
-    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, float quality) const = 0;
+    virtual WebXImage * convert(XImage * image, const WebXQuality & quality) const = 0;
+    virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const = 0;
 };
 
 

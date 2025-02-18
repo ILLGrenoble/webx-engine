@@ -58,7 +58,7 @@ public:
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 
-    std::shared_ptr<WebXImage> getImage(Window x11Window, float quality, WebXRectangle * imageRectangle = NULL);
+    std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, WebXRectangle * imageRectangle = NULL);
 
     void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh = false);
     std::vector<WebXWindowDamageProperties> getDamagedWindows(const WebXQuality & quality);

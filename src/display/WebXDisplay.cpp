@@ -236,6 +236,8 @@ void WebXDisplay::updateWindowQualities() {
         // quality dependent on coverage, but mouse over visible part of window improves quality
         const WebXQuality & quality = overlap.mouseOver ? webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX) : webx_quality_for_image_coverage(overlap.coverage);
 
+        // spdlog::info("window 0x{:01x} quality index {:d}", window->getX11Window(), quality.index);
+
         window->setQuality(quality);
     }
 }
@@ -266,7 +268,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
     }
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, float quality , WebXRectangle * imageRectangle) {
+std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQuality & quality, WebXRectangle * imageRectangle) {
     std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
     // Find visible window

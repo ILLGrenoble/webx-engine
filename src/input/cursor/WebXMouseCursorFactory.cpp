@@ -1,4 +1,5 @@
 #include "WebXMouseCursorFactory.h"
+#include <utils/WebXQualityHelper.h>
 #include <crc32/Crc32.h>
 #include <spdlog/spdlog.h>
 
@@ -79,7 +80,7 @@ std::shared_ptr<WebXImage> WebXMouseCursorFactory::convertCursorImage(XFixesCurs
         offset += 4;
     }
 
-    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32, 0.95);
+    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32, webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX));
     free(imageData);
 
     return std::shared_ptr<WebXImage>(image);

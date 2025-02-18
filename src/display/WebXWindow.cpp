@@ -73,7 +73,7 @@ void WebXWindow::printInfo() const {
     printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height);
 }
 
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, float requestedQuality) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     Status status = this->updateAttributes();
@@ -115,12 +115,12 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
     
     if (image) {
         // Check if image has transparency and modify image depth accordingly
-        bool hasTransparency = checkTransparent(image);
+        bool hasTransparency = requestedQuality.alphaQuality > 0 && checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
         // Choose min quality between requested and calculated quality
-        float quality = this->_quality.imageQuality < requestedQuality ? this->_quality.imageQuality : requestedQuality;
-        // spdlog::info("Quality chosen = {}: window quality = {}, requested = {}", quality, this->_quality.imageQuality, requestedQuality);
+        const WebXQuality quality = this->_quality.index < requestedQuality.index ? this->_quality : requestedQuality;
+        // spdlog::info("Quality chosen = {}: window quality = {}, requested = {}", quality.index, this->_quality.index, requestedQuality.index);
 
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 
