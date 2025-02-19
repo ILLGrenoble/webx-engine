@@ -122,7 +122,7 @@ int main() {
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        WebXImage * image = converter.convert(&xImage, webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX));
+        WebXImage * image = converter.convert(&xImage, webx_quality_max());
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;

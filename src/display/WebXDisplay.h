@@ -73,6 +73,8 @@ public:
     void sendKeyboard(int keysym, bool pressed);
     void loadKeyboardLayout(const std::string & layout);
     
+    void onImageDataSent(Window x11Window, float imageSizeKB);
+
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :
@@ -103,7 +105,7 @@ private:
     void createTree(WebXWindow * root);
     void deleteTree(WebXWindow * root);
     WebXWindow * getParent(WebXWindow * window);
-    void updateWindowQualities();
+    void updateWindowCoverage();
 
 private:
     Display * _x11Display;

@@ -7,6 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <string>
+#include "WebXStats.h"
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
@@ -15,18 +16,10 @@
 class WebXGateway;
 class WebXManager;
 class WebXDisplay;
-class WebXConnection;
 class WebXInstruction;
 class WebXMessage;
 
 class WebXController {
-private:
-    struct WebXFrameData {
-        double fps;
-        double duration;
-    };
-
-
 public:
     WebXController(WebXGateway * gateway, const std::string & keyboardLayout = "");
     virtual ~WebXController();
@@ -48,42 +41,37 @@ private:
         }
     }
 
-    void setQuality(uint32_t qualityIndex) {
-        this->_quality = webx_quality_for_index(qualityIndex);
+    void setRequestedQuality(uint32_t qualityIndex) {
+        this->_requestedQuality = webx_quality_for_index(qualityIndex);
     }
     
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
-    void notifyImagesChanged(WebXDisplay * display);
+    float notifyImagesChanged(WebXDisplay * display);
     void notifyMouseChanged(WebXDisplay * display);
 
     void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);
-    void updateFrameData(double fps, double duration);
 
 private:
     const static unsigned int THREAD_RATE = 60;
     const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
     const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
     const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
-    const static size_t FRAME_DATA_STORE_SIZE = 30;
 
     WebXGateway * _gateway;
     WebXManager * _manager;
+    WebXStats _stats;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
 
     bool _displayDirty;
     bool _cursorDirty;
 
-    long _imageRefreshUs;
-    WebXQuality _quality;
+    WebXQuality _requestedQuality;
 
     long _threadSleepUs;
     std::mutex _instructionsMutex;
     WebXControllerState _state;
-
-    std::vector<WebXFrameData> _frameDataStore;
-    int _frameDataStoreIndex;
 
 };
 

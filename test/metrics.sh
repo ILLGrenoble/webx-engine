@@ -97,8 +97,8 @@ calculate_frame_metrics() {
   # Process each matching log line
   while IFS= read -r line; do
     # Extract width, height, grab time, and encoding time using awk
-    duration=$(echo "$line" | awk -F '[ ,=()]+' '{gsub("ms", "", $NF); print $NF}')
-    fps=$(echo "$line" | awk -F '[ ,=()]+' '{gsub("ms", "", $NF); print $(NF-4)}')
+    duration=$(echo "$line" | awk -F '[ ,=()]+' '{gsub("ms", "", $(NF-6)); print $(NF-6)}')
+    fps=$(echo "$line" | awk -F '[ ,=()]+' '{gsub("ms", "", $(NF-10)); print $(NF-10)}')
 
     # Accumulate values
     sum_duration=$(awk -v sum="$sum_duration" -v time="$duration" 'BEGIN {print sum + time}')

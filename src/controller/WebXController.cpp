@@ -26,15 +26,9 @@ WebXController::WebXController(WebXGateway * gateway, const std::string & keyboa
     _manager(new WebXManager(keyboardLayout)),
     _displayDirty(true),
     _cursorDirty(true),
-    _imageRefreshUs(1000000.0 / WebXController::DEFAULT_IMAGE_REFRESH_RATE),
-    _quality(webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX)),
+    _requestedQuality(webx_quality_max()),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
-    _state(WebXControllerState::Stopped),
-    _frameDataStoreIndex(0) {
-
-    for (int i = 0; i < WebXController::FRAME_DATA_STORE_SIZE; i++) {
-        this->_frameDataStore.push_back({.fps = 0.0, .duration = 0.0});
-    }
+    _state(WebXControllerState::Stopped) {
 
     // Set the instruction handler function in the gateway
     this->_gateway->setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
@@ -100,7 +94,7 @@ void WebXController::run() {
             }
 
             // Update necessary images
-            this->notifyImagesChanged(display);
+            float imageSizeKB = this->notifyImagesChanged(display);
 
             WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
             if (this->_cursorDirty || finalMousePosition != initialMousePosition) {
@@ -113,8 +107,8 @@ void WebXController::run() {
             long duration = durationUs.count();
             calculateThreadSleepUs = duration > this->_threadSleepUs ? 0 : this->_threadSleepUs - duration;
 
-            double fps = 1000000 / delayUs.count();
-            this->updateFrameData(fps, duration);
+            float fps = 1000000 / delayUs.count();
+            this->_stats.updateFrameData(fps, 0.001 * duration, imageSizeKB);
         }
     }
 
@@ -145,7 +139,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
             // Client request full window image: make it the best quality 
-            const WebXQuality & quality = webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX);
+            const WebXQuality & quality = webx_quality_max();
             std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
@@ -164,7 +158,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
             uint32_t qualityIndex = qualityInstruction->qualityIndex;
-            this->setQuality(qualityIndex);
+            this->setRequestedQuality(qualityIndex);
         }
     }
 
@@ -178,8 +172,10 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
     this->sendMessage(message);
 }
 
-void WebXController::notifyImagesChanged(WebXDisplay * display) {
-    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_quality);
+float WebXController::notifyImagesChanged(WebXDisplay * display) {
+    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_requestedQuality);
+    float imageSizeKB = 0.0;
+
     if (damagedWindows.size() > 0) {
         for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
             WebXWindowDamageProperties & windowDamage = *it;
@@ -190,7 +186,7 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                     // Get checksums before and after updating the window image
                     uint64_t oldChecksum = window->getWindowChecksum();
                     uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_requestedQuality);
                     if (image) {
                         uint64_t newChecksum = window->getWindowChecksum();
                         uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
@@ -210,6 +206,11 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
 
                             auto message = std::make_shared<WebXImageMessage>(windowDamage.windowId, image);
                             this->sendMessage(message);
+
+                            // Update stats
+                            float imageSizeKB = image->getFullDataSize() / 1024.0;
+                            display->onImageDataSent(windowDamage.windowId, imageSizeKB);
+                            imageSizeKB += imageSizeKB;
                         }
                     }
                 }
@@ -219,10 +220,15 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
                 std::vector<WebXSubImage> subImages;
                 for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
                     WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_quality, &area);
+                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_requestedQuality, &area);
                     // Check image not null
                     if (image) {
                         subImages.push_back(WebXSubImage(area, image));
+
+                        // Update stats
+                        float imageSizeKB = image->getFullDataSize() / 1024.0;
+                        display->onImageDataSent(windowDamage.windowId, imageSizeKB);
+                        imageSizeKB += imageSizeKB;
                     }
                 }
 
@@ -238,6 +244,8 @@ void WebXController::notifyImagesChanged(WebXDisplay * display) {
             }
         }
     }
+
+    return imageSizeKB;
 }
 
 void WebXController::notifyMouseChanged(WebXDisplay * display) {
@@ -253,23 +261,5 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
 void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
     message->commandId = commandId;
     this->_gateway->publishMessage(message);
-}
-
-void WebXController::updateFrameData(double fps, double duration) {
-    this->_frameDataStore[this->_frameDataStoreIndex++] = { .fps = fps, .duration = duration };
-    if (this->_frameDataStoreIndex == WebXController::FRAME_DATA_STORE_SIZE) {
-        this->_frameDataStoreIndex = 0;
-
-        double averageFps = 0;
-        double averageDuration = 0;
-        for (auto it = this->_frameDataStore.begin(); it != this->_frameDataStore.end(); it++) {
-            averageFps += (*it).fps;
-            averageDuration += (*it).duration;
-        }
-        averageFps /= WebXController::FRAME_DATA_STORE_SIZE;
-        averageDuration = 0.001 * averageDuration / WebXController::FRAME_DATA_STORE_SIZE;
-
-        spdlog::trace("Average FPS = {:f}, average frame duration = {:f}ms", averageFps, averageDuration);
-    }
 }
 

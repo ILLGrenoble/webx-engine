@@ -16,8 +16,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _parent(NULL),
     _rectangle(WebXRectangle(x, y, width, height)),
     _isViewable(isViewable),
-    _coverage(0.0),
-    _quality(webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX)),
+    _qualityHandler(x11Window),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
 }
@@ -118,9 +117,8 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
         bool hasTransparency = requestedQuality.alphaQuality > 0 && checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
-        // Choose min quality between requested and calculated quality
-        const WebXQuality quality = this->_quality.index < requestedQuality.index ? this->_quality : requestedQuality;
-        // spdlog::info("Quality chosen = {}: window quality = {}, requested = {}", quality.index, this->_quality.index, requestedQuality.index);
+        // Calculate quality depending on requested quality, coverage and image KB/s
+        const WebXQuality quality = this->_qualityHandler.calculateQuality(requestedQuality);
 
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 

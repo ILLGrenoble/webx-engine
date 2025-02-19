@@ -8,6 +8,7 @@
 #include <memory>
 #include <chrono>
 #include <mutex>
+#include "WebXWindowQualityHandler.h"
 #include <utils/WebXRectangle.h>
 #include <utils/WebXQuality.h>
 #include <image/WebXImageConverter.h>
@@ -68,20 +69,20 @@ public:
         this->_isViewable = isViewable;
     }
 
-    void setCoverage(float coverage) {
-        this->_coverage = coverage;
+    void setCoverage(const WebXRectangle::WebXRectCoverage & coverage) {
+        this->_qualityHandler.setWindowCoverage(coverage);
+    }
+    
+    void onImageDataSent(float imageSizeKB) {
+        this->_qualityHandler.onImageDataSent(imageSizeKB);
     }
 
-    float getCoverage() const {
-        return this->_coverage;
-    }
-
-    void setQuality(const WebXQuality & quality) {
-        this->_quality = quality;
+    const WebXQuality & calculateQuality(const WebXQuality & desiredQuality) {
+        return this->_qualityHandler.calculateQuality(desiredQuality);
     }
 
     const WebXQuality & getQuality() const {
-        return this->_quality;
+        return this->_qualityHandler.getCurrentQuality();;
     }
 
     void enableDamage();
@@ -105,9 +106,10 @@ private:
     std::vector<WebXWindow *> _children;
 
     WebXRectangle _rectangle;
+
     bool _isViewable;
-    float _coverage;
-    WebXQuality _quality;
+
+    WebXWindowQualityHandler _qualityHandler;
 
     std::chrono::high_resolution_clock::time_point _imageCaptureTime;
 

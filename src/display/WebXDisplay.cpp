@@ -205,7 +205,7 @@ void WebXDisplay::updateVisibleWindows() {
     std::chrono::high_resolution_clock::time_point updateTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> updateDuration = updateTime - start;
 
-    this->updateWindowQualities();
+    this->updateWindowCoverage();
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> coverageDuration = end - updateTime;
@@ -214,7 +214,7 @@ void WebXDisplay::updateVisibleWindows() {
     spdlog::trace("Updated visible windows: {:d} windows in {:.2f}ms (update = {:.2f}ms, coverage = {:.2f}ms)", this->_visibleWindows.size(), duration.count(), updateDuration.count(), coverageDuration.count());
 }
 
-void WebXDisplay::updateWindowQualities() {
+void WebXDisplay::updateWindowCoverage() {
 
     const WebXMouseState * mouseState = this->getMouse()->getState();
 
@@ -227,18 +227,8 @@ void WebXDisplay::updateWindowQualities() {
         std::vector<WebXRectangle> coveringRectangles;
         std::transform(it2, this->_visibleWindows.end(), std::back_inserter(coveringRectangles), [](WebXWindow * window) { return window->getRectangle(); });
 
-        WebXRectangle::WebXRectCoverage overlap = window->getRectangle().overlapCalc(coveringRectangles, mouseState->getX(), mouseState->getY());
-        window->setCoverage(overlap.coverage);
-
-        // quality dependent on coverage only
-        // const WebXQuality & quality = webx_quality_for_image_coverage(overlap.coverage);
-
-        // quality dependent on coverage, but mouse over visible part of window improves quality
-        const WebXQuality & quality = overlap.mouseOver ? webx_quality_for_index(WebXQuality::MAX_QUALITY_INDEX) : webx_quality_for_image_coverage(overlap.coverage);
-
-        // spdlog::info("window 0x{:01x} quality index {:d}", window->getX11Window(), quality.index);
-
-        window->setQuality(quality);
+        WebXRectangle::WebXRectCoverage coverage = window->getRectangle().overlapCalc(coveringRectangles, mouseState->getX(), mouseState->getY());
+        window->setCoverage(coverage);
     }
 }
 
@@ -338,12 +328,12 @@ std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(const Web
     for (auto it = this->_damagedWindows.begin(); it != this->_damagedWindows.end();) {
         WebXWindowDamageProperties & windowDamage = *it;
 
-        // Verify that the window still exists
-        WebXWindow * window = this->getWindow(windowDamage.windowId);
+        // Verify that the window still exists and is still visible
+        WebXWindow * window = this->getVisibleWindow(windowDamage.windowId);
         float imageUpdateTimeUs = quality.imageUpdateTimeUs;
         if (window != NULL) {
             // Modify quality to be poorest between requested and calculated
-            if (window->getQuality().index < quality.index) {
+            if (window->calculateQuality(quality).index < quality.index) {
                 imageUpdateTimeUs = window->getQuality().imageUpdateTimeUs;
             }
 
@@ -372,7 +362,7 @@ void WebXDisplay::updateMouseCursor() {
 void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
     spdlog::trace("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
     this->_mouse->sendClientInstruction(x, y, buttonMask);
-    this->updateWindowQualities();
+    this->updateWindowCoverage();
 }
 
 void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
@@ -388,6 +378,14 @@ void WebXDisplay::loadKeyboardLayout(const std::string & layout) {
         } else {
             spdlog::error("Failed to load '{:s}' keyboard layout", layout);
         }
+    }
+}
+
+void WebXDisplay::onImageDataSent(Window x11Window, float imageSizeKB) {
+    // See if window exists
+    WebXWindow * window = this->getWindow(x11Window);
+    if (window != NULL) {
+        window->onImageDataSent(imageSizeKB);
     }
 }
 
