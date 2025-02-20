@@ -27,7 +27,11 @@ inline const WebXQuality & webx_quality_for_image_coverage(float coverage) {
     }
 
     // Coverage [0.0:1.0], quality [1:10]
-    int qualityIndex = 10 - (int)(9 * coverage);
+    // linear conversion from coverage to quality
+    // int qualityIndex = std::ceil(10 - (10 * coverage));
+
+    // quadratic conversion from coverage to quality (keep higher quality for smaller coverage)
+    int qualityIndex = std::ceil(10 - (10 * coverage * coverage));
 
     const WebXQuality & quality = WebXQuality::QUALITY_SETTINGS[qualityIndex - 1];
 
