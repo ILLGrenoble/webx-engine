@@ -45,7 +45,8 @@ private:
     WebXWindowImageKbs calculateImageKbps();
 
 private:
-    const static int DATA_RETENTION_TIME_MS = 3000;
+    const static int DATA_RETENTION_TIME_MS = 4000;
+    const static int NO_RECENT_WINDOW_UPDATE_TIME_MS = 2000;
     const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 1000;
     
     unsigned long _windowId;
@@ -57,6 +58,7 @@ private:
     
     std::vector<WebXWindowQualityData> _dataStore;
     WebXWindowImageKbs _imageKbps;
+    std::chrono::high_resolution_clock::time_point _imageKbpsInitTime;
 };
 
 
