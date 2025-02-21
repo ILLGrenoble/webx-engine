@@ -1,5 +1,5 @@
 #include "WebXMouseCursorFactory.h"
-#include <utils/WebXQualityHelper.h>
+#include <utils/WebXQuality.h>
 #include <crc32/Crc32.h>
 #include <spdlog/spdlog.h>
 
@@ -23,7 +23,7 @@ std::shared_ptr<WebXMouseCursor> WebXMouseCursorFactory::createCursor() {
                 auto cursor =  std::shared_ptr<WebXMouseCursor>(new WebXMouseCursor(cursorId, image, (int)cursorImage->xhot, (int)cursorImage->yhot));
                 this->_catalogue[cursorId] = cursor;
 
-                spdlog::debug("Cursor catalogue contains {:d} cursors", this->_catalogue.size());
+                // spdlog::debug("Cursor catalogue contains {:d} cursors", this->_catalogue.size());
 
                 return cursor;
             }
@@ -80,7 +80,7 @@ std::shared_ptr<WebXImage> WebXMouseCursorFactory::convertCursorImage(XFixesCurs
         offset += 4;
     }
 
-    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32, webx_quality_max());
+    WebXImage * image = this->_imageConverter.convert(imageData, (int)cursorImage->width, (int)cursorImage->height, (int)cursorImage->width * 4, 32, WebXQuality::MaxQuality());
     free(imageData);
 
     return std::shared_ptr<WebXImage>(image);

@@ -3,12 +3,12 @@
 #define WEBX_MESSAGE_ENCODER_H
 
 #include <memory>
+#include <cstring>
 
 namespace zmq {
 class message_t;
 }
 
-class WebXSettings;
 class WebXMessage;
 class WebXCursorImageMessage;
 class WebXImageMessage;
@@ -20,8 +20,9 @@ class WebXWindowsMessage;
 
 class WebXMessageEncoder {
     public:
-    WebXMessageEncoder(WebXSettings * settings) :
-        _settings(settings) {}
+    WebXMessageEncoder(const unsigned char * sessionId) {
+        memcpy(this->_sessionId, sessionId, 16);
+    }
     ~WebXMessageEncoder() {}
 
     zmq::message_t * encode(std::shared_ptr<WebXMessage> message);
@@ -135,7 +136,7 @@ private:
     zmq::message_t * createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message);
 
 private:
-    WebXSettings * _settings;
+    unsigned char _sessionId[16];
 };
 
 

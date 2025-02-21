@@ -56,25 +56,23 @@ int main(int argc, char *argv[]) {
     spdlog::info("Starting WebX server");
 
     // Create the Gateway (connection between transport layer and controller)
-    WebXGateway * gateway = new WebXGateway();
+    WebXGateway gateway;
 
     // Initialise Manager, Display and Event Listener
     controller = new WebXController(gateway, keyboardLayout);
 
     // Start transport
-    WebXTransport * transport = new WebXTransport(gateway, &settings, standAlone);
-    transport->start();
+    WebXTransport transport(gateway, settings, standAlone);
+    transport.start();
 
     // Start the controller (blocking)
     controller->run();
 
     // stop transport
-    transport->stop();
+    transport.stop();
 
-    delete transport;
     delete controller;
     controller = nullptr;
-    delete gateway;
 
     spdlog::info("WebX terminated");
 }

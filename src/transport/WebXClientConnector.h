@@ -1,14 +1,13 @@
 #ifndef WEBX_CLIENT_CONNECTOR_H
 #define WEBX_CLIENT_CONNECTOR_H
 
-#include "message/WebXMessage.h"
+#include <message/WebXMessage.h>
 #include "WebXZMQ.h"
 #include <thread>
 #include <mutex>
 
 
 class WebXBinarySerializer;
-class WebXSettings;
 namespace zmq {
 class context_t;
 class socket_t;
@@ -18,9 +17,8 @@ class WebXClientConnector {
 public:
     WebXClientConnector(WebXBinarySerializer * serializer);
     virtual ~WebXClientConnector();
-    void init();
 
-    void run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings);
+    void run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, int publisherPort, int collectorPort);
     void stop();
 
 private:

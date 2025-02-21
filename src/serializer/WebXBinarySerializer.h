@@ -3,7 +3,6 @@
 
 #include <memory>
 
-class WebXSettings;
 class WebXMessageEncoder;
 class WebXInstructionDecoder;
 class WebXInstruction;
@@ -15,7 +14,7 @@ class message_t;
 
 class WebXBinarySerializer {
 public:
-    WebXBinarySerializer(WebXSettings * settings);
+    WebXBinarySerializer(const unsigned char * sessionId);
     ~WebXBinarySerializer();
 
     std::shared_ptr<WebXInstruction> deserialize(const unsigned char * instructionData, size_t instructionDataSize);

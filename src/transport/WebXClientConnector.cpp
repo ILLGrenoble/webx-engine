@@ -1,5 +1,4 @@
 #include "WebXClientConnector.h"
-#include <utils/WebXSettings.h>
 #include <unistd.h>
 #include <string>
 #include <spdlog/spdlog.h>
@@ -16,12 +15,12 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-void WebXClientConnector::run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, WebXSettings * settings) {
+void WebXClientConnector::run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, int publisherPort, int collectorPort) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_eventBusAddr = eventBusAddr;
-    this->_publisherPort = settings->publisherPort;
-    this->_collectorPort = settings->collectorPort;
+    this->_publisherPort = publisherPort;
+    this->_collectorPort = collectorPort;
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientConnector::mainLoop, this);
     }

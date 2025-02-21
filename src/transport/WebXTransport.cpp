@@ -2,15 +2,13 @@
 #include "WebXClientConnector.h"
 #include "WebXClientMessagePublisher.h"
 #include "WebXClientCommandCollector.h"
-#include <gateway/WebXGateway.h>
 #include <serializer/WebXBinarySerializer.h>
-#include <utils/WebXSettings.h>
 
-WebXTransport::WebXTransport(WebXGateway * gateway, WebXSettings * settings, bool standAlone) :
+WebXTransport::WebXTransport(WebXGateway & gateway, const WebXSettings & settings, bool standAlone) :
     _gateway(gateway),
     _settings(settings),
     _standAlone(standAlone),
-    _serializer(new WebXBinarySerializer(settings)),
+    _serializer(new WebXBinarySerializer(settings.sessionId)),
     _context(1),
     _eventBusPublisher(this->createEventBusPublisher()),
     _connector(new WebXClientConnector(_serializer)),
@@ -28,40 +26,40 @@ WebXTransport::~WebXTransport() {
 void WebXTransport::start() {
     if (this->_standAlone) {
         // Create connector
-        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings->connectorPort);
-        _connector->run(&this->_context, clientResponderAddr, _settings->inprocEventBusAddress, _settings);
+        const std::string clientResponderAddr = fmt::format("tcp://*:{:4d}", _settings.connectorPort);
+        _connector->run(&this->_context, clientResponderAddr, _settings.inprocEventBusAddress, _settings.publisherPort, _settings.collectorPort);
 
         // Create publisher
-        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings->publisherPort);
-        _publisher->run(&this->_context, clientPublisherAddr, true, _settings->inprocEventBusAddress);
+        std::string clientPublisherAddr = fmt::format("tcp://*:{:4d}", _settings.publisherPort);
+        _publisher->run(&this->_context, clientPublisherAddr, true, _settings.inprocEventBusAddress);
 
         // Create instruction collector
-        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", _settings->collectorPort);
-        _collector->run(&this->_context, clientCollectorAddr, true, _settings->inprocEventBusAddress, _settings);
+        const std::string clientCollectorAddr = fmt::format("tcp://*:{:4d}", _settings.collectorPort);
+        _collector->run(&this->_context, clientCollectorAddr, true, _settings.inprocEventBusAddress, _settings.sessionId);
     
     } else {
         // Create connector
-        std::string sessionConnectorAddr = fmt::format("ipc://{}", _settings->ipcSessionConnectorPath);
-        _connector->run(&this->_context, sessionConnectorAddr, _settings->inprocEventBusAddress, _settings);
+        std::string sessionConnectorAddr = fmt::format("ipc://{}", _settings.ipcSessionConnectorPath);
+        _connector->run(&this->_context, sessionConnectorAddr, _settings.inprocEventBusAddress, _settings.publisherPort, _settings.collectorPort);
 
         // Create publisher
-        std::string clientPublisherAddr = fmt::format("ipc://{}", _settings->ipcMessageProxyPath);
-        _publisher->run(&this->_context, clientPublisherAddr, false, _settings->inprocEventBusAddress);
+        std::string clientPublisherAddr = fmt::format("ipc://{}", _settings.ipcMessageProxyPath);
+        _publisher->run(&this->_context, clientPublisherAddr, false, _settings.inprocEventBusAddress);
 
         // Create instruction collector
-        std::string clientCollectorAddr = fmt::format("ipc://{}", _settings->ipcInstructionProxyPath);
-        _collector->run(&this->_context, clientCollectorAddr, false, _settings->inprocEventBusAddress, _settings);
+        std::string clientCollectorAddr = fmt::format("ipc://{}", _settings.ipcInstructionProxyPath);
+        _collector->run(&this->_context, clientCollectorAddr, false, _settings.inprocEventBusAddress, _settings.sessionId);
     }
 
     // Set the message publisher function in the gateway
-    this->_gateway->setMessagePublisherFunc([this](std::shared_ptr<WebXMessage> message) {
+    this->_gateway.setMessagePublisherFunc([this](std::shared_ptr<WebXMessage> message) {
         this->_publisher->onMessage(message);
     });
 }
 
 void WebXTransport::stop() {
     // Remove the message publisher function in the gateway
-    this->_gateway->setMessagePublisherFunc(nullptr);
+    this->_gateway.setMessagePublisherFunc(nullptr);
 
     // Send shutdown message
     std::string messageString = "shutdown";
@@ -86,11 +84,11 @@ zmq::socket_t WebXTransport::createEventBusPublisher() {
     socket.set(zmq::sockopt::linger, 0);
 #endif
     try {
-        socket.bind(_settings->inprocEventBusAddress);
+        socket.bind(_settings.inprocEventBusAddress);
         return socket;
     
     } catch (zmq::error_t& e) {
-        spdlog::error("failed to bind Event Bus socket to {:s}", _settings->inprocEventBusAddress);
+        spdlog::error("failed to bind Event Bus socket to {:s}", _settings.inprocEventBusAddress);
         exit(1);
     }       
 }

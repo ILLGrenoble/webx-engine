@@ -1,5 +1,4 @@
 #include "WebXController.h"
-#include <gateway/WebXGateway.h>
 #include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <instruction/WebXMouseInstruction.h>
@@ -16,22 +15,21 @@
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
-#include <utils/WebXQualityHelper.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
 
-WebXController::WebXController(WebXGateway * gateway, const std::string & keyboardLayout) :
+WebXController::WebXController(WebXGateway & gateway, const std::string & keyboardLayout) :
     _gateway(gateway),
     _manager(new WebXManager(keyboardLayout)),
     _displayDirty(true),
     _cursorDirty(true),
-    _requestedQuality(webx_quality_max()),
+    _requestedQuality(WebXQuality::MaxQuality()),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped) {
 
     // Set the instruction handler function in the gateway
-    this->_gateway->setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
+    this->_gateway.setInstructionHandlerFunc([this](std::shared_ptr<WebXInstruction> instruction) {
         const std::lock_guard<std::mutex> lock(this->_instructionsMutex);
         this->_instructions.push_back(instruction);
     });
@@ -47,6 +45,12 @@ WebXController::~WebXController() {
 void WebXController::stop() {
     spdlog::info("Shutdown");
     this->_state = WebXControllerState::Stopped;
+
+    // Remove the instruction handler
+    this->_gateway.setInstructionHandlerFunc(nullptr);
+
+    // Remove the display events listener
+    this->_manager->setDisplayEventHandler(nullptr);
 }
 
 void WebXController::run() {
@@ -139,7 +143,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
             // Client request full window image: make it the best quality 
-            const WebXQuality & quality = webx_quality_max();
+            const WebXQuality & quality = WebXQuality::MaxQuality();
             std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality);
 
             auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
@@ -202,7 +206,7 @@ float WebXController::notifyImagesChanged(WebXDisplay * display) {
                                 }
                             }
 
-                            spdlog::debug("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                            spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
                             auto message = std::make_shared<WebXImageMessage>(windowDamage.windowId, image);
                             this->sendMessage(message);
@@ -260,6 +264,6 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
 
 void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
     message->commandId = commandId;
-    this->_gateway->publishMessage(message);
+    this->_gateway.publishMessage(message);
 }
 

@@ -4,6 +4,19 @@
 #include <cstdlib>
 #include <spdlog/spdlog.h>
 
+class WebXQualitySettings {
+public:
+    enum CoverageQualityFunc {
+        Disabled = 0,
+        Linear,
+        Quadratic,
+    };
+public:
+    bool increaseQualityOnMouseOver;
+    CoverageQualityFunc coverageQualityFunc;
+    bool limitQualityByDataRate;
+};
+
 class WebXSettings {
 public:
     WebXSettings() :

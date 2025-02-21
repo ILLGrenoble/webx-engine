@@ -8,12 +8,12 @@
 #include <mutex>
 #include <string>
 #include "WebXStats.h"
+#include <gateway/WebXGateway.h>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
-#include <utils/WebXQualityHelper.h>
+#include <utils/WebXQuality.h>
 
-class WebXGateway;
 class WebXManager;
 class WebXDisplay;
 class WebXInstruction;
@@ -21,7 +21,7 @@ class WebXMessage;
 
 class WebXController {
 public:
-    WebXController(WebXGateway * gateway, const std::string & keyboardLayout = "");
+    WebXController(WebXGateway & gateway, const std::string & keyboardLayout = "");
     virtual ~WebXController();
 
     void run();
@@ -42,7 +42,7 @@ private:
     }
 
     void setRequestedQuality(uint32_t qualityIndex) {
-        this->_requestedQuality = webx_quality_for_index(qualityIndex);
+        this->_requestedQuality = WebXQuality::QualityForIndex(qualityIndex);
     }
     
     void handleClientInstructions(WebXDisplay * display);
@@ -58,7 +58,7 @@ private:
     const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
     const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
 
-    WebXGateway * _gateway;
+    WebXGateway & _gateway;
     WebXManager * _manager;
     WebXStats _stats;
 

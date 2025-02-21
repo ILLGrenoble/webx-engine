@@ -3,7 +3,7 @@
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
 #include <events/WebXDamageOverride.h>
-#include <utils/WebXQualityHelper.h>
+#include <utils/WebXQuality.h>
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
@@ -118,7 +118,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
         image->depth = hasTransparency ? 32 : 24;
 
         // Calculate quality depending on requested quality, coverage and image KB/s
-        const WebXQuality quality = this->_qualityHandler.calculateQuality(requestedQuality);
+        const WebXQuality & quality = this->_qualityHandler.calculateQuality(requestedQuality);
 
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
 

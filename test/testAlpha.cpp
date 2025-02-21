@@ -1,6 +1,6 @@
 #include <image/WebXImage.h>
 #include <image/WebXJPGImageConverter.h>
-#include <utils/WebXQualityHelper.h>
+#include <utils/WebXQuality.h>
 
 #include <png.h>
 #include <stdlib.h>
@@ -122,7 +122,7 @@ int main() {
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        WebXImage * image = converter.convert(&xImage, webx_quality_max());
+        WebXImage * image = converter.convert(&xImage, WebXQuality::MaxQuality());
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;

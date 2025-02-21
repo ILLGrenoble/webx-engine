@@ -6,7 +6,6 @@
 #include <spdlog/spdlog.h>
 #include <input/WebXMouse.h>
 #include <input/WebXKeyboard.h>
-#include <utils/WebXQualityHelper.h>
 
 WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
@@ -333,7 +332,7 @@ std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(const Web
         float imageUpdateTimeUs = quality.imageUpdateTimeUs;
         if (window != NULL) {
             // Modify quality to be poorest between requested and calculated
-            if (window->calculateQuality(quality).index < quality.index) {
+            if (window->calculateQuality(quality) < quality) {
                 imageUpdateTimeUs = window->getQuality().imageUpdateTimeUs;
             }
 

@@ -1,12 +1,10 @@
 #include "WebXClientCommandCollector.h"
 #include "instruction/WebXInstruction.h"
 #include "serializer/WebXBinarySerializer.h"
-#include <gateway/WebXGateway.h>
-#include <utils/WebXSettings.h>
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientCommandCollector::WebXClientCommandCollector(WebXGateway * gateway, WebXBinarySerializer * serializer) : 
+WebXClientCommandCollector::WebXClientCommandCollector(WebXGateway & gateway, WebXBinarySerializer * serializer) : 
     _thread(NULL),
     _gateway(gateway),
     _serializer(serializer) {
@@ -19,12 +17,12 @@ WebXClientCommandCollector::~WebXClientCommandCollector() {
     }
 }
 
-void WebXClientCommandCollector::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, WebXSettings * settings) {
+void WebXClientCommandCollector::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr, const unsigned char * sessionId) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
     this->_eventBusAddr = eventBusAddr;
-    memcpy(this->_sessionId, settings->sessionId, 16);
+    memcpy(this->_sessionId, sessionId, 16);
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientCommandCollector::mainLoop, this);
     }
@@ -97,7 +95,7 @@ void WebXClientCommandCollector::mainLoop() {
                     if (instruction != NULL) {
                         // spdlog::debug("Received instruction type {}", (int)instruction->type);
                         // Handle message
-                        this->_gateway->handleInstruction(instruction);
+                        this->_gateway.handleInstruction(instruction);
                     }
                 }
             }
