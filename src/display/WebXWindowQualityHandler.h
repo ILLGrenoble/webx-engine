@@ -43,6 +43,14 @@ public:
 
 private:
     WebXWindowImageKbs calculateImageKbps();
+    void setCurrentQuality(const WebXQuality & quality) {
+        spdlog::debug("Window 0x{:x} image KB/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_imageKbps.imageKbps, this->_currentQuality.index < quality.index ? "increased" : "reduced", quality.index);
+        this->_currentQuality = quality;
+
+        // Reset data store to give image KB/s calc time to refresh with new values
+        this->_dataStore.clear();
+        this->_imageKbpsInitTime = std::chrono::high_resolution_clock::now();
+    }
 
 private:
     const static int DATA_RETENTION_TIME_MS = 4000;
@@ -55,6 +63,7 @@ private:
     WebXQuality _coverageQuality;
     WebXQuality _imageKbpsQuality;
     WebXQuality _currentQuality;
+    WebXQuality _desiredQuality;
     
     std::vector<WebXWindowQualityData> _dataStore;
     WebXWindowImageKbs _imageKbps;

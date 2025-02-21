@@ -8,6 +8,7 @@ WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId) :
     _coverageQuality(webx_quality_max()),
     _imageKbpsQuality(webx_quality_max()),
     _currentQuality(webx_quality_max()),
+    _desiredQuality(webx_quality_max()),
     _imageKbps({.valid = true, .imageKbps = 0.0}),
     _imageKbpsInitTime(std::chrono::high_resolution_clock::now()) {
 }
@@ -22,12 +23,18 @@ void WebXWindowQualityHandler::setWindowCoverage(const WebXRectangle::WebXRectCo
     // const WebXQuality & quality = webx_quality_for_image_coverage(this->_coverage.coverage);
 
     // quality dependent on coverage, but mouse over visible part of window improves quality
-    this->_coverageQuality = this->_coverage.mouseOver ? webx_quality_max() : webx_quality_for_image_coverage(this->_coverage.coverage);
+    const WebXQuality & coverageQuality = this->_coverage.mouseOver ? webx_quality_max() : webx_quality_for_image_coverage(this->_coverage.coverage);
 
-    // spdlog::info("window 0x{:01x} quality index {:d}", window->getX11Window(), quality.index);
+    // If a window is made fully visible (eg click to bring into focus) then force the current quality to the max desired quality
+    if (coverageQuality.index == WebXQuality::MAX_QUALITY_INDEX && (coverageQuality.index - this->_coverageQuality.index) > 2) {
+        this->setCurrentQuality(this->_desiredQuality);
+    }
+    this->_coverageQuality = coverageQuality;
 }
 
 const WebXQuality & WebXWindowQualityHandler::calculateQuality(const WebXQuality & desiredQuality) {
+    // Set the desired quality
+    this->_desiredQuality = desiredQuality;
 
     // Update image KB/s
     this->_imageKbps = this->calculateImageKbps();
@@ -46,12 +53,7 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality(const WebXQuality
 
         // If change quality empty the dataStore (requires one second to get new data allowing time to obtain valid stats for new level)
         if (quality.index != this->_currentQuality.index) {
-            spdlog::debug("Window 0x{:x} image KB/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_imageKbps.imageKbps, this->_currentQuality.index < quality.index ? "increased" : "reduced", quality.index);
-            this->_currentQuality = quality;
-
-            // Reset data store to give image KB/s calc time to refresh with new values
-            this->_dataStore.clear();
-            this->_imageKbpsInitTime = std::chrono::high_resolution_clock::now();
+            this->setCurrentQuality(quality);
         }
     }
 

@@ -143,7 +143,7 @@ calculate_network_metrics() {
     sum_rgb_kb=$(awk -v sum="$sum_rgb_kb" -v kb="$rgb_kb" 'BEGIN {print sum + kb}')
     sum_alpha_kb=$(awk -v sum="$sum_alpha_kb" -v kb="$alpha_kb" 'BEGIN {print sum + kb}')
     count=$((count + 1))
-  done < <(grep "Sending encoded" "$log_file")
+  done < <(grep "sending encoded" "$log_file")
 
   # Compute averages
   if [ "$count" -gt 0 ]; then
