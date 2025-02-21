@@ -3,9 +3,10 @@
 #include <string>
 #include <spdlog/spdlog.h>
 
-WebXClientConnector::WebXClientConnector(WebXBinarySerializer * serializer) :
+WebXClientConnector::WebXClientConnector(const WebXTransportSettings & settings) :
     _thread(NULL),
-    _serializer(serializer) {
+    _publisherPort(settings.publisherPort),
+    _collectorPort(settings.collectorPort) {
 }
 
 WebXClientConnector::~WebXClientConnector() {
@@ -15,12 +16,10 @@ WebXClientConnector::~WebXClientConnector() {
     }
 }
 
-void WebXClientConnector::run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr, int publisherPort, int collectorPort) {
+void WebXClientConnector::run(zmq::context_t * context, const std::string & clientAddr, const std::string & eventBusAddr) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_eventBusAddr = eventBusAddr;
-    this->_publisherPort = publisherPort;
-    this->_collectorPort = collectorPort;
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientConnector::mainLoop, this);
     }

@@ -11,13 +11,14 @@
 #include "WebXWindowQualityHandler.h"
 #include <utils/WebXRectangle.h>
 #include <utils/WebXQuality.h>
+#include <utils/WebXSettings.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
 
 class WebXWindow {
 
 public:
-    WebXWindow(Display * display, Window window, bool isRoot, int x, int y, int width, int height, bool isViewable);
+    WebXWindow(Display * display, const WebXQualitySettings & settings, Window window, bool isRoot, int x, int y, int width, int height, bool isViewable);
     virtual ~WebXWindow();
 
     Window getX11Window() const {

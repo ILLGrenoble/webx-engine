@@ -11,7 +11,7 @@
 #include <utils/WebXSettings.h>
 #include <zmq.hpp>
 
-zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message) {
+zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message) const {
     switch (message->type) {
         case WebXMessage::Windows: {
             auto windowsMessage = std::static_pointer_cast<WebXWindowsMessage>(message);
@@ -43,7 +43,7 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
     }
 }
 
-zmq::message_t * WebXMessageEncoder::createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message) {
+zmq::message_t * WebXMessageEncoder::createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message) const {
     std::shared_ptr<WebXImage> mouseCursorImage = message->mouseCursorImage;
 
     size_t dataSize = 32 + 28 + mouseCursorImage->getRawDataSize();
@@ -62,7 +62,7 @@ zmq::message_t * WebXMessageEncoder::createCursorImageMessage(std::shared_ptr<We
     return output;
 }
 
-zmq::message_t * WebXMessageEncoder::createImageMessage(std::shared_ptr<WebXImageMessage> message) {
+zmq::message_t * WebXMessageEncoder::createImageMessage(std::shared_ptr<WebXImageMessage> message) const {
     std::shared_ptr<WebXImage> image = message->image;
     size_t imageDataSize = 0;
     unsigned int depth = 0;
@@ -98,7 +98,7 @@ zmq::message_t * WebXMessageEncoder::createImageMessage(std::shared_ptr<WebXImag
     return output;
 }
 
-zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMouseMessage> message) {
+zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMouseMessage> message) const {
     size_t dataSize = 32 + 16;
     zmq::message_t * output= new zmq::message_t(dataSize);
 
@@ -111,7 +111,7 @@ zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMous
     return output;
 }
 
-zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScreenMessage> message) {
+zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const {
     size_t dataSize = 32 + 12;
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, this->_sessionId, (uint32_t) message->type);
@@ -121,7 +121,7 @@ zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScr
     return output;
 }
 
-zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebXSubImagesMessage> message) {
+zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebXSubImagesMessage> message) const {
     unsigned int nImages = message->images.size();
     size_t imageDataSize = 0;
     size_t alphaDataSize = 0;
@@ -169,7 +169,7 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
 
 }
 
-zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) {
+zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) const {
     size_t dataSize = 32 + 8 + message->windows.size() * 20;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, (uint32_t)message->type);

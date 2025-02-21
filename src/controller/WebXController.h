@@ -8,20 +8,21 @@
 #include <mutex>
 #include <string>
 #include "WebXStats.h"
+#include <display/WebXManager.h>
 #include <gateway/WebXGateway.h>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
 #include <utils/WebXQuality.h>
+#include <utils/WebXSettings.h>
 
-class WebXManager;
 class WebXDisplay;
 class WebXInstruction;
 class WebXMessage;
 
 class WebXController {
 public:
-    WebXController(WebXGateway & gateway, const std::string & keyboardLayout = "");
+    WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout = "");
     virtual ~WebXController();
 
     void run();
@@ -59,7 +60,8 @@ private:
     const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
 
     WebXGateway & _gateway;
-    WebXManager * _manager;
+    const WebXSettings & _settings;
+    WebXManager _manager;
     WebXStats _stats;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;

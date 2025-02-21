@@ -54,7 +54,7 @@ public:
 		unsigned char * content;
 	} MessageComposition;
 	
-	WebXBinaryBuffer(unsigned char * buffer, size_t bufferLength, unsigned char (& sessionId)[16], uint32_t messageTypeId) :
+	WebXBinaryBuffer(unsigned char * buffer, size_t bufferLength, const unsigned char (& sessionId)[16], uint32_t messageTypeId) :
 		_bufferContent(buffer),
 		_bufferLength(bufferLength),
 		_writeOffset(sizeof(MessageHeader)),

@@ -1,8 +1,9 @@
 #include "WebXWindowQualityHandler.h"
 #include <algorithm>
 
-WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId) :
+WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const WebXQualitySettings & settings) :
     _windowId(windowId),
+    _settings(settings),
     _coverage({.coverage = 0.0, .mouseOver = false}),
     _coverageQuality(WebXQuality::MaxQuality()),
     _imageKbpsQuality(WebXQuality::MaxQuality()),
@@ -18,17 +19,24 @@ WebXWindowQualityHandler::~WebXWindowQualityHandler() {
 void WebXWindowQualityHandler::setWindowCoverage(const WebXRectangle::WebXRectCoverage & coverage) {
     this->_coverage = coverage;
 
-    // quality dependent on coverage only
-    // const WebXQuality & quality = webx_quality_for_image_coverage(this->_coverage.coverage);
+    if (this->_settings.coverageQualityFunc != WebXQualitySettings::CoverageQualityFunc::Disabled) {
+        // Use either linear or quadratic function to calculate the quality for the coverage
+        const WebXQuality qualityForImageCoverage = this->_settings.coverageQualityFunc != WebXQualitySettings::CoverageQualityFunc::Linear ? 
+            WebXQuality::QualityForImageCoverageLinear(this->_coverage.coverage) :
+            WebXQuality::QualityForImageCoverageQuadratic(this->_coverage.coverage);
 
-    // quality dependent on coverage, but mouse over visible part of window improves quality
-    const WebXQuality & coverageQuality = this->_coverage.mouseOver ? WebXQuality::MaxQuality() : WebXQuality::QualityForImageCoverage(this->_coverage.coverage);
+        // Take into account if the mouse if over a visibe part of the window (to improve quality)
+        const WebXQuality & coverageQuality = this->_settings.increaseQualityOnMouseOver ?
+            this->_coverage.mouseOver ? WebXQuality::MaxQuality() : qualityForImageCoverage : 
+            qualityForImageCoverage;
 
-    // If a window is made fully visible (eg click to bring into focus) then force the current quality to the max desired quality
-    if (coverageQuality.index == WebXQuality::MAX_QUALITY_INDEX && (coverageQuality.index - this->_coverageQuality.index) > 2) {
-        this->setCurrentQuality(this->_desiredQuality);
+        // If a window is made fully visible (eg click to bring into focus) then force the current quality to the max desired quality
+        if (coverageQuality.index == WebXQuality::MAX_QUALITY_INDEX && (coverageQuality.index - this->_coverageQuality.index) > 2) {
+            this->setCurrentQuality(this->_desiredQuality);
+        }
+        this->_coverageQuality = coverageQuality;
+
     }
-    this->_coverageQuality = coverageQuality;
 }
 
 const WebXQuality & WebXWindowQualityHandler::calculateQuality(const WebXQuality & desiredQuality) {
@@ -38,20 +46,26 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality(const WebXQuality
     // Update image KB/s
     this->_imageKbps = this->calculateImageKbps();
 
-    // Only recalculate quality if we have a valid image KB/s value
-    if (this->_imageKbps.valid) {
-        // Start with coverage quality: if image KB/s > coverage quality KB/s then choose coverage quality, otherwise use desired quality
-        // eg for a window with very low KB/S just keep good quality
-        WebXQuality quality = this->_coverageQuality.maxKbps < this->_imageKbps.imageKbps ? this->_coverageQuality : desiredQuality;
+    if (this->_settings.limitQualityByDataRate) {
+        // Only recalculate quality if we have a valid image KB/s value
+        if (this->_imageKbps.valid) {
+            // Start with coverage quality: if image KB/s > coverage quality KB/s then choose coverage quality, otherwise use desired quality
+            // eg for a window with very low KB/S just keep good quality
+            WebXQuality quality = this->_coverageQuality.maxKbps < this->_imageKbps.imageKbps ? this->_coverageQuality : desiredQuality;
 
-        // If the image KB/s is too high for this quality then reduce it. If much lower then raise the quality level
-        this->_imageKbpsQuality = WebXQuality::QualityForImageKbps(this->_imageKbps.imageKbps, quality, this->_currentQuality);
+            // If the image KB/s is too high for this quality then reduce it. If much lower then raise the quality level
+            this->_imageKbpsQuality = WebXQuality::QualityForImageKbps(this->_imageKbps.imageKbps, quality, this->_currentQuality);
 
-        // Use min of image quality and previous quality
-        quality = this->_imageKbpsQuality < quality ? this->_imageKbpsQuality : quality;
+            // Use min of image quality and previous quality
+            quality = this->_imageKbpsQuality < quality ? this->_imageKbpsQuality : quality;
 
+            // Update the quality
+            this->setCurrentQuality(quality);
+        }
+
+    } else {
         // Update the quality
-        this->setCurrentQuality(quality);
+        this->setCurrentQuality(desiredQuality);
     }
 
     return this->_currentQuality;

@@ -1,12 +1,13 @@
 #ifndef WEBX_CLIENT_MESSAGE_PUBLISHER_H
 #define WEBX_CLIENT_MESSAGE_PUBLISHER_H
 
+#include <serializer/WebXBinarySerializer.h>
 #include <utils/WebXQueue.h>
+#include <utils/WebXSettings.h>
 #include <thread>
 #include <mutex>
 
 class WebXMessage;
-class WebXBinarySerializer;
 
 namespace zmq {
 class context_t;
@@ -15,10 +16,10 @@ class socket_t;
 
 class WebXClientMessagePublisher {
 public:
-    WebXClientMessagePublisher(WebXBinarySerializer * serializer);
+    WebXClientMessagePublisher(const WebXTransportSettings & settings, const WebXBinarySerializer & serializer);
     virtual ~WebXClientMessagePublisher();
 
-    void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr);
+    void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr);
     void stop();
 
     void onMessage(std::shared_ptr<WebXMessage> message) {
@@ -35,11 +36,11 @@ private:
     bool _running;
     WebXQueue<std::shared_ptr<WebXMessage>> _messageQueue;
 
-    WebXBinarySerializer * _serializer;
+    const WebXBinarySerializer & _serializer;
     zmq::context_t * _context;
+    std::string _eventBusAddr;
     std::string _clientAddr;
     bool _bindToClientAddr;
-    std::string _eventBusAddr;
 };
 
 

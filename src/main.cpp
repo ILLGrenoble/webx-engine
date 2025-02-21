@@ -59,10 +59,10 @@ int main(int argc, char *argv[]) {
     WebXGateway gateway;
 
     // Initialise Manager, Display and Event Listener
-    controller = new WebXController(gateway, keyboardLayout);
+    controller = new WebXController(gateway, settings, keyboardLayout);
 
     // Start transport
-    WebXTransport transport(gateway, settings, standAlone);
+    WebXTransport transport(gateway, settings.transport, standAlone);
     transport.start();
 
     // Start the controller (blocking)

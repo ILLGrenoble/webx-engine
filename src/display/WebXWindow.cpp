@@ -8,7 +8,7 @@
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
 
-WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
+WebXWindow::WebXWindow(Display * display, const WebXQualitySettings & settings, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
     _x11Window(x11Window),
     _damage(0),
@@ -16,7 +16,7 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _parent(NULL),
     _rectangle(WebXRectangle(x, y, width, height)),
     _isViewable(isViewable),
-    _qualityHandler(x11Window),
+    _qualityHandler(x11Window, settings),
     _imageCaptureTime(std::chrono::high_resolution_clock::now()),
     _windowChecksum(0) {
 }

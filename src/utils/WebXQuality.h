@@ -55,16 +55,27 @@ public:
         return quality;
     }
     
-    static const WebXQuality & QualityForImageCoverage(float coverage) {
+    static const WebXQuality & QualityForImageCoverageLinear(float coverage) {
         if (coverage < 0.0 || coverage > 1.0) {
             spdlog::warn("Attempt to get the quality for an invalid coverage ({:f})", coverage);
             coverage = coverage < 0.0 ? 0.0 : 1.0;
         }
     
         // Coverage [0.0:1.0], quality [1:10]
-        // linear conversion from coverage to quality
-        // int qualityIndex = std::ceil(10 - (10 * coverage));
+        int qualityIndex = std::ceil(10 - (10 * coverage));
     
+        const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
+    
+        return quality;
+    }
+    
+    static const WebXQuality & QualityForImageCoverageQuadratic(float coverage) {
+        if (coverage < 0.0 || coverage > 1.0) {
+            spdlog::warn("Attempt to get the quality for an invalid coverage ({:f})", coverage);
+            coverage = coverage < 0.0 ? 0.0 : 1.0;
+        }
+    
+        // Coverage [0.0:1.0], quality [1:10]
         // quadratic conversion from coverage to quality (keep higher quality for smaller coverage)
         int qualityIndex = std::ceil(10 - (10 * coverage * coverage));
     

@@ -13,7 +13,8 @@ int WebXManager::IO_ERROR_HANDLER(Display *display) {
     return 0;
 }
 
-WebXManager::WebXManager(const std::string & keyboardLayout) :
+WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyboardLayout) :
+    _settings(settings),
     _x11Display(NULL),
     _display(NULL),
     _eventListener(NULL),
@@ -56,7 +57,7 @@ void WebXManager::init(const std::string & keyboardLayout) {
     XSetIOErrorHandler(WebXManager::IO_ERROR_HANDLER);
     XSynchronize(this->_x11Display, True);
 
-    this->_display = new WebXDisplay(this->_x11Display);
+    this->_display = new WebXDisplay(this->_x11Display, this->_settings.quality);
     this->_display->init();
 
     this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());

@@ -1,5 +1,4 @@
 #include "WebXController.h"
-#include <display/WebXManager.h>
 #include <display/WebXDisplay.h>
 #include <instruction/WebXMouseInstruction.h>
 #include <instruction/WebXKeyboardInstruction.h>
@@ -15,13 +14,15 @@
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
+#include <utils/WebXSettings.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
 
-WebXController::WebXController(WebXGateway & gateway, const std::string & keyboardLayout) :
+WebXController::WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout) :
     _gateway(gateway),
-    _manager(new WebXManager(keyboardLayout)),
+    _settings(settings),
+    _manager(settings, keyboardLayout),
     _displayDirty(true),
     _cursorDirty(true),
     _requestedQuality(WebXQuality::MaxQuality()),
@@ -35,11 +36,10 @@ WebXController::WebXController(WebXGateway & gateway, const std::string & keyboa
     });
 
     // Listen to events from the display
-    this->_manager->setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
+    this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
 }
 
 WebXController::~WebXController() {
-    delete _manager;
 }
 
 void WebXController::stop() {
@@ -50,7 +50,7 @@ void WebXController::stop() {
     this->_gateway.setInstructionHandlerFunc(nullptr);
 
     // Remove the display events listener
-    this->_manager->setDisplayEventHandler(nullptr);
+    this->_manager.setDisplayEventHandler(nullptr);
 }
 
 void WebXController::run() {
@@ -59,7 +59,7 @@ void WebXController::run() {
     std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point lastMouseRefreshTime = lastTime;
 
-    WebXDisplay * display = this->_manager->getDisplay();
+    WebXDisplay * display = this->_manager.getDisplay();
     WebXMouse * mouse = display->getMouse();
 
     this->_state = WebXControllerState::Running;
@@ -90,7 +90,7 @@ void WebXController::run() {
             this->handleClientInstructions(display);
 
             // Handle all pending X11 events
-            this->_manager->handlePendingEvents();
+            this->_manager.handlePendingEvents();
 
             if (this->_displayDirty) {
                 // Dispatch display event to connectors

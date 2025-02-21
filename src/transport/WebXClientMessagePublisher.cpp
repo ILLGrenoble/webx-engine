@@ -1,24 +1,23 @@
 #include "WebXClientMessagePublisher.h"
-#include "serializer/WebXBinarySerializer.h"
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientMessagePublisher::WebXClientMessagePublisher(WebXBinarySerializer * serializer) :
+WebXClientMessagePublisher::WebXClientMessagePublisher(const WebXTransportSettings & settings, const WebXBinarySerializer & serializer) :
     _thread(NULL),
     _running(false),
     _messageQueue(),
-    _serializer(serializer) {
+    _serializer(serializer),
+    _eventBusAddr(settings.inprocEventBusAddress) {
 }
 
 WebXClientMessagePublisher::~WebXClientMessagePublisher() {
     this->stop();
 }
 
-void WebXClientMessagePublisher::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr, const std::string & eventBusAddr) {
+void WebXClientMessagePublisher::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
-    this->_eventBusAddr = eventBusAddr;
     this->_running = true;
     if (this->_thread == NULL) {
         this->_thread = new std::thread(&WebXClientMessagePublisher::mainLoop, this);
@@ -48,7 +47,7 @@ void WebXClientMessagePublisher::mainLoop() {
            auto message = this->_messageQueue.get();
             if (message != NULL && this->_running) {
 
-                zmq::message_t * replyMessage = this->_serializer->serialize(message);
+                zmq::message_t * replyMessage = this->_serializer.serialize(message);
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
                 messagePublisher.send(*replyMessage);
 #else

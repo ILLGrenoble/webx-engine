@@ -11,6 +11,7 @@
 #include "WebXWindowProperties.h"
 #include "WebXWindowDamageProperties.h"
 #include <utils/WebXQuality.h>
+#include <utils/WebXSettings.h>
 
 class WebXWindow;
 class WebXImageConverter;
@@ -19,7 +20,7 @@ class WebXKeyboard;
 
 class WebXDisplay {
 public:
-    WebXDisplay(Display * display);
+    WebXDisplay(Display * display, const WebXQualitySettings & settings);
     virtual ~WebXDisplay();
 
     void init();
@@ -109,6 +110,8 @@ private:
 
 private:
     Display * _x11Display;
+    const WebXQualitySettings & _settings;
+
     WebXSize _screenSize;
 
     WebXWindow * _rootWindow;

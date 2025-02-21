@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include <events/WebXEvent.h>
+#include <utils/WebXSettings.h>
 #include "WebXDisplayEventType.h"
 
 class WebXWindow;
@@ -17,7 +18,7 @@ class WebXManager {
 public:
     static int IO_ERROR_HANDLER(Display *disp);
 
-    WebXManager(const std::string & keyboardLayout = "");
+    WebXManager(const WebXSettings & settings, const std::string & keyboardLayout = "");
     virtual ~WebXManager();
 
 
@@ -54,6 +55,8 @@ private:
     }
 
 private:
+    const WebXSettings & _settings;
+
     Display * _x11Display;
     WebXDisplay * _display;
     WebXEventListener * _eventListener;

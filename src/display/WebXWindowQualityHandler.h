@@ -5,6 +5,7 @@
 #include <chrono>
 #include <utils/WebXQuality.h>
 #include <utils/WebXRectangle.h>
+#include <utils/WebXSettings.h>
 
 class WebXWindowQualityHandler {
 private:
@@ -25,7 +26,7 @@ private:
     };
 
 public:
-    WebXWindowQualityHandler(unsigned long windowId);
+    WebXWindowQualityHandler(unsigned long windowId, const WebXQualitySettings & settings);
     virtual ~WebXWindowQualityHandler();
 
     void onImageDataSent(float imageSizeKB) {
@@ -61,6 +62,7 @@ private:
     const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 1000;
     
     unsigned long _windowId;
+    const WebXQualitySettings & _settings;
 
     WebXRectangle::WebXRectCoverage _coverage;
     WebXQuality _coverageQuality;

@@ -7,8 +7,9 @@
 #include <input/WebXMouse.h>
 #include <input/WebXKeyboard.h>
 
-WebXDisplay::WebXDisplay(Display * display) :
+WebXDisplay::WebXDisplay(Display * display, const WebXQualitySettings & settings) :
     _x11Display(display),
+    _settings(settings),
     _rootWindow(NULL),
     _imageConverter(new WebXJPGImageConverter()),
     _mouse(NULL) {
@@ -395,7 +396,7 @@ WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
         XWindowAttributes attr;
         Status status = XGetWindowAttributes(this->_x11Display, x11Window, &attr);
         if (status != BadWindow && attr.map_state == IsViewable && attr.c_class == InputOutput) {
-            window = new WebXWindow(this->_x11Display, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
+            window = new WebXWindow(this->_x11Display, this->_settings, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
 
             this->_allWindows[x11Window] = window;
         }
