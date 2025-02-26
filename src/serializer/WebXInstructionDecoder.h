@@ -28,7 +28,7 @@ private:
      *    y: 4 bytes
      *    buttonMask: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createMouseInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createMouseInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a new cursor image instruction
@@ -41,7 +41,7 @@ private:
      *   Content: 4 bytes
      *    cursorId: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createCursorImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createCursorImageInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a new image instruction
@@ -54,7 +54,7 @@ private:
      *   Content: 4 bytes
      *    windowId: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createImageInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a keyboard instruction
@@ -68,7 +68,7 @@ private:
      *    key (the keyboard key code): 4 bytes
      *    pressed: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createKeyboardInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createKeyboardInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a screen instruction
@@ -79,7 +79,7 @@ private:
      *    length: 4 bytes
      *    padding: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createScreenInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createScreenInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a windows instruction
@@ -90,7 +90,7 @@ private:
      *    length: 4 bytes
      *    padding: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createWindowsInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
     /**
      * Create a quality instruction
@@ -103,7 +103,7 @@ private:
      *   Content: 4 bytes
      *    qualityIndex: 4 bytes
      */
-    std::shared_ptr<WebXInstruction> createQualityInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+    std::shared_ptr<WebXInstruction> createQualityInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
 private:
 

@@ -10,7 +10,7 @@ class WebXGateway;
 class WebXBinarySerializer;
 class WebXClientConnector;
 class WebXClientMessagePublisher;
-class WebXClientCommandCollector;
+class WebXClientInstructionSubscriber;
 
 class WebXTransport {
 public:
@@ -35,7 +35,7 @@ private:
 
     WebXClientConnector * _connector;
     WebXClientMessagePublisher * _publisher;
-    WebXClientCommandCollector * _collector;
+    WebXClientInstructionSubscriber * _collector;
 };
 
 

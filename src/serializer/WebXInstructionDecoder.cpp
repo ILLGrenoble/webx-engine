@@ -22,67 +22,68 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
     // Ignore sessionId (this is filtered already by the ZMQ subscription)
     buffer.advanceReadOffset(16);
 
+    uint32_t clientId = buffer.read<uint32_t>();
     uint32_t details = buffer.read<uint32_t>();
     uint32_t type = details & ~0x80000000;
     uint32_t instructionId = buffer.read<uint32_t>();
 
     if (type == WebXInstruction::Mouse) {
-        return this->createMouseInstruction(instructionId, buffer);
+        return this->createMouseInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Keyboard) {
-        return this->createKeyboardInstruction(instructionId, buffer);
+        return this->createKeyboardInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Cursor) {
-        return this->createCursorImageInstruction(instructionId, buffer);
+        return this->createCursorImageInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Image) {
-        return this->createImageInstruction(instructionId, buffer);
+        return this->createImageInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Screen) {
-        return this->createScreenInstruction(instructionId, buffer);
+        return this->createScreenInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Windows) {
-        return this->createWindowsInstruction(instructionId, buffer);
+        return this->createWindowsInstruction(clientId, instructionId, buffer);
 
     } else if (type == WebXInstruction::Quality) {
-        return this->createQualityInstruction(instructionId, buffer);
+        return this->createQualityInstruction(clientId, instructionId, buffer);
     }
 
     return nullptr;
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createMouseInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createMouseInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     int32_t x = buffer.read<int32_t>();
     int32_t y = buffer.read<int32_t>();
     uint32_t buttonMask = buffer.read<uint32_t>();
-    return std::make_shared<WebXMouseInstruction>(instructionId, x, y, buttonMask);
+    return std::make_shared<WebXMouseInstruction>(clientId, instructionId, x, y, buttonMask);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createCursorImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createCursorImageInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     int32_t cursorId = buffer.read<int32_t>();
-    return std::make_shared<WebXCursorImageInstruction>(instructionId, cursorId);
+    return std::make_shared<WebXCursorImageInstruction>(clientId, instructionId, cursorId);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createImageInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createImageInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     uint32_t windowId = buffer.read<uint32_t>();
-    return std::make_shared<WebXImageInstruction>(instructionId, windowId);
+    return std::make_shared<WebXImageInstruction>(clientId, instructionId, windowId);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createKeyboardInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createKeyboardInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     uint32_t key = buffer.read<uint32_t>();
     bool pressed = buffer.read<uint32_t>() > 0;
-    return std::make_shared<WebXKeyboardInstruction>(instructionId, key, pressed);
+    return std::make_shared<WebXKeyboardInstruction>(clientId, instructionId, key, pressed);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createScreenInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
-    return std::make_shared<WebXScreenInstruction>(instructionId);
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createScreenInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    return std::make_shared<WebXScreenInstruction>(clientId, instructionId);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
-    return std::make_shared<WebXWindowsInstruction>(instructionId);
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    return std::make_shared<WebXWindowsInstruction>(clientId, instructionId);
 }
 
-std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createQualityInstruction(uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createQualityInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     uint32_t qualityIndex = buffer.read<uint32_t>();
-    return std::make_shared<WebXQualityInstruction>(instructionId, qualityIndex);
+    return std::make_shared<WebXQualityInstruction>(clientId, instructionId, qualityIndex);
 }

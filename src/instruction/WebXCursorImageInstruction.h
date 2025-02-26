@@ -6,8 +6,8 @@
 class WebXCursorImageInstruction : public WebXInstruction {
 
 public:
-    WebXCursorImageInstruction(uint32_t id, uint32_t cursorId) :
-        WebXInstruction(Type::Cursor, id),
+    WebXCursorImageInstruction(uint32_t clientId, uint32_t id, uint32_t cursorId) :
+        WebXInstruction(Type::Cursor, clientId, id),
         cursorId(cursorId) {
     }
     

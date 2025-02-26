@@ -6,8 +6,8 @@
 class WebXScreenInstruction : public WebXInstruction {
 
 public:
-    WebXScreenInstruction(uint32_t id) :
-        WebXInstruction(Type::Screen, id) {
+    WebXScreenInstruction(uint32_t clientId, uint32_t id) :
+        WebXInstruction(Type::Screen, clientId, id) {
     }
 
     virtual ~WebXScreenInstruction() {

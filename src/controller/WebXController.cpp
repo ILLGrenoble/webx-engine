@@ -35,6 +35,10 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
         this->_instructions.push_back(instruction);
     });
 
+    // Set the client registry functions in the gateway
+    this->_gateway.setClientConnectFunc([this]() { return this->_clientRegistry.addClient(); });
+    this->_gateway.setClientDisconnectFunc([this](uint32_t clientId) { this->_clientRegistry.removeClient(clientId); });
+
     // Listen to events from the display
     this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
 }
@@ -124,6 +128,9 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         auto instruction = *it;
+
+        // TODO Verify that the instruction->clientId is known. Reject the instruction if client unknown
+
         if (instruction->type == WebXInstruction::Type::Mouse) {
             auto mouseInstruction = std::static_pointer_cast<WebXMouseInstruction>(instruction);
             display->sendClientMouseInstruction(mouseInstruction->x, mouseInstruction->y, mouseInstruction->buttonMask);

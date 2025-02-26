@@ -6,8 +6,8 @@
 class WebXWindowsInstruction : public WebXInstruction {
 
 public:
-    WebXWindowsInstruction(uint32_t id) :
-        WebXInstruction(Type::Windows, id) {
+    WebXWindowsInstruction(uint32_t clientId, uint32_t id) :
+        WebXInstruction(Type::Windows, clientId, id) {
     }
 
     virtual ~WebXWindowsInstruction() {

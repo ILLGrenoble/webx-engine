@@ -15,19 +15,16 @@ public:
         Quality
     };
 
-    WebXInstruction(Type type, uint32_t id) :
+    WebXInstruction(Type type, uint32_t clientId, uint32_t id) :
         type(type),
-        id(id) {
-    }
-
-    WebXInstruction(Type type) :
-        type(type),
-        id(0) {
+        id(id),
+        clientId(clientId) {
     }
 
     virtual ~WebXInstruction() {}
 
     Type type;
+    uint32_t clientId;
     uint32_t id;
 
 };

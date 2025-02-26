@@ -1,9 +1,9 @@
-#include "WebXClientCommandCollector.h"
+#include "WebXClientInstructionSubscriber.h"
 #include "instruction/WebXInstruction.h"
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientCommandCollector::WebXClientCommandCollector(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer) : 
+WebXClientInstructionSubscriber::WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer) : 
     _thread(NULL),
     _gateway(gateway),
     _serializer(serializer),
@@ -12,34 +12,34 @@ WebXClientCommandCollector::WebXClientCommandCollector(const WebXTransportSettin
     memcpy(this->_sessionId, settings.sessionId.data(), 16);
 }
 
-WebXClientCommandCollector::~WebXClientCommandCollector() {
+WebXClientInstructionSubscriber::~WebXClientInstructionSubscriber() {
     if (this->_thread != NULL) {
         delete this->_thread;
         this->_thread = NULL;
     }
 }
 
-void WebXClientCommandCollector::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr) {
+void WebXClientInstructionSubscriber::run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr) {
     this->_context = context;
     this->_clientAddr = clientAddr;
     this->_bindToClientAddr = bindToClientAddr;
     if (this->_thread == NULL) {
-        this->_thread = new std::thread(&WebXClientCommandCollector::mainLoop, this);
+        this->_thread = new std::thread(&WebXClientInstructionSubscriber::mainLoop, this);
     }
 }
 
-void WebXClientCommandCollector::stop() {
+void WebXClientInstructionSubscriber::stop() {
     if (this->_thread != NULL) {
         // Join thread and cleanup
-        spdlog::info("Stopping client command collector...");
+        spdlog::info("Stopping client instruction subscriber...");
         this->_thread->join();
-        spdlog::info("Stopped client command collector");
+        spdlog::info("Stopped client instruction subscriber");
         delete this->_thread;
         this->_thread = NULL;
     }    
 }
 
-void WebXClientCommandCollector::mainLoop() {
+void WebXClientInstructionSubscriber::mainLoop() {
 
     // Create client instruction socket
     zmq::socket_t clientInstructionSocket = this->createClientInstructionSubscriber();
@@ -102,19 +102,19 @@ void WebXClientCommandCollector::mainLoop() {
         
         } catch(zmq::error_t& e) {
             if (running) {
-                spdlog::warn("WebXClientCommandCollector interrupted from message recv: {:s}", e.what());
+                spdlog::warn("WebXClientInstructionSubscriber interrupted from message recv: {:s}", e.what());
             }
 
         } catch (const std::exception& e) {
-            spdlog::error("WebXClientCommandCollector caught std::exception: {:s}", e.what());
+            spdlog::error("WebXClientInstructionSubscriber caught std::exception: {:s}", e.what());
 
         } catch (const std::string& e) {
-            spdlog::error("WebXClientCommandCollector caught std::string: {:s}", e.c_str());
+            spdlog::error("WebXClientInstructionSubscriber caught std::string: {:s}", e.c_str());
         }
     }
 }
 
-zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
+zmq::socket_t WebXClientInstructionSubscriber::createClientInstructionSubscriber() {
     // Create instruction subscriber
     zmq::socket_t socket(*this->_context, ZMQ_SUB);
 
@@ -156,7 +156,7 @@ zmq::socket_t WebXClientCommandCollector::createClientInstructionSubscriber() {
     }
 } 
 
-zmq::socket_t WebXClientCommandCollector::createEventBusSubscriber() {
+zmq::socket_t WebXClientInstructionSubscriber::createEventBusSubscriber() {
     zmq::socket_t eventBus(*this->_context, ZMQ_SUB);
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_8_0
     eventBus.setsockopt(ZMQ_SUBSCRIBE, "", 0);

@@ -10,6 +10,7 @@
 #include "WebXStats.h"
 #include <display/WebXManager.h>
 #include <gateway/WebXGateway.h>
+#include <client/WebXClientRegistry.h>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
@@ -62,6 +63,7 @@ private:
     WebXGateway & _gateway;
     const WebXSettings & _settings;
     WebXManager _manager;
+    WebXClientRegistry _clientRegistry;
     WebXStats _stats;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;

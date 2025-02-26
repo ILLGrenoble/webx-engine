@@ -1,7 +1,7 @@
 #include "WebXTransport.h"
 #include "WebXClientConnector.h"
 #include "WebXClientMessagePublisher.h"
-#include "WebXClientCommandCollector.h"
+#include "WebXClientInstructionSubscriber.h"
 
 WebXTransport::WebXTransport(WebXGateway & gateway, const WebXTransportSettings & settings, bool standAlone) :
     _gateway(gateway),
@@ -10,9 +10,9 @@ WebXTransport::WebXTransport(WebXGateway & gateway, const WebXTransportSettings 
     _serializer(settings.sessionId),
     _context(1),
     _eventBusPublisher(this->createEventBusPublisher()),
-    _connector(new WebXClientConnector(settings)),
+    _connector(new WebXClientConnector(settings, _gateway)),
     _publisher(new WebXClientMessagePublisher(settings, _serializer)),
-    _collector(new WebXClientCommandCollector(settings, _gateway, _serializer)) {
+    _collector(new WebXClientInstructionSubscriber(settings, _gateway, _serializer)) {
 }
 
 WebXTransport::~WebXTransport() {

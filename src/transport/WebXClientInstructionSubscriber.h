@@ -1,5 +1,5 @@
-#ifndef WEBX_CLIENT_COMMAND_COLLECTOR_H
-#define WEBX_CLIENT_COMMAND_COLLECTOR_H
+#ifndef WEBX_CLIENT_INSTRUCTION_SUBSCRIBER_H
+#define WEBX_CLIENT_INSTRUCTION_SUBSCRIBER_H
 
 #include <serializer/WebXBinarySerializer.h>
 #include <gateway/WebXGateway.h>
@@ -16,10 +16,10 @@ class context_t;
 class socket_t;
 }
 
-class WebXClientCommandCollector {
+class WebXClientInstructionSubscriber {
 public:
-    WebXClientCommandCollector(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer);
-    virtual ~WebXClientCommandCollector();
+    WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer);
+    virtual ~WebXClientInstructionSubscriber();
 
     void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr);
     void stop();
@@ -42,4 +42,4 @@ private:
 };
 
 
-#endif /* WEBX_CLIENT_COMMAND_COLLECTOR_H */
+#endif /* WEBX_CLIENT_INSTRUCTION_SUBSCRIBER_H */

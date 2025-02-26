@@ -6,8 +6,8 @@
 class WebXImageInstruction : public WebXInstruction {
 
 public:
-    WebXImageInstruction(uint32_t id, unsigned long windowId) :
-        WebXInstruction(Type::Image, id),
+    WebXImageInstruction(uint32_t clientId, uint32_t id, uint32_t windowId) :
+        WebXInstruction(Type::Image, clientId, id),
         windowId(windowId) {
     }
 

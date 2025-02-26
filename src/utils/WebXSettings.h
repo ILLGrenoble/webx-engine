@@ -77,7 +77,8 @@ public:
         ipcInstructionProxyPath(webx_settings_env_or_default("WEBX_ENGINE_IPC_INSTRUCTION_PROXY_PATH", "/tmp/webx-router-instruction-proxy.ipc")),
         ipcSessionConnectorPath(webx_settings_env_or_default("WEBX_ENGINE_IPC_SESSION_CONNECTOR_PATH", "/tmp/webx-engine-session-connector.ipc")),
         inprocEventBusAddress(webx_settings_env_or_default("WEBX_ENGINE_INPROC_EVENT_BUS_ADDRESS", "inproc://webx-engine/event-bus")),
-        sessionId(convertSessionIdStringToBytes(webx_settings_env_or_default("WEBX_ENGINE_SESSION_ID", ""))) {
+        sessionId(convertSessionIdStringToBytes(webx_settings_env_or_default("WEBX_ENGINE_SESSION_ID", "00000000000000000000000000000000"))),
+        sessionIdString(webx_settings_env_or_default("WEBX_ENGINE_SESSION_ID", "00000000000000000000000000000000")) {
     }
 
     std::array<unsigned char, 16> convertSessionIdStringToBytes(const std::string & sessionIdString) {
@@ -87,13 +88,6 @@ public:
                 std::string byteString = sessionIdString.substr(stringPos, 2);
                 char byte = (char) strtol(byteString.c_str(), NULL, 16);
                 sessionId[i] = byte;
-            }
-            return sessionId;
-
-        } else if (sessionIdString.length() == 0) {
-            std::array<unsigned char, 16> sessionId;
-            for (unsigned int i = 0; i < 16; i++) {
-                sessionId[i] = 0;
             }
             return sessionId;
 
@@ -114,6 +108,7 @@ public:
     const std::string inprocEventBusAddress;
 
     const std::array<unsigned char, 16> sessionId;
+    const std::string sessionIdString;
 };
 
 class WebXSettings {
