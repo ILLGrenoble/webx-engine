@@ -18,9 +18,13 @@ public:
 
     const WebXResult<std::pair<uint32_t, uint64_t>> addClient();
     const WebXResult<void> removeClient(uint32_t clientId);
+    
+    const bool isValidClient(uint32_t clientId) const {
+        return this->getClientById(clientId) != nullptr;
+    }
 
 private:
-    std::shared_ptr<WebXClient> getClientById(uint32_t id) {
+    std::shared_ptr<WebXClient> getClientById(uint32_t id) const {
         auto it = std::find_if(this->_clients.begin(), this->_clients.end(), [&id](const std::shared_ptr<WebXClient> & client) {
             return client->getId() == id;
         });
@@ -28,7 +32,7 @@ private:
         return (it != this->_clients.end()) ? *it : nullptr;
     }
 
-    std::shared_ptr<WebXClientGroup> getGroupByQuality(const WebXQuality & quality) {
+    std::shared_ptr<WebXClientGroup> getGroupByQuality(const WebXQuality & quality) const {
         auto it = std::find_if(this->_groups.begin(), this->_groups.end(), [&quality](const std::shared_ptr<WebXClientGroup> & group) {
             return group->getQuality() == quality;
         });
@@ -51,7 +55,7 @@ private:
         }
     }
 
-    std::shared_ptr<WebXClientGroup> getGroupWithClientId(uint32_t clientId) {
+    std::shared_ptr<WebXClientGroup> getGroupWithClientId(uint32_t clientId) const {
         auto it = std::find_if(this->_groups.begin(), this->_groups.end(), [&clientId](const std::shared_ptr<WebXClientGroup> & group) {
             return group->getClientById(clientId) != nullptr;
         });

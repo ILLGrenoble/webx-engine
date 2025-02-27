@@ -129,7 +129,11 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
     for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
         auto instruction = *it;
 
-        // TODO Verify that the instruction->clientId is known. Reject the instruction if client unknown
+        // Verify that the instruction->clientId is known. Reject the instruction if client unknown
+        if (!this->_clientRegistry.isValidClient(instruction->clientId)) {
+            spdlog::debug("Ignoring instruction {:d} from unknown client {:08x}", (int)instruction->type, instruction->clientId);
+            continue;
+        }
 
         if (instruction->type == WebXInstruction::Type::Mouse) {
             auto mouseInstruction = std::static_pointer_cast<WebXMouseInstruction>(instruction);
