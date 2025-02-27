@@ -37,7 +37,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
 
     // Set the client registry functions in the gateway
     this->_gateway.setClientConnectFunc([this]() { return this->_clientRegistry.addClient(); });
-    this->_gateway.setClientDisconnectFunc([this](uint32_t clientId) { this->_clientRegistry.removeClient(clientId); });
+    this->_gateway.setClientDisconnectFunc([this](uint32_t clientId) { return this->_clientRegistry.removeClient(clientId); });
 
     // Listen to events from the display
     this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });

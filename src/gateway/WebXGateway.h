@@ -41,10 +41,11 @@ public:
         return WebXResult<std::pair<uint32_t, uint64_t>>::Err("engine configuration error");
     }
 
-    void onClientDisconnect(uint32_t clientId) {
+    const WebXResult<void> onClientDisconnect(uint32_t clientId) {
         if (this->_clientDisconnectFunc) {
-            this->_clientDisconnectFunc(clientId);
+            return this->_clientDisconnectFunc(clientId);
         }
+        return WebXResult<void>::Err("engine configuration error");
     }
 
     void setMessagePublisherFunc(std::function<void(std::shared_ptr<WebXMessage>)> func) {
@@ -59,7 +60,7 @@ public:
         this->_clientConnectFunc = func;
     }
 
-    void setClientDisconnectFunc(std::function<void(uint32_t)> func) {
+    void setClientDisconnectFunc(std::function<const WebXResult<void>(uint32_t)> func) {
         this->_clientDisconnectFunc = func;
     }
 
@@ -67,7 +68,7 @@ private:
     std::function<void(std::shared_ptr<WebXMessage>)> _messagePublisherFunc;
     std::function<void(std::shared_ptr<WebXInstruction>)> _instructionHandlerFunc;
     std::function<const WebXResult<std::pair<uint32_t, uint64_t>>()> _clientConnectFunc;
-    std::function<void(uint32_t)> _clientDisconnectFunc;
+    std::function<const WebXResult<void>(uint32_t)> _clientDisconnectFunc;
 };
 
 

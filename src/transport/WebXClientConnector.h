@@ -15,6 +15,12 @@ class socket_t;
 }
 
 class WebXClientConnector {
+private:
+    enum SocketState {
+        WAITING_RECV = 0,
+        WAITING_SEND,
+    };
+
 public:
     WebXClientConnector(const WebXTransportSettings & settings, WebXGateway & gateway);
     virtual ~WebXClientConnector();
@@ -24,9 +30,13 @@ public:
 
 private:
     void mainLoop();
+
+    std::string connectClient(const std::string & sessionId);
+    std::string disconnectClient(const std::string & sessionId, const std::string & clientIdString);
+
     zmq::socket_t createClientResponder();
     zmq::socket_t createEventBusSubscriber();
-    void sendMessage(zmq::socket_t & clientResponder, zmq::message_t & message);
+    void sendMessage(zmq::socket_t & clientResponder, const std::string & messageText);
 
 private:
     std::thread * _thread;
@@ -40,6 +50,7 @@ private:
     zmq::context_t * _context;
     std::string _clientAddr;
     std::string _eventBusAddr;
+    SocketState _socketState;
 };
 
 

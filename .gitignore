@@ -33,5 +33,7 @@ gmon.out
 gprof.out
 .vagrant
 
+core
+
 *.deb
 VERSION

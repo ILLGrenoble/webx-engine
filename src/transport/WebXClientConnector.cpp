@@ -1,5 +1,6 @@
 #include "WebXClientConnector.h"
 #include <utils/WebXHexUtils.h>
+#include <utils/WebXStringUtils.h>
 #include <unistd.h>
 #include <string>
 #include <spdlog/spdlog.h>
@@ -9,7 +10,8 @@ WebXClientConnector::WebXClientConnector(const WebXTransportSettings & settings,
     _gateway(gateway),
     _publisherPort(settings.publisherPort),
     _collectorPort(settings.collectorPort),
-    _sessionId(settings.sessionIdString) {
+    _sessionId(settings.sessionIdString),
+    _socketState(WAITING_RECV) {
 }
 
 WebXClientConnector::~WebXClientConnector() {
@@ -62,7 +64,6 @@ void WebXClientConnector::mainLoop() {
     bool running = true;
     while (running) {
         zmq::message_t message;
-        bool sendRequired = true;
 
         //  Wait for next message from client
         try {
@@ -85,6 +86,11 @@ void WebXClientConnector::mainLoop() {
                 }
             }
 
+            if (this->_socketState != WAITING_RECV) {
+                spdlog::error("Client Connected socket not waiting to receive");
+                exit(1);
+            }
+
             // Check for req-rep message
             if (pollItems[1].revents & ZMQ_POLLIN && running) {
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
@@ -92,56 +98,42 @@ void WebXClientConnector::mainLoop() {
 #else
                 auto retVal = clientResponder.recv(message);
 #endif
-                
+                this->_socketState = WAITING_SEND;
                 if (retVal) {
                     std::string instruction = std::string(static_cast<char *>(message.data()), message.size());
-                    spdlog::debug("Received {} message", instruction);
+//                    spdlog::debug("Received {} message", instruction);
                     if (instruction == "comm") {
                         const std::string ports = fmt::format("{},{}", this->_publisherPort, this->_collectorPort);
-                        zmq::message_t replyMessage(ports.c_str(), ports.size());
-                        this->sendMessage(clientResponder, replyMessage);
-                        sendRequired = false;
+                        this->sendMessage(clientResponder, ports);
 
                     } else if (instruction == "ping") {
-                        zmq::message_t replyMessage("pong", 4);
-                        this->sendMessage(clientResponder, replyMessage);
-                        sendRequired = false;
+                        this->sendMessage(clientResponder, "pong");
 
-                    } else if (instruction.rfind("connect,", 0) == 0) {
-                        std::string sessionId = instruction.substr(8);
-                        if (sessionId == this->_sessionId) {
-                            const WebXResult<std::pair<uint32_t, uint64_t>> result = this->_gateway.onClientConnect();
-                            if (result.ok()) {
-                                const std::string response = fmt::format("{:08x},{:016x}", result.data().first, result.data().second);
-                                zmq::message_t replyMessage(response.c_str(), response.size());
-                                this->sendMessage(clientResponder, replyMessage);
-    
-                            } else {
-                                spdlog::warn("Failed to register client: {:s}", result.error());
-                                zmq::message_t replyMessage(result.error().c_str(), result.error().size());
-                                this->sendMessage(clientResponder, replyMessage);
-                            }
-    
+                    } else if (instruction.rfind("connect", 0) == 0) {
+                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        if (elements.size() != 2) {
+                            spdlog::warn("Invalid connect command received: {}", instruction);
+                            this->sendMessage(clientResponder, "invalid connect command");
+
                         } else {
-                            spdlog::warn("Client not registed: session Id is incorrect");
-                            zmq::message_t replyMessage("session id error", 16);
-                            this->sendMessage(clientResponder, replyMessage);
+                            const std::string & sessionId = elements[1];
+                            const std::string & response = this->connectClient(sessionId);
+                            this->sendMessage(clientResponder, response);
                         }
 
-                        sendRequired = false;
+                    } else if (instruction.rfind("disconnect", 0) == 0) {
+                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        if (elements.size() != 3) {
+                            spdlog::warn("Invalid disconnect command received: {}", instruction);
+                            this->sendMessage(clientResponder, "invalid disconnect command");
 
-                    } else if (instruction.rfind("disconnect,", 0) == 0) {
-                        std::string clientId = instruction.substr(11);
-                        const WebXResult<uint32_t> hexToUint32 = HexUtils::toUint32(clientId);
-                        if (hexToUint32.ok()) {
-                            this->_gateway.onClientDisconnect(hexToUint32.data());
                         } else {
-                            spdlog::warn("Cannot disconnect client as clientId is not valid hex {:s}", clientId);
+                            const std::string & sessionId = elements[1];
+                            const std::string & clientIdString = elements[2];
+                            const std::string & response = this->disconnectClient(sessionId, clientIdString);
+                            this->sendMessage(clientResponder, response);
                         }
 
-                        // Send empty response
-                        sendRequired = true;
-                    
                     } else {
                         spdlog::warn("Message {:s} is unknown", instruction);
                     }
@@ -160,10 +152,51 @@ void WebXClientConnector::mainLoop() {
             spdlog::error("WebXClientConnector caught std::string: {:s}", e.c_str());
         }
 
-        if (sendRequired && running) {
-            zmq::message_t replyMessage(0);
-            this->sendMessage(clientResponder, replyMessage);
+        if (this->_socketState == WAITING_SEND && running) {
+            this->sendMessage(clientResponder, "");
         }
+    }
+}
+
+std::string WebXClientConnector::connectClient(const std::string & sessionId) {
+    if (sessionId == this->_sessionId) {
+        const WebXResult<std::pair<uint32_t, uint64_t>> result = this->_gateway.onClientConnect();
+        if (result.ok()) {
+            const std::string response = fmt::format("{:08x},{:016x}", result.data().first, result.data().second);
+            return response;
+
+        } else {
+            spdlog::warn("Failed to register client: {:s}", result.error());
+            return result.error();
+        }
+
+    } else {
+        spdlog::warn("Client not connected: session Id is incorrect");
+        return "session id error";
+    }
+}
+
+std::string WebXClientConnector::disconnectClient(const std::string & sessionId, const std::string & clientIdString) {
+    if (sessionId == this->_sessionId) {
+        const WebXResult<uint32_t> clientId = HexUtils::toUint32(clientIdString);
+        if (clientId.ok()) {
+            const WebXResult<void> result = this->_gateway.onClientDisconnect(clientId.data());
+            if (result.ok()) {
+                return "success";
+
+            } else {
+                spdlog::warn("Failed to disconnect client: {:s}", result.error());
+                return result.error();
+            }
+
+        } else {
+            spdlog::warn("Cannot disconnect client as clientId is not valid hex {:s}", clientIdString);
+            return "client id is invalid";
+        }
+
+    } else {
+        spdlog::warn("Client not disconnected: session Id is incorrect");
+        return "session id error";
     }
 }
 
@@ -209,11 +242,13 @@ zmq::socket_t WebXClientConnector::createEventBusSubscriber() {
     }
 }
 
-void WebXClientConnector::sendMessage(zmq::socket_t & clientResponder, zmq::message_t & message) {
+void WebXClientConnector::sendMessage(zmq::socket_t & clientResponder, const std::string & messageText) {
+    zmq::message_t message(messageText.c_str(), messageText.length());
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
     clientResponder.send(message);
 #else
     clientResponder.send(message, zmq::send_flags::none);
-#endif            
+#endif
+    this->_socketState = WAITING_RECV;
 }
 

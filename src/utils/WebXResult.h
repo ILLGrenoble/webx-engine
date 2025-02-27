@@ -7,12 +7,12 @@ template<typename ItemType>
 class WebXResult {
 
 private:
-    WebXResult(const ItemType data, bool ok) : 
+    WebXResult(const ItemType data) : 
         _data(data),
         _error(),
         _ok(true) {
     }
-    WebXResult(const std::string & error, bool ok) :
+    WebXResult(const std::string & error) :
         _data(),
         _error(error),
         _ok(false) {
@@ -20,10 +20,10 @@ private:
 
 public:
     static const WebXResult Ok(const ItemType & data) {
-        return WebXResult(data, true);
+        return WebXResult(data);
     };
     static const WebXResult Err(const std::string & error) {
-        return WebXResult(error, false);
+        return WebXResult(error);
     }
 
     virtual ~WebXResult() {}
@@ -77,6 +77,38 @@ public:
 
 private:    
     const std::string _data;
+    const std::string _error;
+    const bool _ok;
+};
+
+// Specialization for ItemType = void
+template<>
+class WebXResult<void> {
+private:
+    WebXResult() :
+        _error(""),
+        _ok(true) {
+    }
+    WebXResult(const std::string & error) :
+        _error(error),
+        _ok(false) {
+    }
+
+public:
+    static WebXResult Ok() { return WebXResult(); }
+    static WebXResult Err(const std::string& error) { return WebXResult(error); }
+
+    virtual ~WebXResult() {}
+
+    const std::string & error() const {
+        return this->_error;
+    }
+
+    const bool ok() const {
+        return this->_ok;
+    }
+
+private:    
     const std::string _error;
     const bool _ok;
 };
