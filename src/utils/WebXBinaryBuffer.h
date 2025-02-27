@@ -37,6 +37,7 @@ public:
 	 */
 	typedef struct {
 		unsigned char sessionId[16];
+		uint64_t clientIndexMask;
 		uint32_t messageTypeId;
 		uint32_t messageId;
 		uint32_t bufferLength;
@@ -54,7 +55,7 @@ public:
 		unsigned char * content;
 	} MessageComposition;
 	
-	WebXBinaryBuffer(unsigned char * buffer, size_t bufferLength, const unsigned char (& sessionId)[16], uint32_t messageTypeId) :
+	WebXBinaryBuffer(unsigned char * buffer, size_t bufferLength, const unsigned char (& sessionId)[16], uint64_t clientIndexMask, uint32_t messageTypeId) :
 		_bufferContent(buffer),
 		_bufferLength(bufferLength),
 		_writeOffset(sizeof(MessageHeader)),
@@ -64,6 +65,7 @@ public:
 
 		MessageHeader * messageHeader = this->getMessageHeader();
 		memcpy(messageHeader->sessionId, sessionId, 16);
+		messageHeader->clientIndexMask = clientIndexMask;
 		messageHeader->messageTypeId = messageTypeId;
 		messageHeader->messageId = _messageCounter;
 		messageHeader->bufferLength = bufferLength;

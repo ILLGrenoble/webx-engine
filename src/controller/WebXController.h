@@ -59,6 +59,7 @@ private:
     const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
     const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
     const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
+    const static uint64_t GLOBAL_CLIENT_INDEX_MASK; // Sets all bits
 
     WebXGateway & _gateway;
     const WebXSettings & _settings;
@@ -67,6 +68,7 @@ private:
     WebXStats _stats;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
+
 
     bool _displayDirty;
     bool _cursorDirty;

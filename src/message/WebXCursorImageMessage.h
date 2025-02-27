@@ -8,8 +8,8 @@
 
 class WebXCursorImageMessage : public WebXMessage {
 public:
-    WebXCursorImageMessage(int x, int y, int xhot, int yhot, uint32_t cursorId, std::shared_ptr<WebXImage> mouseCursorImage) :
-        WebXMessage(Type::CursorImage),
+    WebXCursorImageMessage(uint64_t clientIndexMask, int x, int y, int xhot, int yhot, uint32_t cursorId, std::shared_ptr<WebXImage> mouseCursorImage) :
+        WebXMessage(Type::CursorImage, clientIndexMask),
         x(x),
         y(y),
         xhot(xhot),

@@ -31,8 +31,9 @@ class WebXMessageEncoder {
 private:
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -49,8 +50,9 @@ private:
     zmq::message_t * createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message) const;
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -68,8 +70,9 @@ private:
 
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -82,8 +85,9 @@ private:
     zmq::message_t * createMouseMessage(std::shared_ptr<WebXMouseMessage> message) const;
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -95,8 +99,9 @@ private:
     zmq::message_t * createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const;
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes
@@ -119,8 +124,9 @@ private:
     zmq::message_t * createSubImagesMessage(std::shared_ptr<WebXSubImagesMessage> message) const;
 
     // Structure:
-    // Header: 32 bytes
+    // Header: 40 bytes
     //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
     //   type: 4 bytes
     //   id: 4 bytes
     //   length: 4 bytes

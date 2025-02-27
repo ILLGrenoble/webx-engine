@@ -13,7 +13,7 @@ WebXClientRegistry::~WebXClientRegistry() {
 }
 
 const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() {
-    const std::lock_guard<std::mutex> lock(this->_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
 
     // Check we have available indices
     if (~this->_clientIndexMask == 0) {
@@ -57,7 +57,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
 }
 
 const WebXResult<void> WebXClientRegistry::removeClient(uint32_t clientId) {
-    const std::lock_guard<std::mutex> lock(this->_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
 
     // Determine if client exists in vector and remove it
     const std::shared_ptr<WebXClient> & client = this->getClientById(clientId);

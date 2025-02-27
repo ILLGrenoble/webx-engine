@@ -19,6 +19,8 @@
 #include <thread>
 #include <spdlog/spdlog.h>
 
+const uint64_t WebXController::GLOBAL_CLIENT_INDEX_MASK = ~0x00; // Sets all bits
+
 WebXController::WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout) :
     _gateway(gateway),
     _settings(settings),
@@ -130,7 +132,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         auto instruction = *it;
 
         // Verify that the instruction->clientId is known. Reject the instruction if client unknown
-        if (!this->_clientRegistry.isValidClient(instruction->clientId)) {
+        const std::shared_ptr<WebXClient> & client = this->_clientRegistry.getClientById(instruction->clientId);
+        if (client == nullptr) {
             spdlog::debug("Ignoring instruction {:d} from unknown client {:08x}", (int)instruction->type, instruction->clientId);
             continue;
         }
@@ -144,11 +147,13 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             display->sendKeyboard(keyboardInstruction->key, keyboardInstruction->pressed);
     
         } else if (instruction->type == WebXInstruction::Type::Screen) {
-            auto message = std::make_shared<WebXScreenMessage>(display->getScreenSize());
+            // Send message to specific client
+            auto message = std::make_shared<WebXScreenMessage>(client->getIndex(), display->getScreenSize());
             this->sendMessage(message, instruction->id);
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
-            auto message = std::make_shared<WebXWindowsMessage>(display->getVisibleWindowsProperties());
+            // Send message to specific client
+            auto message = std::make_shared<WebXWindowsMessage>(client->getIndex(), display->getVisibleWindowsProperties());
             this->sendMessage(message, instruction->id);
         
         } else if (instruction->type == WebXInstruction::Type::Image) {
@@ -157,7 +162,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             const WebXQuality & quality = WebXQuality::MaxQuality();
             std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality);
 
-            auto message = std::make_shared<WebXImageMessage>(imageInstruction->windowId, image);
+            // Send message to specific client
+            auto message = std::make_shared<WebXImageMessage>(client->getIndex(), imageInstruction->windowId, image);
             this->sendMessage(message, instruction->id);
 
         } else if (instruction->type == WebXInstruction::Type::Cursor) {
@@ -167,7 +173,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             WebXMouseState * mouseState = mouse->getState();
             std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorImageInstruction->cursorId);
             
-            auto message = std::make_shared<WebXCursorImageMessage>(mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
+            // Send message to specific client
+            auto message = std::make_shared<WebXCursorImageMessage>(client->getIndex(), mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
             this->sendMessage(message, instruction->id);
 
         } else if (instruction->type == WebXInstruction::Type::Quality) {
@@ -183,7 +190,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 void WebXController::notifyDisplayChanged(WebXDisplay * display) {
     this->_displayDirty = false;
 
-    auto message = std::make_shared<WebXWindowsMessage>(display->getVisibleWindowsProperties());
+    // Send message to all clients
+    auto message = std::make_shared<WebXWindowsMessage>(GLOBAL_CLIENT_INDEX_MASK, display->getVisibleWindowsProperties());
     this->sendMessage(message);
 }
 
@@ -219,7 +227,8 @@ float WebXController::notifyImagesChanged(WebXDisplay * display) {
 
                             spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
-                            auto message = std::make_shared<WebXImageMessage>(windowDamage.windowId, image);
+                            // TODO: Send message group of clients
+                            auto message = std::make_shared<WebXImageMessage>(GLOBAL_CLIENT_INDEX_MASK, windowDamage.windowId, image);
                             this->sendMessage(message);
 
                             // Update stats
@@ -253,7 +262,8 @@ float WebXController::notifyImagesChanged(WebXDisplay * display) {
                         spdlog::trace("Window 0x{:x} sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)((1.0 * subImage.image->getAlphaDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
                     }
     
-                    auto message = std::make_shared<WebXSubImagesMessage>(windowDamage.windowId, subImages);
+                    // TODO: Send message group of clients
+                    auto message = std::make_shared<WebXSubImagesMessage>(GLOBAL_CLIENT_INDEX_MASK, windowDamage.windowId, subImages);
                     this->sendMessage(message);
                 }
             }
@@ -268,7 +278,8 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
 
     const WebXMouseState  * mouseState = display->getMouse()->getState();
 
-    auto message = std::make_shared<WebXMouseMessage>( mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
+    // Send message to all clients
+    auto message = std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     this->sendMessage(message);
 }
 

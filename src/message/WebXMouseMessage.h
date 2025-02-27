@@ -5,8 +5,8 @@
 
 class WebXMouseMessage : public WebXMessage {
 public:
-    WebXMouseMessage(int x, int y, uint32_t cursorId) :
-        WebXMessage(Type::Mouse),
+    WebXMouseMessage(uint64_t clientIndexMask, int x, int y, uint32_t cursorId) :
+        WebXMessage(Type::Mouse, clientIndexMask),
         x(x),
         y(y),
         cursorId(cursorId) {

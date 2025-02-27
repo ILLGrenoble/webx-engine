@@ -23,14 +23,16 @@ public:
         return this->getClientById(clientId) != nullptr;
     }
 
-private:
     std::shared_ptr<WebXClient> getClientById(uint32_t id) const {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
         auto it = std::find_if(this->_clients.begin(), this->_clients.end(), [&id](const std::shared_ptr<WebXClient> & client) {
             return client->getId() == id;
         });
 
         return (it != this->_clients.end()) ? *it : nullptr;
     }
+
+private:
 
     std::shared_ptr<WebXClientGroup> getGroupByQuality(const WebXQuality & quality) const {
         auto it = std::find_if(this->_groups.begin(), this->_groups.end(), [&quality](const std::shared_ptr<WebXClientGroup> & group) {
@@ -70,7 +72,7 @@ private:
     std::mt19937 _randomNumberGenerator;
     uint64_t _clientIndexMask;
 
-    std::mutex _mutex;
+    mutable std::recursive_mutex _mutex;
 
     std::vector<std::shared_ptr<WebXClient>> _clients;
     std::vector<std::shared_ptr<WebXClientGroup>> _groups;

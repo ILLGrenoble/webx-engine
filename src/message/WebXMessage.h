@@ -15,12 +15,14 @@ public:
         CursorImage,
     };
 
-    WebXMessage(Type type) :
+    WebXMessage(Type type, uint64_t clientIndexMask) :
         type(type),
+        clientIndexMask(clientIndexMask),
         commandId(-1) {}
     virtual ~WebXMessage() {}
 
     Type type;
+    uint64_t clientIndexMask;
     uint32_t commandId;
 };
 
