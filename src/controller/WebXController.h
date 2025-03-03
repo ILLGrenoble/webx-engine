@@ -12,7 +12,6 @@
 #include <gateway/WebXGateway.h>
 #include <client/WebXClientRegistry.h>
 #include <display/WebXWindowProperties.h>
-#include <display/WebXWindowDamageProperties.h>
 #include <display/WebXDisplayEventType.h>
 #include <utils/WebXQuality.h>
 #include <utils/WebXSettings.h>
@@ -49,7 +48,7 @@ private:
     
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
-    float notifyImagesChanged(WebXDisplay * display);
+    float updateClientWindows(WebXDisplay * display);
     void notifyMouseChanged(WebXDisplay * display);
 
     void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);

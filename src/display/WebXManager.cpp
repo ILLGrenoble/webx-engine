@@ -57,7 +57,7 @@ void WebXManager::init(const std::string & keyboardLayout) {
     XSetIOErrorHandler(WebXManager::IO_ERROR_HANDLER);
     XSynchronize(this->_x11Display, True);
 
-    this->_display = new WebXDisplay(this->_x11Display, this->_settings.quality);
+    this->_display = new WebXDisplay(this->_x11Display);
     this->_display->init();
 
     this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
@@ -116,11 +116,12 @@ void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
 
     WebXWindow * window = this->_display->getWindow(event.getX11Window());
     if (window != NULL) {
-        const WebXSize & windowSize = window->getRectangle().size;
-        bool sizeHasChanged = windowSize.width != event.getWidth() || windowSize.height != event.getHeight();
+        const WebXSize & windowSize = window->getRectangle().size();
+        bool sizeHasChanged = windowSize.width() != event.getWidth() || windowSize.height() != event.getHeight();
 
         if (sizeHasChanged) {
-            this->_display->addDamagedWindow(event.getX11Window(), window->getRectangle(), true);
+            // Send this as an event to indicate that the full window is damaged
+            this->sendDamageEvent(WebXWindowDamage(event.getX11Window(), window->getRectangle(), true));
         }
     }
 
@@ -136,8 +137,10 @@ void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {
-    spdlog::trace("Got damage Event for window 0x{:x}: ({:d}, {:d}) {:d} x {:d}", event.getX11Window(), event.getRectangle().x, event.getRectangle().y, event.getRectangle().size.width, event.getRectangle().size.height);
-    this->_display->addDamagedWindow(event.getX11Window(), event.getRectangle());
+    spdlog::trace("Got damage Event for window 0x{:x}: ({:d}, {:d}) {:d} x {:d}", event.getX11Window(), event.getRectangle().x(), event.getRectangle().y(), event.getRectangle().size().width(), event.getRectangle().size().height());
+
+    // Send this as an event to indicate that a window rectangle is damaged
+    this->sendDamageEvent(WebXWindowDamage(event.getX11Window(), event.getRectangle()));
 }
 
 void WebXManager::handleMouseCursorEvent(const WebXEvent & event) {

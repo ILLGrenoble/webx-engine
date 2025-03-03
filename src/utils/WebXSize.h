@@ -4,19 +4,39 @@
 class WebXSize {
 public:
     WebXSize() :
-        width(0),
-        height(0) {}
+        _width(0),
+        _height(0) {}
     WebXSize(int width, int height) :
-        width(width),
-        height(height) {}
+        _width(width),
+        _height(height) {}
+    WebXSize(const WebXSize & size) :
+        _width(size._width),
+        _height(size._height) {}
     virtual ~WebXSize() {}
 
-    int area() const {
-        return this->width * this->height;
+    bool operator == (const WebXSize & size) const {
+        return this->_width == size._width && this->_height == size._height;
     }
 
-    int width;
-    int height;
+    bool operator != (const WebXSize & size) const {
+        return !operator==(size);
+    }
+
+    int area() const {
+        return this->_width * this->_height;
+    }
+
+    int width() const {
+        return this->_width;
+    }
+
+    int height() const {
+        return this->_height;
+    }
+
+private:
+    int _width;
+    int _height;
 };
 
 

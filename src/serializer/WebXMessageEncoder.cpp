@@ -116,8 +116,8 @@ zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScr
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t) message->type);
     buffer.write<uint32_t>(message->commandId);
-    buffer.write<int32_t>(message->screenSize.width);
-    buffer.write<int32_t>(message->screenSize.height);
+    buffer.write<int32_t>(message->screenSize.width());
+    buffer.write<int32_t>(message->screenSize.height());
     return output;
 }
 
@@ -125,8 +125,7 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
     unsigned int nImages = message->images.size();
     size_t imageDataSize = 0;
     size_t alphaDataSize = 0;
-    for (auto it = message->images.begin(); it != message->images.end(); it++) {
-        const WebXSubImage & subImage = *it;
+    for (const WebXSubImage & subImage : message->images) {
         size_t rawDataSize = subImage.image->getRawDataSize();
         size_t alphaDataSize = subImage.image->getAlphaDataSize();
         imageDataSize += rawDataSize + alphaDataSize;
@@ -144,13 +143,11 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
     buffer.write<uint32_t>(message->windowId);
     buffer.write<uint32_t>(nImages);
 
-    for (auto it = message->images.begin(); it != message->images.end(); it++) {
-        const WebXSubImage & subImage = *it;
-
-        buffer.write<int32_t>(subImage.imageRectangle.x);
-        buffer.write<int32_t>(subImage.imageRectangle.y);
-        buffer.write<int32_t>(subImage.imageRectangle.size.width);
-        buffer.write<int32_t>(subImage.imageRectangle.size.height);
+    for (const WebXSubImage & subImage : message->images) {
+        buffer.write<int32_t>(subImage.imageRectangle.x());
+        buffer.write<int32_t>(subImage.imageRectangle.y());
+        buffer.write<int32_t>(subImage.imageRectangle.size().width());
+        buffer.write<int32_t>(subImage.imageRectangle.size().height());
         buffer.write<uint32_t>(subImage.image->getDepth());
 
         char imageType[4] = "";

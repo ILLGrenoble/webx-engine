@@ -15,6 +15,7 @@
 #include <input/WebXMouse.h>
 #include <utils/WebXPosition.h>
 #include <utils/WebXSettings.h>
+#include <utils/WebXResult.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
@@ -25,6 +26,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     _gateway(gateway),
     _settings(settings),
     _manager(settings, keyboardLayout),
+    _clientRegistry(settings),
     _displayDirty(true),
     _cursorDirty(true),
     _requestedQuality(WebXQuality::MaxQuality()),
@@ -43,6 +45,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
 
     // Listen to events from the display
     this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
+    this->_manager.setDamageEventHandler([this](const WebXWindowDamage damage) { this->_clientRegistry.addWindowDamage(damage); });
 }
 
 WebXController::~WebXController() {
@@ -55,8 +58,13 @@ void WebXController::stop() {
     // Remove the instruction handler
     this->_gateway.setInstructionHandlerFunc(nullptr);
 
+    // Remove the client registry functions
+    this->_gateway.setClientConnectFunc(nullptr);
+    this->_gateway.setClientDisconnectFunc(nullptr);
+    
     // Remove the display events listener
     this->_manager.setDisplayEventHandler(nullptr);
+    this->_manager.setDamageEventHandler(nullptr);
 }
 
 void WebXController::run() {
@@ -103,8 +111,8 @@ void WebXController::run() {
                 this->notifyDisplayChanged(display);
             }
 
-            // Update necessary images
-            float imageSizeKB = this->notifyImagesChanged(display);
+            // Update necessary images of the client windows
+            float imageSizeKB = this->updateClientWindows(display);
 
             WebXPosition finalMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
             if (this->_cursorDirty || finalMousePosition != initialMousePosition) {
@@ -128,8 +136,7 @@ void WebXController::run() {
 void WebXController::handleClientInstructions(WebXDisplay * display) {
     std::lock_guard<std::mutex> lock(this->_instructionsMutex);
 
-    for (auto it = this->_instructions.begin(); it != this->_instructions.end(); it++) {
-        auto instruction = *it;
+    for (const auto & instruction : this->_instructions) {
 
         // Verify that the instruction->clientId is known. Reject the instruction if client unknown
         const std::shared_ptr<WebXClient> & client = this->_clientRegistry.getClientById(instruction->clientId);
@@ -195,82 +202,82 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
     this->sendMessage(message);
 }
 
-float WebXController::notifyImagesChanged(WebXDisplay * display) {
-    std::vector<WebXWindowDamageProperties> damagedWindows = display->getDamagedWindows(this->_requestedQuality);
-    float imageSizeKB = 0.0;
 
-    if (damagedWindows.size() > 0) {
-        for (auto it = damagedWindows.begin(); it != damagedWindows.end(); it++) {
-            WebXWindowDamageProperties & windowDamage = *it;
+float WebXController::updateClientWindows(WebXDisplay * display) {
+    // Send all current window visibilities to registry to update all current visible client windows and their coverage
+    this->_clientRegistry.updateVisibleWindows(display->getWindowVisiblities());
 
-            if (windowDamage.isFullWindow() || windowDamage.getDamageAreaRatio() > 0.9) {
-                WebXWindow * window = display->getVisibleWindow(windowDamage.windowId);
-                if (window) {
-                    // Get checksums before and after updating the window image
-                    uint64_t oldChecksum = window->getWindowChecksum();
-                    uint64_t oldAlphaChecksum = window->getWindowAlphaChecksum();
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_requestedQuality);
-                    if (image) {
-                        uint64_t newChecksum = window->getWindowChecksum();
-                        uint64_t newAlphaChecksum = window->getWindowAlphaChecksum();
+    // Handle all necessary damage in the client windows
+    float totalImageSizeKB = 0.0;
+    this->_clientRegistry.handleWindowDamage([&](const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask) { 
+        const WebXWindowDamage & windowDamage = window->getDamage();
+        if (window->isFullWindowDamage() || window->getDamageAreaRatio() > 0.9) {
+            std::shared_ptr<WebXImage> image = display->getImage(window->getId(), window->getCurrentQuality());
+            if (image) {
+                // Calculate the image checksums
+                uint64_t rgbChecksum = image->calculateImageChecksum();
+                uint64_t alphaChecksum = image->calculateAlphaChecksum();
 
-                        // Send event if checksum has changed
-                        if (newChecksum != oldChecksum) {
+                // Send event if checksum has changed
+                if (rgbChecksum != window->getRGBChecksum()) {
 
-                            // Compare alpha checksums
-                            if (newAlphaChecksum == oldAlphaChecksum) {
-                                bool removed = image->removeAlpha();
-                                if (removed) {
-                                    spdlog::trace("Removed alpha from image for window 0x{:01x}", windowDamage.windowId);
-                                }
-                            }
-
-                            spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
-
-                            // TODO: Send message group of clients
-                            auto message = std::make_shared<WebXImageMessage>(GLOBAL_CLIENT_INDEX_MASK, windowDamage.windowId, image);
-                            this->sendMessage(message);
-
-                            // Update stats
-                            float imageSizeKB = image->getFullDataSize() / 1024.0;
-                            display->onImageDataSent(windowDamage.windowId, imageSizeKB);
-                            imageSizeKB += imageSizeKB;
+                    // Compare alpha checksums
+                    if (alphaChecksum == window->getAlphaChecksum()) {
+                        bool removed = image->removeAlpha();
+                        if (removed) {
+                            spdlog::trace("Removed alpha from image for window 0x{:01x}", window->getId());
                         }
                     }
-                }
 
-            } else {
-                // Get sub image changes
-                std::vector<WebXSubImage> subImages;
-                for (auto it = windowDamage.damageAreas.begin(); it != windowDamage.damageAreas.end(); it++) {
-                    WebXRectangle & area = *it;
-                    std::shared_ptr<WebXImage> image = display->getImage(windowDamage.windowId, this->_requestedQuality, &area);
-                    // Check image not null
-                    if (image) {
-                        subImages.push_back(WebXSubImage(area, image));
+                    spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", window->getId(), image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
-                        // Update stats
-                        float imageSizeKB = image->getFullDataSize() / 1024.0;
-                        display->onImageDataSent(windowDamage.windowId, imageSizeKB);
-                        imageSizeKB += imageSizeKB;
-                    }
-                }
+                    // Send message group of clients for the window full image update
+                    this->sendMessage(std::make_shared<WebXImageMessage>(clientIndexMask, window->getId(), image));
 
-                if (subImages.size() > 0) {
-                    for (auto it = subImages.begin(); it != subImages.end(); it++) {
-                        const WebXSubImage & subImage = *it;
-                        spdlog::trace("Window 0x{:x} sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", windowDamage.windowId, subImage.imageRectangle.size.width, subImage.imageRectangle.size.height, subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)((1.0 * subImage.image->getAlphaDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
-                    }
-    
-                    // TODO: Send message group of clients
-                    auto message = std::make_shared<WebXSubImagesMessage>(GLOBAL_CLIENT_INDEX_MASK, windowDamage.windowId, subImages);
-                    this->sendMessage(message);
+                    // Update stats
+                    float imageSizeKB = image->getFullDataSize() / 1024.0;
+                    totalImageSizeKB += imageSizeKB;
+
+                    // Return full window transfer data
+                    return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), imageSizeKB, rgbChecksum, alphaChecksum));
                 }
             }
-        }
-    }
 
-    return imageSizeKB;
+        } else {
+            // Get sub image changes
+            std::vector<WebXSubImage> subImages;
+            float totalSubImagesSizeKB = 0.0;
+            for (const WebXRectangle & area: window->getDamage().getDamagedAreas()) {
+                std::shared_ptr<WebXImage> image = display->getImage(window->getId(), window->getCurrentQuality(), &area);
+                // Check image not null
+                if (image) {
+                    subImages.push_back(WebXSubImage(area, image));
+                    totalSubImagesSizeKB += image->getFullDataSize() / 1024.0;
+                }
+            }
+
+            if (subImages.size() > 0) {
+                for (auto it = subImages.begin(); it != subImages.end(); it++) {
+                    const WebXSubImage & subImage = *it;
+                    spdlog::trace("Window 0x{:x} sending encoded subimage {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", window->getId(), subImage.imageRectangle.size().width(), subImage.imageRectangle.size().height(), subImage.image->getDepth(), (int)((1.0 * subImage.image->getFullDataSize()) / 1024), (int)((1.0 * subImage.image->getRawDataSize()) / 1024), (int)((1.0 * subImage.image->getAlphaDataSize()) / 1024), (int)(subImage.image->getEncodingTimeUs() / 1000));
+                }
+
+                // Send message group of clients for the window sub-image updates
+                this->sendMessage(std::make_shared<WebXSubImagesMessage>(clientIndexMask, window->getId(), subImages));
+
+                // Update stats
+                totalImageSizeKB += totalSubImagesSizeKB;
+
+                // Return sub window transfer data
+                return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), totalSubImagesSizeKB));
+            }            
+        }
+
+        // Return ignored window transfer data
+        return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), WebXWindowImageTransferData::WebXWindowImageTransferStatus::Ignored));
+    });
+
+    return totalImageSizeKB;
 }
 
 void WebXController::notifyMouseChanged(WebXDisplay * display) {

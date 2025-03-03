@@ -2,7 +2,8 @@
 #include "WebXClient.h"
 #include <spdlog/spdlog.h>
 
-WebXClientRegistry::WebXClientRegistry() :
+WebXClientRegistry::WebXClientRegistry(const WebXSettings & settings) :
+    _settings(settings),
     _randomNumberGenerator(std::random_device{}()),
     _clientIndexMask(0) {
 
@@ -46,13 +47,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
 
     spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
 
-    // Return identifier (clientid:index)
-    // uint32_t clientId = 0xff20ff40;
-    // uint64_t clientIndex = 0x1000200040008000;
-    // uint8_t * clientIdBytes = (uint8_t *)&clientId;
-    // uint8_t * clientIndexBytes = (uint8_t *)&clientIndex;
-    // spdlog::debug("Created client with id {:x} ({:d}) [{:x} {:x} {:x} {:x}] and index {:x} ({:d}) [{:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x}]", clientId, clientId, clientIdBytes[0], clientIdBytes[1], clientIdBytes[2], clientIdBytes[3], clientIndex, clientIndex, clientIndexBytes[0], clientIndexBytes[1], clientIndexBytes[2], clientIndexBytes[3], clientIndexBytes[4], clientIndexBytes[5], clientIndexBytes[6], clientIndexBytes[7]);
-
+    // Return identifier clientid and index
     return WebXResult<std::pair<uint32_t, uint64_t>>::Ok(std::pair<uint32_t, uint64_t>(clientId, clientIndex));
 }
 
@@ -92,7 +87,7 @@ void WebXClientRegistry::removeClientFromGroups(uint32_t clientId) {
         group->removeClient(clientId);
 
         // If group is empty then remove it
-        if (group->isEmpty()) {
+        if (group->hasClients()) {
             auto it = std::find(this->_groups.begin(), this->_groups.end(), group);
             if (it != this->_groups.end()) {
                 this->_groups.erase(it);

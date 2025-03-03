@@ -21,10 +21,10 @@ void WebXStats::updateFrameData(float fps, float durationMs, float imageSizeKB) 
         float totalFps = 0;
         double totalDurationMs = 0;
         float totalImageSizeKB = 0;
-        for (auto it = this->_frameDataStore.begin(); it != this->_frameDataStore.end(); it++) {
-            totalFps += (*it).fps;
-            totalDurationMs += (*it).durationMs;
-            totalImageSizeKB += (*it).imageSizeKB;
+        for (const WebXFrameData & frameData : this->_frameDataStore) {
+            totalFps += frameData.fps;
+            totalDurationMs += frameData.durationMs;
+            totalImageSizeKB += frameData.imageSizeKB;
         }
         this->_averageFps = totalFps / this->_frameDataStore.size();
         this->_averageDurationMs = totalDurationMs / this->_frameDataStore.size();
@@ -41,7 +41,7 @@ void WebXStats::removeAncientData() {
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 
     // Remove ancient frame data
-    this->_frameDataStore.erase(std::remove_if(this->_frameDataStore.begin(), this->_frameDataStore.end(), [now](const WebXFrameData & dataPoint) { 
+    this->_frameDataStore.erase(std::remove_if(this->_frameDataStore.begin(), this->_frameDataStore.end(), [&now](const WebXFrameData & dataPoint) { 
         std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
         return durationMs.count() > WebXStats::FRAME_DATA_RETENTION_TIME_MS; 
     }), this->_frameDataStore.end());

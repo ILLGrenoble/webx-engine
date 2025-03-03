@@ -8,6 +8,7 @@
 #include <events/WebXEvent.h>
 #include <utils/WebXSettings.h>
 #include "WebXDisplayEventType.h"
+#include <models/WebXWindowDamage.h>
 
 class WebXWindow;
 class WebXDisplay;
@@ -32,6 +33,10 @@ public:
         this->_onDisplayEvent = handler;
     }
 
+    void setDamageEventHandler(std::function<void(const WebXWindowDamage & damage)> handler) {
+        this->_onDamageEvent = handler;
+    }
+
 private:
     void init(const std::string & keyboardLayout = "");
 
@@ -54,6 +59,12 @@ private:
         }
     }
 
+    void sendDamageEvent(const WebXWindowDamage & damage) {
+        if (this->_onDamageEvent) {
+            this->_onDamageEvent(damage);
+        }
+    }
+
 private:
     const WebXSettings & _settings;
 
@@ -63,6 +74,7 @@ private:
     bool _displayRequiresUpdate;
 
     std::function<void(WebXDisplayEventType eventType)> _onDisplayEvent;
+    std::function<void(const WebXWindowDamage & damage)> _onDamageEvent;
 };
 
 

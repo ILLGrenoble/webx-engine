@@ -39,10 +39,10 @@ inline bool makeOpaque(XImage * image, WebXRectangle * mainWindowRectangle, WebX
         return false;
     
     } else if (
-        subWindowRectangle->x == 0 && 
-        subWindowRectangle->y == 0 && 
-        subWindowRectangle->size.width == mainWindowRectangle->size.width && 
-        subWindowRectangle->size.height == mainWindowRectangle->size.height) {
+        subWindowRectangle->x() == 0 && 
+        subWindowRectangle->y() == 0 && 
+        subWindowRectangle->size().width() == mainWindowRectangle->size().width() && 
+        subWindowRectangle->size().height() == mainWindowRectangle->size().height()) {
         return false;
     
     } else if (image->depth == 32) {
@@ -52,11 +52,11 @@ inline bool makeOpaque(XImage * image, WebXRectangle * mainWindowRectangle, WebX
         return false;
     }
 
-    int startX = subWindowRectangle->x > imageRectangle->x ? subWindowRectangle->x - imageRectangle->x : 0;
-    int startY = subWindowRectangle->y > imageRectangle->y ? subWindowRectangle->y - imageRectangle->y : 0;
+    int startX = subWindowRectangle->x() > imageRectangle->x() ? subWindowRectangle->x() - imageRectangle->x() : 0;
+    int startY = subWindowRectangle->y() > imageRectangle->y() ? subWindowRectangle->y() - imageRectangle->y() : 0;
 
-    int endX = startX + subWindowRectangle->size.width < image->width ? startX + subWindowRectangle->size.width : image->width;
-    int endY = startY + subWindowRectangle->size.height < image->height ? startY + subWindowRectangle->size.height : image->height;
+    int endX = startX + subWindowRectangle->size().width() < image->width ? startX + subWindowRectangle->size().width() : image->width;
+    int endY = startY + subWindowRectangle->size().height() < image->height ? startY + subWindowRectangle->size().height() : image->height;
 
     int width = endX - startX;
     int height = endY - startY;

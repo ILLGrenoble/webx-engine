@@ -8,17 +8,17 @@
 #include <memory>
 #include <chrono>
 #include <mutex>
-#include "WebXWindowQualityHandler.h"
 #include <utils/WebXRectangle.h>
 #include <utils/WebXQuality.h>
-#include <utils/WebXSettings.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
+#include <models/WebXWindowCoverage.h>
+#include <models/WebXWindowVisibility.h>
 
 class WebXWindow {
 
 public:
-    WebXWindow(Display * display, const WebXQualitySettings & settings, Window window, bool isRoot, int x, int y, int width, int height, bool isViewable);
+    WebXWindow(Display * display, Window window, bool isRoot, int x, int y, int width, int height, bool isViewable);
     virtual ~WebXWindow();
 
     Window getX11Window() const {
@@ -30,22 +30,18 @@ public:
     }
 
     const WebXRectangle & getRectangle() const {
-        return this->_rectangle;
+        return this->_visibility.getRectangle();
     }
 
     void setRectangle(const WebXRectangle & rectangle) {
-        this->_rectangle = rectangle;
+        this->_visibility.setRectangle(rectangle);
     }
 
     Status updateAttributes();
 
     void printInfo() const;
 
-    std::shared_ptr<WebXImage> getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality);
-
-    std::chrono::high_resolution_clock::time_point getImageCaptureTime() const {
-        return this->_imageCaptureTime;
-    }
+    std::shared_ptr<WebXImage> getImage(const WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality);
 
     WebXWindow * getParent() const {
         return this->_parent;
@@ -63,39 +59,27 @@ public:
     }
 
     bool isVisible(const WebXSize & viewport) const {
-        return this->_isViewable && this->_rectangle.isVisible(viewport);
+        return this->_visibility.isVisible(viewport);
     }
 
     void setIsViewable(bool isViewable) {
-        this->_isViewable = isViewable;
+        this->_visibility.setViewable(isViewable);
     }
 
-    void setCoverage(const WebXRectangle::WebXRectCoverage & coverage) {
-        this->_qualityHandler.setWindowCoverage(coverage);
+    bool isViewable() const {
+        return this->_visibility.isViewable();
+    }
+
+    void setCoverage(const WebXWindowCoverage & coverage) {
+        this->_visibility.setCoverage(coverage);
+    }
+
+    const WebXWindowVisibility & getVisibility() const {
+        return this->_visibility;
     }
     
-    void onImageDataSent(float imageSizeKB) {
-        this->_qualityHandler.onImageDataSent(imageSizeKB);
-    }
-
-    const WebXQuality & calculateQuality(const WebXQuality & desiredQuality) {
-        return this->_qualityHandler.calculateQuality(desiredQuality);
-    }
-
-    const WebXQuality & getQuality() const {
-        return this->_qualityHandler.getCurrentQuality();;
-    }
-
     void enableDamage();
     void disableDamage();
-
-    uint32_t getWindowChecksum() const {
-        return this->_windowChecksum;
-    }
-
-    uint32_t getWindowAlphaChecksum() const {
-        return this->_windowAlphaChecksum;
-    }
 
 private:
     Display * _display;
@@ -106,19 +90,9 @@ private:
     WebXWindow * _parent;
     std::vector<WebXWindow *> _children;
 
-    WebXRectangle _rectangle;
-
-    bool _isViewable;
-
-    WebXWindowQualityHandler _qualityHandler;
-
-    std::chrono::high_resolution_clock::time_point _imageCaptureTime;
+    WebXWindowVisibility _visibility;
 
     std::mutex _damageMutex;
-
-    unsigned long _windowChecksum;
-    unsigned long _windowAlphaChecksum;
-
 };
 
 

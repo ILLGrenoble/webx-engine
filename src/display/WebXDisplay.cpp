@@ -6,10 +6,10 @@
 #include <spdlog/spdlog.h>
 #include <input/WebXMouse.h>
 #include <input/WebXKeyboard.h>
+#include <models/WebXWindowCoverage.h>
 
-WebXDisplay::WebXDisplay(Display * display, const WebXQualitySettings & settings) :
+WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
-    _settings(settings),
     _rootWindow(NULL),
     _imageConverter(new WebXJPGImageConverter()),
     _mouse(NULL) {
@@ -179,7 +179,7 @@ void WebXDisplay::updateVisibleWindows() {
             WebXWindow * child = this->getWindow(childX11Window);
             if (child != NULL) {
                 Status status = child->updateAttributes();
-                if (status && child->isVisible(this->_rootWindow->getRectangle().size)) {
+                if (status && child->isVisible(this->_rootWindow->getRectangle().size())) {
 
                     child->enableDamage();
                     this->_visibleWindows.push_back(child);
@@ -227,7 +227,7 @@ void WebXDisplay::updateWindowCoverage() {
         std::vector<WebXRectangle> coveringRectangles;
         std::transform(it2, this->_visibleWindows.end(), std::back_inserter(coveringRectangles), [](WebXWindow * window) { return window->getRectangle(); });
 
-        WebXRectangle::WebXRectCoverage coverage = window->getRectangle().overlapCalc(coveringRectangles, mouseState->getX(), mouseState->getY());
+        WebXWindowCoverage coverage = WebXWindowCoverage::OverlapCalc(window->getRectangle(), coveringRectangles, mouseState->getX(), mouseState->getY());
         window->setCoverage(coverage);
     }
 }
@@ -258,7 +258,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
     }
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQuality & quality, WebXRectangle * imageRectangle) {
+std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle) {
     std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
 
     // Find visible window
@@ -275,84 +275,6 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQua
     } else {
         return nullptr;
     }
-}
-
-void WebXDisplay::addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh) {
-    std::lock_guard<std::mutex> damageLock(this->_damagedWindowsMutex);
-    std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
-
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    // Ignore damage if window is not visible
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
-
-        // See if window damage already exists
-        auto it = std::find_if(this->_damagedWindows.begin(), this->_damagedWindows.end(), 
-            [&x11Window](const WebXWindowDamageProperties & obj) {
-                return obj.windowId == x11Window;
-            });
-
-        // Modify or add window damage
-        if (it != this->_damagedWindows.end()) {
-            if (fullWindowRefresh) {
-                // Delete previous window damage (window size has changed)
-                this->_damagedWindows.erase(it);
-
-                // Create new window damage
-                this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, fullWindowRefresh));
-            
-            } else {
-                // Add to existing damage
-                WebXWindowDamageProperties & existingDamagedWindow = *it;
-                existingDamagedWindow += damagedArea;
-            }
-
-        } else {
-            // Create new window damage
-            this->_damagedWindows.push_back(WebXWindowDamageProperties(window, damagedArea, fullWindowRefresh));
-        }
-    }
-}
-
-std::vector<WebXWindowDamageProperties> WebXDisplay::getDamagedWindows(const WebXQuality & quality) {
-    std::lock_guard<std::mutex> lock(this->_damagedWindowsMutex);
-
-    std::vector<WebXWindowDamageProperties> windowDamageToRepair;
-
-    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-    for (auto it = this->_damagedWindows.begin(); it != this->_damagedWindows.end();) {
-        WebXWindowDamageProperties & windowDamage = *it;
-
-        // Verify that the window still exists and is still visible
-        WebXWindow * window = this->getVisibleWindow(windowDamage.windowId);
-        float imageUpdateTimeUs = quality.imageUpdateTimeUs;
-        if (window != NULL) {
-            // Modify quality to be poorest between requested and calculated
-            if (window->calculateQuality(quality) < quality) {
-                imageUpdateTimeUs = window->getQuality().imageUpdateTimeUs;
-            }
-
-            std::chrono::duration<double, std::micro> timeSinceImageUpdateUs = now - windowDamage.imageCaptureTime;
-            if (timeSinceImageUpdateUs.count() > imageUpdateTimeUs) {
-                windowDamageToRepair.push_back(windowDamage);
-                it = this->_damagedWindows.erase(it);
-    
-            } else {
-                it++;
-            }
-
-        } else {
-            it = this->_damagedWindows.erase(it);
-        }
-
-    }
-
-    return windowDamageToRepair;
 }
 
 void WebXDisplay::updateMouseCursor() {
@@ -381,14 +303,6 @@ void WebXDisplay::loadKeyboardLayout(const std::string & layout) {
     }
 }
 
-void WebXDisplay::onImageDataSent(Window x11Window, float imageSizeKB) {
-    // See if window exists
-    WebXWindow * window = this->getWindow(x11Window);
-    if (window != NULL) {
-        window->onImageDataSent(imageSizeKB);
-    }
-}
-
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);
@@ -396,7 +310,7 @@ WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
         XWindowAttributes attr;
         Status status = XGetWindowAttributes(this->_x11Display, x11Window, &attr);
         if (status != BadWindow && attr.map_state == IsViewable && attr.c_class == InputOutput) {
-            window = new WebXWindow(this->_x11Display, this->_settings, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
+            window = new WebXWindow(this->_x11Display, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
 
             this->_allWindows[x11Window] = window;
         }

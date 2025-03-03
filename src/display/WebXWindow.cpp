@@ -1,28 +1,24 @@
 #include "WebXWindow.h"
-#include "WebXWindowImageUtils.h"
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
 #include <events/WebXDamageOverride.h>
 #include <utils/WebXQuality.h>
+#include <utils/WebXWindowImageUtils.h>
 #include <algorithm>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
 
-WebXWindow::WebXWindow(Display * display, const WebXQualitySettings & settings, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
+WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
     _display(display),
     _x11Window(x11Window),
     _damage(0),
     _isRoot(isRoot),
     _parent(NULL),
-    _rectangle(WebXRectangle(x, y, width, height)),
-    _isViewable(isViewable),
-    _qualityHandler(x11Window, settings),
-    _imageCaptureTime(std::chrono::high_resolution_clock::now()),
-    _windowChecksum(0) {
+    _visibility(x11Window, WebXRectangle(x, y, width, height), isViewable) {
 }
 
 WebXWindow::~WebXWindow() {
-    if (this->_isViewable) {
+    if (this->isViewable()) {
         // Disable damage events for the window
         this->disableDamage();
     
@@ -53,7 +49,7 @@ void WebXWindow::enableDamage() {
 
 void WebXWindow::disableDamage() {
     std::lock_guard<std::mutex> lock(this->_damageMutex);
-    if (this->_damage != 0 && this->_isViewable) {
+    if (this->_damage != 0 && this->isViewable()) {
         XDamageDestroy(this->_display, this->_damage);
         this->_damage = 0;
     }
@@ -62,17 +58,17 @@ void WebXWindow::disableDamage() {
 Status WebXWindow::updateAttributes() {
     XWindowAttributes attr;
     Status status = XGetWindowAttributes(this->_display, this->_x11Window, &attr);
-    this->_rectangle = WebXRectangle(attr.x, attr.y, attr.width, attr.height);
-    this->_isViewable = (attr.map_state == IsViewable && attr.c_class == InputOutput);
+    this->_visibility.setRectangle(WebXRectangle(attr.x, attr.y, attr.width, attr.height));
+    this->_visibility.setViewable(attr.map_state == IsViewable && attr.c_class == InputOutput);
 
     return status;
 }
 
 void WebXWindow::printInfo() const {
-    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->_rectangle.x, this->_rectangle.y, this->_rectangle.size.width, this->_rectangle.size.height);
+    printf("WebXWindow = 0x%08lx [(%d, %d), %dx%d]\n", this->_x11Window, this->getRectangle().x(), this->getRectangle().y(), this->getRectangle().size().width(), this->getRectangle().size().height());
 }
 
-std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality) {
+std::shared_ptr<WebXImage> WebXWindow::getImage(const WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & quality) {
 
     // Update window attributes to ensure we can grab the pixels and the size is coherent
     Status status = this->updateAttributes();
@@ -82,7 +78,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
     }
 
     // Initialise rectangle as full window
-    WebXRectangle rectangle(0, 0, this->_rectangle.size.width, this->_rectangle.size.height);
+    WebXRectangle rectangle(0, 0, this->getRectangle().size().width(), this->getRectangle().size().height());
     bool isFull = true;
 
     // If image rectangle is specified, validate its size
@@ -103,7 +99,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
     // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
     this->disableDamage();
     
-    XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, AllPlanes, ZPixmap);
+    XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x(), rectangle.y(), rectangle.size().width(), rectangle.size().height(), AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
     // Fix for Ubuntu 20.04
@@ -114,18 +110,10 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
     
     if (image) {
         // Check if image has transparency and modify image depth accordingly
-        bool hasTransparency = requestedQuality.alphaQuality > 0 && checkTransparent(image);
+        bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
-        // Calculate quality depending on requested quality, coverage and image KB/s
-        const WebXQuality & quality = this->_qualityHandler.calculateQuality(requestedQuality);
-
         webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
-
-        if (isFull) {
-            this->_windowChecksum = webXImage->calculateImageChecksum();
-            this->_windowAlphaChecksum = webXImage->calculateAlphaChecksum();
-        }
 
         XDestroyImage(image);
 
@@ -133,7 +121,7 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
         std::chrono::duration<double, std::milli> encodeDuration = end - grab;
         std::chrono::duration<double, std::milli> duration = end - start;
 
-        spdlog::trace("Grabbed WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s}) in {:.2f}ms (grab = {:.2f}ms, encoding = {:.2f}ms)", this->_x11Window, rectangle.x, rectangle.y, rectangle.size.width, rectangle.size.height, (isFull ? "full window" : "sub window"), duration.count(), grabDuration.count(), encodeDuration.count());
+        spdlog::trace("Grabbed WebXWindow 0x{:x} ({:d}, {:d}), {:d} x {:d} ({:s}) in {:.2f}ms (grab = {:.2f}ms, encoding = {:.2f}ms)", this->_x11Window, rectangle.x(), rectangle.y(), rectangle.size().width(), rectangle.size().height(), (isFull ? "full window" : "sub window"), duration.count(), grabDuration.count(), encodeDuration.count());
 
     } else {
         // See if ErrorHandler has this window as it's last error source and determine exact error
@@ -152,7 +140,6 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(WebXRectangle * imageRectangle, 
             }
         }
     }
-    this->_imageCaptureTime = std::chrono::high_resolution_clock::now();
 
     return webXImage;
 }

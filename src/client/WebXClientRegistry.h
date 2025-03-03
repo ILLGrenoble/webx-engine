@@ -9,11 +9,12 @@
 #include "WebXClientGroup.h"
 #include <utils/WebXResult.h>
 #include <utils/WebXQuality.h>
+#include <utils/WebXSettings.h>
 
 class WebXClientRegistry {
 
 public:
-    WebXClientRegistry();
+    WebXClientRegistry(const WebXSettings & settings);
     virtual ~WebXClientRegistry();
 
     const WebXResult<std::pair<uint32_t, uint64_t>> addClient();
@@ -32,8 +33,28 @@ public:
         return (it != this->_clients.end()) ? *it : nullptr;
     }
 
-private:
+    void addWindowDamage(const WebXWindowDamage & damage) {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        for (auto & group : this->_groups) {
+            group->addWindowDamage(damage);
+        }
+    }
 
+    void updateVisibleWindows(const std::vector<const WebXWindowVisibility *> & windowVisibilities) {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        for (auto & group : this->_groups) {
+            group->updateVisibleWindows(windowVisibilities);
+        }
+    }
+
+    void handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc) {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        for (auto & group : this->_groups) {
+            group->handleWindowDamage(damageHandlerFunc);
+        }
+    }
+
+private:
     std::shared_ptr<WebXClientGroup> getGroupByQuality(const WebXQuality & quality) const {
         auto it = std::find_if(this->_groups.begin(), this->_groups.end(), [&quality](const std::shared_ptr<WebXClientGroup> & group) {
             return group->getQuality() == quality;
@@ -48,7 +69,7 @@ private:
         });
 
         if (it == this->_groups.end()) {
-            auto group = std::make_shared<WebXClientGroup>(quality);
+            auto group = std::make_shared<WebXClientGroup>(this->_settings, quality);
             this->_groups.push_back(group);
             return group;
 
@@ -69,6 +90,7 @@ private:
 
 
 private:
+    const WebXSettings & _settings;
     std::mt19937 _randomNumberGenerator;
     uint64_t _clientIndexMask;
 

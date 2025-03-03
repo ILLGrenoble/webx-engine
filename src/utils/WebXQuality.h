@@ -62,7 +62,7 @@ public:
         }
     
         // Coverage [0.0:1.0], quality [1:10]
-        int qualityIndex = std::ceil(10 - (10 * coverage));
+        int qualityIndex = std::ceil(10 - (9.99 * coverage));
     
         const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
     
@@ -77,7 +77,7 @@ public:
     
         // Coverage [0.0:1.0], quality [1:10]
         // quadratic conversion from coverage to quality (keep higher quality for smaller coverage)
-        int qualityIndex = std::ceil(10 - (10 * coverage * coverage));
+        int qualityIndex = std::ceil(10 - (9.99 * coverage * coverage));
     
         const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
     
@@ -105,7 +105,7 @@ public:
     float alphaQuality;
     float maxKbps;
 
-    double imageUpdateTimeUs;
+    int imageUpdateTimeUs;
 
     static const std::vector<WebXQuality> QUALITY_SETTINGS;
     static const int MAX_QUALITY_INDEX = 10;

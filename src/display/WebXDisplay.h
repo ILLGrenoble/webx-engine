@@ -9,9 +9,7 @@
 #include <thread>
 #include <mutex>
 #include "WebXWindowProperties.h"
-#include "WebXWindowDamageProperties.h"
 #include <utils/WebXQuality.h>
-#include <utils/WebXSettings.h>
 
 class WebXWindow;
 class WebXImageConverter;
@@ -20,7 +18,7 @@ class WebXKeyboard;
 
 class WebXDisplay {
 public:
-    WebXDisplay(Display * display, const WebXQualitySettings & settings);
+    WebXDisplay(Display * display);
     virtual ~WebXDisplay();
 
     void init();
@@ -36,9 +34,15 @@ public:
     void removeWindowFromTree(Window x11Window);
     void reparentWindow(Window x11Window, Window parentX11Window);
 
-    const std::vector<WebXWindow *> & getVisibleWindows() {
+    const std::vector<const WebXWindowVisibility *> getWindowVisiblities() {
         const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
-        return this->_visibleWindows;
+        std::vector<const WebXWindowVisibility *> windowVisibilities;
+
+        std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(windowVisibilities), [](WebXWindow * window) { 
+            return &window->getVisibility();
+        });
+
+        return windowVisibilities;
     }
 
     const std::vector<WebXWindowProperties> getVisibleWindowsProperties() {
@@ -59,11 +63,8 @@ public:
     void updateVisibleWindows();
     void debugTree(Window root = 0, int indent = 0);
 
-    std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, WebXRectangle * imageRectangle = NULL);
+    std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle = nullptr);
 
-    void addDamagedWindow(Window x11Window, const WebXRectangle & damagedArea, bool fullWindowRefresh = false);
-    std::vector<WebXWindowDamageProperties> getDamagedWindows(const WebXQuality & quality);
-    
     WebXMouse * getMouse() const {
         return this->_mouse;
     }
@@ -74,8 +75,6 @@ public:
     void sendKeyboard(int keysym, bool pressed);
     void loadKeyboardLayout(const std::string & layout);
     
-    void onImageDataSent(Window x11Window, float imageSizeKB);
-
 private:
     struct WebXTreeDetails {
         WebXTreeDetails() :
@@ -110,7 +109,6 @@ private:
 
 private:
     Display * _x11Display;
-    const WebXQualitySettings & _settings;
 
     WebXSize _screenSize;
 
@@ -121,9 +119,6 @@ private:
     std::mutex _visibleWindowsMutex;
 
     WebXImageConverter * _imageConverter;
-
-    std::vector<WebXWindowDamageProperties> _damagedWindows;
-    std::mutex _damagedWindowsMutex;
 
     WebXMouse * _mouse;
     WebXKeyboard * _keyboard;
