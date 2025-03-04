@@ -5,11 +5,11 @@
 #include <map>
 #include <vector>
 #include <memory>
-#include <utils/WebXSize.h>
 #include <thread>
 #include <mutex>
 #include "WebXWindowProperties.h"
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
+#include <models/WebXSize.h>
 
 class WebXWindow;
 class WebXImageConverter;

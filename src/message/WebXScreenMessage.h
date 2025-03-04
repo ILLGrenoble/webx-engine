@@ -2,7 +2,7 @@
 #define WEBX_SCREEN_MESSAGE_H
 
 #include "WebXMessage.h"
-#include <utils/WebXSize.h>
+#include <models/WebXSize.h>
 #include <string>
 
 class WebXScreenMessage : public WebXMessage {

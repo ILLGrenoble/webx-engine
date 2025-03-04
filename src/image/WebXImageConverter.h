@@ -3,7 +3,7 @@
 
 #include <X11/Xlib.h>
 #include <spdlog/spdlog.h>
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
 
 class WebXImage;
 

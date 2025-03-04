@@ -13,10 +13,9 @@
 #include <message/WebXMouseMessage.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
-#include <utils/WebXPosition.h>
-#include <utils/WebXSettings.h>
 #include <utils/WebXResult.h>
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
+#include <models/WebXPosition.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>

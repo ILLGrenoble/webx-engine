@@ -8,10 +8,10 @@
 #include <memory>
 #include <chrono>
 #include <mutex>
-#include <utils/WebXRectangle.h>
-#include <utils/WebXQuality.h>
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
+#include <models/WebXQuality.h>
+#include <models/WebXRectangle.h>
 #include <models/WebXWindowCoverage.h>
 #include <models/WebXWindowVisibility.h>
 

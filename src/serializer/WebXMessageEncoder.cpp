@@ -8,7 +8,7 @@
 #include <message/WebXSubImagesMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <utils/WebXBinaryBuffer.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 #include <zmq.hpp>
 
 zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message) const {

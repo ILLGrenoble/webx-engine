@@ -2,7 +2,7 @@
 #define WEBX_SUB_IMAGE_H
 
 #include <memory>
-#include <utils/WebXRectangle.h>
+#include <models/WebXRectangle.h>
 
 class WebXImage;
 

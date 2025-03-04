@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include <utils/WebXRectangle.h>
+#include "WebXRectangle.h"
 
 class WebXWindowCoverage {
 private:

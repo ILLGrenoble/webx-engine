@@ -5,9 +5,9 @@
 #include <memory>
 #include "WebXClient.h"
 #include "WebXClientWindow.h"
-#include <utils/WebXQuality.h>
 #include <utils/WebXResult.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXQuality.h>
+#include <models/WebXSettings.h>
 #include <models/WebXWindowDamage.h>
 
 class WebXWindowVisibility;

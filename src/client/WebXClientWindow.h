@@ -3,9 +3,9 @@
 
 #include <X11/Xlib.h>
 #include "WebXWindowQualityHandler.h"
-#include <utils/WebXQuality.h>
-#include <utils/WebXSettings.h>
-#include <utils/WebXRectangle.h>
+#include <models/WebXSettings.h>
+#include <models/WebXQuality.h>
+#include <models/WebXRectangle.h>
 #include <models/WebXWindowDamage.h>
 
 class WebXClientWindow {

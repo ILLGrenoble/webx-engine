@@ -3,7 +3,7 @@
 #include <gateway/WebXGateway.h>
 #include <transport/WebXTransport.h>
 #include <display/WebXDisplay.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <csignal>

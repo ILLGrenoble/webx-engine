@@ -54,7 +54,7 @@ target_include_directories(
     ${ZeroMQ_INCLUDE_DIR}
 )
 
-file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
+file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp src/models/* lib/*.cpp)
 add_executable(testImageEncoder ${TEST_IMAGE_SOURCES})
 target_link_libraries(
     testImageEncoder
@@ -67,7 +67,7 @@ target_link_libraries(
     -lX11
 )
 
-file(GLOB_RECURSE TEST_ALPHA_SOURCES test/testAlpha.cpp src/image/*.cpp src/utils/*.cpp lib/*.cpp)
+file(GLOB_RECURSE TEST_ALPHA_SOURCES test/testAlpha.cpp src/image/*.cpp src/utils/*.cpp src/models/* lib/*.cpp)
 add_executable(testAlpha ${TEST_ALPHA_SOURCES})
 target_link_libraries(
     testAlpha
@@ -77,7 +77,7 @@ target_link_libraries(
     -lwebp
 )
 
-file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/image/* lib/crc32/*)
+file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/models/* src/image/* lib/crc32/*)
 add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
 target_link_libraries(
     testCursorImageEncoder

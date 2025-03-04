@@ -3,10 +3,10 @@
 
 #include <vector>
 #include <chrono>
-#include <utils/WebXQuality.h>
-#include <utils/WebXRectangle.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 #include <models/WebXWindowImageTransferData.h>
+#include <models/WebXQuality.h>
+#include <models/WebXRectangle.h>
 #include <models/WebXWindowCoverage.h>
 
 class WebXWindowQualityHandler {

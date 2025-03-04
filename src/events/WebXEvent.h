@@ -2,7 +2,7 @@
 #define WEBX_EVENT_H
 
 #include <X11/Xlib.h>
-#include <utils/WebXRectangle.h>
+#include <models/WebXRectangle.h>
 
 enum WebXEventType {
     Create = 0,

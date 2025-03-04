@@ -2,7 +2,7 @@
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
 #include <events/WebXDamageOverride.h>
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
 #include <utils/WebXWindowImageUtils.h>
 #include <algorithm>
 #include <X11/Xutil.h>

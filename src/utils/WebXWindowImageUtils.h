@@ -5,8 +5,8 @@
 #include <spdlog/spdlog.h>
 #include <X11/Xlib.h>
 #include <utils/WebXImageUtils.h>
-#include <utils/WebXRectangle.h>
 #include <image/WebXImage.h>
+#include <models/WebXRectangle.h>
 
 inline bool checkTransparent(XImage * image) {
     if (image->depth == 24) {

@@ -3,7 +3,7 @@
 
 #include <serializer/WebXBinarySerializer.h>
 #include <utils/WebXQueue.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 #include <thread>
 #include <mutex>
 

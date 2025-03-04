@@ -2,7 +2,7 @@
 #define WEBX_CLIENT_CONNECTOR_H
 
 #include <message/WebXMessage.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 #include <gateway/WebXGateway.h>
 #include "WebXZMQ.h"
 #include <thread>

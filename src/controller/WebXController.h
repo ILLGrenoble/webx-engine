@@ -13,7 +13,7 @@
 #include <client/WebXClientRegistry.h>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXDisplayEventType.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 
 class WebXDisplay;
 class WebXInstruction;

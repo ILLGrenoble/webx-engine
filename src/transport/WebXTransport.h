@@ -4,7 +4,7 @@
 #include "WebXZMQ.h"
 #include <serializer/WebXBinarySerializer.h>
 #include <gateway/WebXGateway.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXSettings.h>
 
 class WebXGateway;
 class WebXBinarySerializer;

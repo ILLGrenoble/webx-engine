@@ -2,7 +2,7 @@
 #include <image/WebXPNGImageConverter.h>
 #include <image/WebXJPGImageConverter.h>
 #include <image/WebXWebPImageConverter.h>
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
 
 #include <png.h>
 #include <stdlib.h>

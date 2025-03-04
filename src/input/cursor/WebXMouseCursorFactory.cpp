@@ -1,5 +1,5 @@
 #include "WebXMouseCursorFactory.h"
-#include <utils/WebXQuality.h>
+#include <models/WebXQuality.h>
 #include <crc32/Crc32.h>
 #include <spdlog/spdlog.h>
 

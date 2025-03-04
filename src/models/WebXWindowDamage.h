@@ -3,7 +3,7 @@
 
 #include <X11/Xlib.h>
 #include <vector>
-#include <utils/WebXRectangle.h>
+#include "WebXRectangle.h"
 
 class WebXWindowDamage {
 public:

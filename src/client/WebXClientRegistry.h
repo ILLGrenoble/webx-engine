@@ -8,8 +8,8 @@
 #include "WebXClient.h"
 #include "WebXClientGroup.h"
 #include <utils/WebXResult.h>
-#include <utils/WebXQuality.h>
-#include <utils/WebXSettings.h>
+#include <models/WebXQuality.h>
+#include <models/WebXSettings.h>
 
 class WebXClientRegistry {
 
