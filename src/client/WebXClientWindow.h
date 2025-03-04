@@ -61,6 +61,14 @@ public:
         return this->_qualityHandler.getCurrentQuality();
     }
 
+    void updateQuality() {
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> timeSinceRefresh = now - this->_qualityHandler.getLastRefreshTime();
+        if (timeSinceRefresh.count() > QUALITY_REFRESH_TIME_MS) {
+            this->_qualityHandler.calculateQuality();
+        }
+    }
+
     void setSize(const WebXSize & size) {
         if (this->_windowSize != size) {
             this->_windowSize = size;
@@ -105,6 +113,8 @@ public:
     }
 
 private:
+    const static int QUALITY_REFRESH_TIME_MS = 500;
+
     Window _id;
     WebXWindowDamage _damage;
     WebXWindowQualityHandler _qualityHandler;

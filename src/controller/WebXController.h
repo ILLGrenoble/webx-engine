@@ -13,7 +13,6 @@
 #include <client/WebXClientRegistry.h>
 #include <display/WebXWindowProperties.h>
 #include <display/WebXDisplayEventType.h>
-#include <utils/WebXQuality.h>
 #include <utils/WebXSettings.h>
 
 class WebXDisplay;
@@ -41,10 +40,6 @@ private:
             this->_displayDirty = true;
         }
     }
-
-    void setRequestedQuality(uint32_t qualityIndex) {
-        this->_requestedQuality = WebXQuality::QualityForIndex(qualityIndex);
-    }
     
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
@@ -71,8 +66,6 @@ private:
 
     bool _displayDirty;
     bool _cursorDirty;
-
-    WebXQuality _requestedQuality;
 
     long _threadSleepUs;
     std::mutex _instructionsMutex;

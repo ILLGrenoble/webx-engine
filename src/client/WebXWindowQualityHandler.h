@@ -32,6 +32,7 @@ public:
     WebXWindowQualityHandler(unsigned long windowId, const WebXQuality & desiredQuality, const WebXWindowCoverage & coverage, const WebXQualitySettings & settings);
     virtual ~WebXWindowQualityHandler();
 
+    const WebXQuality & calculateQuality();
 
     void onImageTransfer(const WebXWindowImageTransferData & transferData) {
         if (transferData.status != WebXWindowImageTransferData::WebXWindowImageTransferStatus::Ignored) {
@@ -46,14 +47,17 @@ public:
         return this->_currentQuality;
     }
 
+    const std::chrono::high_resolution_clock::time_point & getLastRefreshTime() const {
+        return this->_lastRefreshTime;
+    }
+
 private:
-    const WebXQuality & calculateQuality();
     WebXDataRate calculateImageKbps();
 
     void setCurrentQuality(const WebXQuality & quality) {
         // If change quality empty the data points (requires one second to get new data allowing time to obtain valid stats for new level)
         if (this->_currentQuality != quality) {
-            spdlog::debug("Window 0x{:x} (desired quality level {:d}) image KB/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index,  this->_imageKbps.kbPerSecond, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
+            spdlog::trace("Window 0x{:x} (desired quality level {:d}) image KB/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index,  this->_imageKbps.kbPerSecond, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
             this->_currentQuality = quality;
     
             // Reset data points to give image KB/s calc time to refresh with new values
@@ -79,6 +83,7 @@ private:
     std::vector<WebXWindowQualityData> _dataPoints;
     WebXDataRate _imageKbps;
     std::chrono::high_resolution_clock::time_point _imageKbpsInitTime;
+    std::chrono::high_resolution_clock::time_point _lastRefreshTime;
 };
 
 

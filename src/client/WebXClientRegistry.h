@@ -33,6 +33,8 @@ public:
         return (it != this->_clients.end()) ? *it : nullptr;
     }
 
+    void setClientQuality(uint32_t clientId, const WebXQuality & quality);
+
     void addWindowDamage(const WebXWindowDamage & damage) {
         const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
         for (auto & group : this->_groups) {
@@ -71,6 +73,7 @@ private:
         if (it == this->_groups.end()) {
             auto group = std::make_shared<WebXClientGroup>(this->_settings, quality);
             this->_groups.push_back(group);
+            spdlog::debug("Created group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
             return group;
 
         } else {
@@ -87,6 +90,7 @@ private:
     }
 
     void removeClientFromGroups(uint32_t clientId);
+    void removeClientFromGroup(uint32_t clientId, const std::shared_ptr<WebXClientGroup> & group);
 
 
 private:

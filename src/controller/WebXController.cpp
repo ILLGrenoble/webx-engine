@@ -16,6 +16,7 @@
 #include <utils/WebXPosition.h>
 #include <utils/WebXSettings.h>
 #include <utils/WebXResult.h>
+#include <utils/WebXQuality.h>
 #include <algorithm>
 #include <thread>
 #include <spdlog/spdlog.h>
@@ -29,7 +30,6 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     _clientRegistry(settings),
     _displayDirty(true),
     _cursorDirty(true),
-    _requestedQuality(WebXQuality::MaxQuality()),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
     _state(WebXControllerState::Stopped) {
 
@@ -187,7 +187,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
             uint32_t qualityIndex = qualityInstruction->qualityIndex;
-            this->setRequestedQuality(qualityIndex);
+            this->_clientRegistry.setClientQuality(qualityInstruction->clientId, WebXQuality::QualityForIndex(qualityIndex));
         }
     }
 

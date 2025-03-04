@@ -84,16 +84,46 @@ void WebXClientRegistry::removeClientFromGroups(uint32_t clientId) {
     // Find associated group and remove client from it
     const std::shared_ptr<WebXClientGroup> & group = this->getGroupWithClientId(clientId);
     if (group != nullptr) {
-        group->removeClient(clientId);
+        this->removeClientFromGroup(clientId, group);
+    }
+}
 
-        // If group is empty then remove it
-        if (group->hasClients()) {
-            auto it = std::find(this->_groups.begin(), this->_groups.end(), group);
-            if (it != this->_groups.end()) {
-                this->_groups.erase(it);
-            }
+void WebXClientRegistry::removeClientFromGroup(uint32_t clientId, const std::shared_ptr<WebXClientGroup> & group) {
+    group->removeClient(clientId);
 
-            spdlog::debug("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
+    // If group is empty then remove it
+    if (group->hasClients()) {
+        auto it = std::find(this->_groups.begin(), this->_groups.end(), group);
+        if (it != this->_groups.end()) {
+            this->_groups.erase(it);
+        }
+
+        spdlog::debug("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
+    }
+}
+
+void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality & quality) {
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+    // Determine if client exists
+    const std::shared_ptr<WebXClient> & client = this->getClientById(clientId);
+    if (client != nullptr) {
+        // Find associated group and check if quality is different
+        const std::shared_ptr<WebXClientGroup> & oldGroup = this->getGroupWithClientId(clientId);
+        if (oldGroup == nullptr) {
+            // shouldn't be here: a client should always be in a group
+            const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
+            group->addClient(client);
+        
+            spdlog::debug("Added client with Id {:08x} and index {:016x} to group with quality index {:d}", clientId, client->getIndex(), quality.index);
+
+        } else if (oldGroup != nullptr && oldGroup->getQuality() != quality) {
+            this->removeClientFromGroup(clientId, oldGroup);
+
+            const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
+            group->addClient(client);
+        
+            spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} index to group with quality index {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
         }
     }
 }

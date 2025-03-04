@@ -38,6 +38,11 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
             window->setCoverage(windowVisibility->getCoverage());
         }
     }
+
+    // Update quality calc for all windows that haven't been refreshed for a while
+    for (std::unique_ptr<WebXClientWindow> & window : this->_windows) {
+        window->updateQuality();
+    }
 }
 
 void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc) {

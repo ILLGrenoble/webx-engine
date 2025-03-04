@@ -7,9 +7,10 @@ WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const
     _settings(settings),
     _coverageQuality(WebXQuality::MaxQuality()),
     _imageKbpsQuality(WebXQuality::MaxQuality()),
-    _currentQuality(WebXQuality::MaxQuality()),
+    _currentQuality(desiredQuality),
     _imageKbps({.valid = true, .kbPerSecond = 0.0}),
-    _imageKbpsInitTime(std::chrono::high_resolution_clock::now()) {
+    _imageKbpsInitTime(std::chrono::high_resolution_clock::now()),
+    _lastRefreshTime(std::chrono::high_resolution_clock::now()) {
 }
 
 WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const WebXQuality & desiredQuality, const WebXWindowCoverage & coverage, const WebXQualitySettings & settings) :
@@ -18,9 +19,10 @@ WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const
     _settings(settings),
     _coverageQuality(WebXQuality::MaxQuality()),
     _imageKbpsQuality(WebXQuality::MaxQuality()),
-    _currentQuality(WebXQuality::MaxQuality()),
+    _currentQuality(desiredQuality),
     _imageKbps({.valid = true, .kbPerSecond = 0.0}),
-    _imageKbpsInitTime(std::chrono::high_resolution_clock::now()) {
+    _imageKbpsInitTime(std::chrono::high_resolution_clock::now()),
+    _lastRefreshTime(std::chrono::high_resolution_clock::now()) {
     
     this->setWindowCoverage(coverage);
 }
@@ -72,8 +74,11 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality() {
             // If the image KB/s is too high for this quality then reduce it. If much lower then raise the quality level
             this->_imageKbpsQuality = WebXQuality::QualityForImageKbps(this->_imageKbps.kbPerSecond, quality, this->_currentQuality);
 
-            // Use min of image quality and previous quality
-            quality = this->_imageKbpsQuality < quality ? this->_imageKbpsQuality : quality;
+            // Use min of image quality and previous quality (maxed to desired quality)
+            // quality = this->_imageKbpsQuality < quality ? this->_imageKbpsQuality : quality;
+            
+            // Set the quality to the one calculated for the image KB/s
+            quality = this->_imageKbpsQuality;
 
             // Update the quality
             this->setCurrentQuality(quality);
@@ -83,6 +88,8 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality() {
         // Update the quality
         this->setCurrentQuality(this->_desiredQuality);
     }
+
+    this->_lastRefreshTime = std::chrono::high_resolution_clock::now();
 
     return this->_currentQuality;
 }

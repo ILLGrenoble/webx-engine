@@ -86,12 +86,12 @@ public:
     
     static const WebXQuality & QualityForImageKbps(float imageKbps, const WebXQuality & desiredQuality, const WebXQuality & currentQuality) {
     
-        float lowerBoundImageKbps = desiredQuality.index > 1 ? QualityForIndex(desiredQuality.index - 1).maxKbps : 0;
+        float lowerBoundImageKbps = desiredQuality.index > 1 ? QualityForIndex(desiredQuality.index - 1).maxKbps : 0.8 * desiredQuality.maxKbps;
         if (imageKbps > desiredQuality.maxKbps && currentQuality.index > 1) {
             // Keep reducing the current quality until we get the desired KB/s rate
             return QualityForIndex(currentQuality.index - 1);
         
-        } else if (imageKbps < lowerBoundImageKbps && currentQuality < desiredQuality) {
+        } else if (imageKbps < lowerBoundImageKbps && currentQuality.index < MAX_QUALITY_INDEX) {
             // Increase the quality if the image KB/s is lower than the minimum for the desired quality 
             return QualityForIndex(currentQuality.index + 1);
         }
