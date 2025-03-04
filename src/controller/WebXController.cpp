@@ -12,7 +12,6 @@
 #include <message/WebXCursorImageMessage.h>
 #include <message/WebXSubImagesMessage.h>
 #include <message/WebXMouseMessage.h>
-#include <message/WebXPingMessage.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXResult.h>
@@ -211,11 +210,8 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
 }
 
 void WebXController::handleClientPings() {
-    this->_clientRegistry.handleClientPings([this](uint32_t clientIndex) {
-        spdlog::trace("Sending Ping to client with index {:016x}", clientIndex);
-
-        auto message = std::make_shared<WebXPingMessage>(clientIndex);
-        this->sendMessage(message);
+    this->_clientRegistry.handleClientPings([this](std::shared_ptr<WebXMessage> clientMessage) {
+        this->sendMessage(clientMessage);
     });
 }
 

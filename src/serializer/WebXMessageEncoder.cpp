@@ -8,6 +8,7 @@
 #include <message/WebXSubImagesMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <message/WebXPingMessage.h>
+#include <message/WebXDisconnectMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -41,6 +42,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::Ping: {
             auto pingMessage = std::static_pointer_cast<WebXPingMessage>(message);
             return this->createPingMessage(pingMessage);
+        }
+        case WebXMessage::Disconnect: {
+            auto disconnectMessage = std::static_pointer_cast<WebXDisconnectMessage>(message);
+            return this->createDisconnectMessage(disconnectMessage);
         }
 
         default:
@@ -190,6 +195,14 @@ zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWi
 }
 
 zmq::message_t * WebXMessageEncoder::createPingMessage(std::shared_ptr<WebXPingMessage> message) const {
+    size_t dataSize = 40;
+    zmq::message_t * output = new zmq::message_t(dataSize);
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+
+    return output;
+}
+
+zmq::message_t * WebXMessageEncoder::createDisconnectMessage(std::shared_ptr<WebXDisconnectMessage> message) const {
     size_t dataSize = 40;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);

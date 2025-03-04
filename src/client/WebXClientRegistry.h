@@ -11,8 +11,9 @@
 #include <models/WebXQuality.h>
 #include <models/WebXSettings.h>
 
-class WebXClientRegistry {
+class WebXMessage;
 
+class WebXClientRegistry {
 public:
     WebXClientRegistry(const WebXSettings & settings);
     virtual ~WebXClientRegistry();
@@ -35,7 +36,7 @@ public:
 
     void setClientQuality(uint32_t clientId, const WebXQuality & quality);
 
-    void handleClientPings(const std::function<void(uint64_t clientIndex)> clientPingHandler);
+    void handleClientPings(const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler);
 
     void onPongReceived(uint32_t clientId);
 

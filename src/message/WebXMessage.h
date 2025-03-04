@@ -14,6 +14,7 @@ public:
         Mouse,
         CursorImage,
         Ping,
+        Disconnect,
     };
 
     WebXMessage(Type type, uint64_t clientIndexMask) :

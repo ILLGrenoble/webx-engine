@@ -1,5 +1,8 @@
 #include "WebXClientRegistry.h"
 #include "WebXClient.h"
+#include <message/WebXMessage.h>
+#include <message/WebXPingMessage.h>
+#include <message/WebXDisconnectMessage.h>
 #include <spdlog/spdlog.h>
 
 WebXClientRegistry::WebXClientRegistry(const WebXSettings & settings) :
@@ -128,7 +131,7 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
     }
 }
 
-void WebXClientRegistry::handleClientPings(const std::function<void(uint64_t clientIndex)> clientPingHandler) {
+void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler) {
     const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
     
     // Update client ping statuses
@@ -145,13 +148,19 @@ void WebXClientRegistry::handleClientPings(const std::function<void(uint64_t cli
     for (const std::shared_ptr<WebXClient> & client : clientsWithTimeout) {
         spdlog::debug("Ping Timeout for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
 
+        spdlog::trace("Sending Disconnect to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+        auto message = std::make_shared<WebXDisconnectMessage>(client->getIndex());
+        clientMessageHandler(message);
+
         this->removeClient(client->getId());
     }
 
     // Send pings to those that need
     for (auto & client : this->_clients) {
         if (client->getPingStatus() == WebXClient::RequiresPing) {
-            clientPingHandler(client->getIndex());
+            spdlog::trace("Sending Ping to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+            auto message = std::make_shared<WebXPingMessage>(client->getIndex());
+            clientMessageHandler(message);
             client->onPingSent();
         }
     }
