@@ -127,3 +127,46 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
         }
     }
 }
+
+void WebXClientRegistry::handleClientPings(const std::function<void(uint64_t clientIndex)> clientPingHandler) {
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+    
+    // Update client ping statuses
+    for (auto & client : this->_clients) {
+        client->updatePingStatus();
+    }
+
+    // Remove clients that have pong timeout
+    std::vector<std::shared_ptr<WebXClient>> clientsWithTimeout;
+    std::copy_if(this->_clients.begin(), this->_clients.end(), std::back_inserter(clientsWithTimeout), [](const std::shared_ptr<WebXClient> client) {
+        return client->getPingStatus() == WebXClient::PongTimeout;
+    });
+
+    for (const std::shared_ptr<WebXClient> & client : clientsWithTimeout) {
+        spdlog::debug("Ping Timeout for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+
+        this->removeClient(client->getId());
+    }
+
+    // Send pings to those that need
+    for (auto & client : this->_clients) {
+        if (client->getPingStatus() == WebXClient::RequiresPing) {
+            clientPingHandler(client->getIndex());
+            client->onPingSent();
+        }
+    }
+}
+
+void WebXClientRegistry::onPongReceived(uint32_t clientId) {
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+    // Get associated client
+    std::shared_ptr<WebXClient> client = this->getClientById(clientId);
+    if (client != nullptr) {
+        spdlog::trace("Received Pong for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+        client->onPongReceived();
+
+    } else {
+        spdlog::debug("Received Pong for client with Id {:08x} that has already been removed", clientId);
+    }
+}

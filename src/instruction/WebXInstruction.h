@@ -2,6 +2,7 @@
 #define WEBX_INSTRUCTION_H
 
 #include <string>
+#include <memory>
 
 class WebXInstruction {
 public:
@@ -12,7 +13,8 @@ public:
         Mouse,
         Keyboard,
         Cursor,
-        Quality
+        Quality,
+        Pong,
     };
 
     WebXInstruction(Type type, uint32_t clientId, uint32_t id) :

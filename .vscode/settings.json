@@ -1,5 +1,8 @@
 {
   "cmake.configureOnOpen": false,
+  "search.exclude": {
+    "**/lib": true,
+  },
   "files.associations": {
     "*.tcc": "cpp",
     "deque": "cpp",

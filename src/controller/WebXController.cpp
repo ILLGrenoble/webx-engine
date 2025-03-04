@@ -5,12 +5,14 @@
 #include <instruction/WebXImageInstruction.h>
 #include <instruction/WebXCursorImageInstruction.h>
 #include <instruction/WebXQualityInstruction.h>
+#include <instruction/WebXPongInstruction.h>
 #include <message/WebXScreenMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <message/WebXImageMessage.h>
 #include <message/WebXCursorImageMessage.h>
 #include <message/WebXSubImagesMessage.h>
 #include <message/WebXMouseMessage.h>
+#include <message/WebXPingMessage.h>
 #include <image/WebXSubImage.h>
 #include <input/WebXMouse.h>
 #include <utils/WebXResult.h>
@@ -110,6 +112,9 @@ void WebXController::run() {
                 this->notifyDisplayChanged(display);
             }
 
+            // Handle client pings
+            this->handleClientPings();
+
             // Update necessary images of the client windows
             float imageSizeKB = this->updateClientWindows(display);
 
@@ -187,6 +192,10 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
             uint32_t qualityIndex = qualityInstruction->qualityIndex;
             this->_clientRegistry.setClientQuality(qualityInstruction->clientId, WebXQuality::QualityForIndex(qualityIndex));
+
+        } else if (instruction->type == WebXInstruction::Type::Pong) {
+            auto pongInstruction = std::static_pointer_cast<WebXPongInstruction>(instruction);
+            this->_clientRegistry.onPongReceived(pongInstruction->clientId);
         }
     }
 
@@ -201,6 +210,14 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
     this->sendMessage(message);
 }
 
+void WebXController::handleClientPings() {
+    this->_clientRegistry.handleClientPings([this](uint32_t clientIndex) {
+        spdlog::trace("Sending Ping to client with index {:016x}", clientIndex);
+
+        auto message = std::make_shared<WebXPingMessage>(clientIndex);
+        this->sendMessage(message);
+    });
+}
 
 float WebXController::updateClientWindows(WebXDisplay * display) {
     // Send all current window visibilities to registry to update all current visible client windows and their coverage

@@ -7,6 +7,7 @@
 #include <message/WebXScreenMessage.h>
 #include <message/WebXSubImagesMessage.h>
 #include <message/WebXWindowsMessage.h>
+#include <message/WebXPingMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -36,6 +37,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::CursorImage: {
             auto cursorImageMessage = std::static_pointer_cast<WebXCursorImageMessage>(message);
             return this->createCursorImageMessage(cursorImageMessage);
+        }
+        case WebXMessage::Ping: {
+            auto pingMessage = std::static_pointer_cast<WebXPingMessage>(message);
+            return this->createPingMessage(pingMessage);
         }
 
         default:
@@ -180,6 +185,14 @@ zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWi
         buffer.write<int32_t>(window.width);
         buffer.write<int32_t>(window.height);
     }
+
+    return output;
+}
+
+zmq::message_t * WebXMessageEncoder::createPingMessage(std::shared_ptr<WebXPingMessage> message) const {
+    size_t dataSize = 40;
+    zmq::message_t * output = new zmq::message_t(dataSize);
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
 
     return output;
 }

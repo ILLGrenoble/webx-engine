@@ -105,6 +105,18 @@ private:
      */
     std::shared_ptr<WebXInstruction> createQualityInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
+    /**
+     * Create a quality instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 0 bytes
+     */
+    std::shared_ptr<WebXInstruction> createPongInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+
 private:
 
 };

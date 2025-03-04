@@ -43,6 +43,7 @@ private:
     
     void handleClientInstructions(WebXDisplay * display);
     void notifyDisplayChanged(WebXDisplay * display);
+    void handleClientPings();
     float updateClientWindows(WebXDisplay * display);
     void notifyMouseChanged(WebXDisplay * display);
 

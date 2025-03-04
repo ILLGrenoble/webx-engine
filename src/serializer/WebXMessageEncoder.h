@@ -18,6 +18,7 @@ class WebXScreenMessage;
 class WebXSubImagesMessage;
 class WebXMessageEncoder;
 class WebXWindowsMessage;
+class WebXPingMessage;
 
 class WebXMessageEncoder {
     public:
@@ -141,6 +142,17 @@ private:
     //      width: 4 bytes
     //      height: 4 bytes
     zmq::message_t * createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) const;
+
+    // Structure:
+    // Header: 40 bytes
+    //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
+    //   type: 4 bytes
+    //   id: 4 bytes
+    //   length: 4 bytes
+    //   padding: 4 bytes
+    // Content:
+    zmq::message_t * createPingMessage(std::shared_ptr<WebXPingMessage> message) const;
 
 private:
     unsigned char _sessionId[16];

@@ -35,6 +35,10 @@ public:
 
     void setClientQuality(uint32_t clientId, const WebXQuality & quality);
 
+    void handleClientPings(const std::function<void(uint64_t clientIndex)> clientPingHandler);
+
+    void onPongReceived(uint32_t clientId);
+
     void addWindowDamage(const WebXWindowDamage & damage) {
         const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
         for (auto & group : this->_groups) {

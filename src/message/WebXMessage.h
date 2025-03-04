@@ -13,6 +13,7 @@ public:
         Subimages,
         Mouse,
         CursorImage,
+        Ping,
     };
 
     WebXMessage(Type type, uint64_t clientIndexMask) :

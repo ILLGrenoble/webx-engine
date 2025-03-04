@@ -8,6 +8,7 @@
 #include <instruction/WebXCursorImageInstruction.h>
 #include <instruction/WebXMouseInstruction.h>
 #include <instruction/WebXQualityInstruction.h>
+#include <instruction/WebXPongInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {
@@ -47,6 +48,9 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     } else if (type == WebXInstruction::Quality) {
         return this->createQualityInstruction(clientId, instructionId, buffer);
+
+    } else if (type == WebXInstruction::Pong) {
+        return this->createPongInstruction(clientId, instructionId, buffer);
     }
 
     return nullptr;
@@ -86,4 +90,8 @@ inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createWindowsIns
 inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createQualityInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
     uint32_t qualityIndex = buffer.read<uint32_t>();
     return std::make_shared<WebXQualityInstruction>(clientId, instructionId, qualityIndex);
+}
+
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createPongInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    return std::make_shared<WebXPongInstruction>(clientId, instructionId);
 }
