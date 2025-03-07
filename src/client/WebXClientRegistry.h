@@ -38,7 +38,24 @@ public:
 
     void handleClientPings(const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler);
 
-    void onPongReceived(uint32_t clientId);
+    void onPongReceived(uint32_t clientId, uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        // Get associated client
+        std::shared_ptr<WebXClient> client = this->getClientById(clientId);
+        if (client != nullptr) {
+            spdlog::trace("Received Pong for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+            client->onPongReceived(sendTimestampMs, recvTimestampMs);
+        }
+    }
+    
+    void onDataAckReceived(uint32_t clientId, uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        // Get associated client
+        std::shared_ptr<WebXClient> client = this->getClientById(clientId);
+        if (client != nullptr) {
+            client->onDataAckReceived(sendTimestampMs, recvTimestampMs, dataLength);
+        }
+    }
 
     void addWindowDamage(const WebXWindowDamage & damage) {
         const std::lock_guard<std::recursive_mutex> lock(this->_mutex);

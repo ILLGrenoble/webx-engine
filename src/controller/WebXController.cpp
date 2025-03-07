@@ -6,6 +6,7 @@
 #include <instruction/WebXCursorImageInstruction.h>
 #include <instruction/WebXQualityInstruction.h>
 #include <instruction/WebXPongInstruction.h>
+#include <instruction/WebXDataAckInstruction.h>
 #include <message/WebXScreenMessage.h>
 #include <message/WebXWindowsMessage.h>
 #include <message/WebXImageMessage.h>
@@ -194,7 +195,11 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 
         } else if (instruction->type == WebXInstruction::Type::Pong) {
             auto pongInstruction = std::static_pointer_cast<WebXPongInstruction>(instruction);
-            this->_clientRegistry.onPongReceived(pongInstruction->clientId);
+            this->_clientRegistry.onPongReceived(pongInstruction->clientId, pongInstruction->sendTimestampMs, pongInstruction->recvTimestampMs);
+
+        } else if (instruction->type == WebXInstruction::Type::DataAck) {
+            auto dataAckInstruction = std::static_pointer_cast<WebXDataAckInstruction>(instruction);
+            this->_clientRegistry.onDataAckReceived(dataAckInstruction->clientId, dataAckInstruction->sendTimestampMs, dataAckInstruction->recvTimestampMs, dataAckInstruction->dataLength);
         }
     }
 

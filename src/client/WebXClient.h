@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <chrono>
+#include <spdlog/spdlog.h>
+#include "WebXClientBitrateCalculator.h"
 
 class WebXClient {
 public:
@@ -14,8 +16,13 @@ public:
     };
 
 public:
-    WebXClient(uint32_t id, uint64_t index);
-    virtual ~WebXClient();
+    WebXClient(uint32_t id, uint64_t index) :
+        _id(id),
+        _index(index),
+        _pingStatus(PingStatus::WaitingToPing),
+        _pingSentTime(std::chrono::high_resolution_clock::now()),
+        _pongReceivedTime(std::chrono::high_resolution_clock::now()) {}
+    virtual ~WebXClient() {}
 
     uint32_t getId() const {
         return this->_id;
@@ -46,9 +53,15 @@ public:
         this->_pingStatus = WaitingForPong;
     }
 
-    void onPongReceived() {
+    void onPongReceived(uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
         this->_pongReceivedTime = std::chrono::high_resolution_clock::now();
         this->_pingStatus = WaitingToPing;
+
+        this->_bitrateCalculator.updateLatency(sendTimestampMs, recvTimestampMs);
+    }
+
+    void onDataAckReceived(uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
+        this->_bitrateCalculator.updateBitrateData(sendTimestampMs, recvTimestampMs, dataLength);
     }
 
 private:
@@ -62,6 +75,7 @@ private:
     std::chrono::high_resolution_clock::time_point _pingSentTime;
     std::chrono::high_resolution_clock::time_point _pongReceivedTime;
 
+    WebXClientBitrateCalculator _bitrateCalculator;
 };
 
 

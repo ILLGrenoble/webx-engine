@@ -166,16 +166,3 @@ void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_
     }
 }
 
-void WebXClientRegistry::onPongReceived(uint32_t clientId) {
-    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
-
-    // Get associated client
-    std::shared_ptr<WebXClient> client = this->getClientById(clientId);
-    if (client != nullptr) {
-        spdlog::trace("Received Pong for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
-        client->onPongReceived();
-
-    } else {
-        spdlog::debug("Received Pong for client with Id {:08x} that has already been removed", clientId);
-    }
-}

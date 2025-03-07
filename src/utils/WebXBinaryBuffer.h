@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string>
+#include <chrono>
 #include <string.h>
 #include <map>
 
@@ -38,6 +39,7 @@ public:
 	typedef struct {
 		unsigned char sessionId[16];
 		uint64_t clientIndexMask;
+		uint64_t timestampMs;
 		uint32_t messageTypeId;
 		uint32_t messageId;
 		uint32_t bufferLength;
@@ -66,6 +68,7 @@ public:
 		MessageHeader * messageHeader = this->getMessageHeader();
 		memcpy(messageHeader->sessionId, sessionId, 16);
 		messageHeader->clientIndexMask = clientIndexMask;
+		messageHeader->timestampMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 		messageHeader->messageTypeId = messageTypeId;
 		messageHeader->messageId = _messageCounter;
 		messageHeader->bufferLength = bufferLength;

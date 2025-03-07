@@ -7,7 +7,6 @@ class WebXPingMessage : public WebXMessage {
 public:
     WebXPingMessage(uint64_t clientIndexMask) :
         WebXMessage(Type::Ping, clientIndexMask) {}
-    
     virtual ~WebXPingMessage() {}
 };
 

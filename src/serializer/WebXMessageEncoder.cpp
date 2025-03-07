@@ -56,7 +56,7 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
 zmq::message_t * WebXMessageEncoder::createCursorImageMessage(std::shared_ptr<WebXCursorImageMessage> message) const {
     std::shared_ptr<WebXImage> mouseCursorImage = message->mouseCursorImage;
 
-    size_t dataSize = 40 + 28 + mouseCursorImage->getRawDataSize();
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 28 + mouseCursorImage->getRawDataSize();
     zmq::message_t * output= new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
@@ -85,7 +85,7 @@ zmq::message_t * WebXMessageEncoder::createImageMessage(std::shared_ptr<WebXImag
         strncpy(imageType, image->getFileExtension().c_str(), 4);
     }
 
-    size_t dataSize = 40 + 24 + imageDataSize + alphaDataSize;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 24 + imageDataSize + alphaDataSize;
     zmq::message_t * output= new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
@@ -109,7 +109,7 @@ zmq::message_t * WebXMessageEncoder::createImageMessage(std::shared_ptr<WebXImag
 }
 
 zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMouseMessage> message) const {
-    size_t dataSize = 40 + 16;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 16;
     zmq::message_t * output= new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
@@ -122,7 +122,7 @@ zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMous
 }
 
 zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const {
-    size_t dataSize = 40 + 12;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 12;
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t) message->type);
     buffer.write<uint32_t>(message->commandId);
@@ -145,7 +145,7 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
             imageDataSize += padding;
         }
     }
-    size_t dataSize = 40 + 12 + nImages * 32 + imageDataSize + alphaDataSize;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 12 + nImages * 32 + imageDataSize + alphaDataSize;
     zmq::message_t * output = new zmq::message_t(dataSize);
 
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
@@ -177,7 +177,7 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
 }
 
 zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) const {
-    size_t dataSize = 40 + 8 + message->windows.size() * 20;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 8 + message->windows.size() * 20;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
     buffer.write<uint32_t>(message->commandId);
@@ -195,7 +195,7 @@ zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWi
 }
 
 zmq::message_t * WebXMessageEncoder::createPingMessage(std::shared_ptr<WebXPingMessage> message) const {
-    size_t dataSize = 40;
+    size_t dataSize = MESSAGE_HEADER_LENGTH;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
 
@@ -203,7 +203,7 @@ zmq::message_t * WebXMessageEncoder::createPingMessage(std::shared_ptr<WebXPingM
 }
 
 zmq::message_t * WebXMessageEncoder::createDisconnectMessage(std::shared_ptr<WebXDisconnectMessage> message) const {
-    size_t dataSize = 40;
+    size_t dataSize = MESSAGE_HEADER_LENGTH;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
 

@@ -15,6 +15,7 @@ public:
         Cursor,
         Quality,
         Pong,
+        DataAck,
     };
 
     WebXInstruction(Type type, uint32_t clientId, uint32_t id) :

@@ -9,6 +9,7 @@
 #include <instruction/WebXMouseInstruction.h>
 #include <instruction/WebXQualityInstruction.h>
 #include <instruction/WebXPongInstruction.h>
+#include <instruction/WebXDataAckInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {
@@ -25,8 +26,10 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     uint32_t clientId = buffer.read<uint32_t>();
     uint32_t details = buffer.read<uint32_t>();
-    uint32_t type = details & ~0x80000000;
     uint32_t instructionId = buffer.read<uint32_t>();
+    uint32_t dummy = buffer.read<uint32_t>();
+
+    uint32_t type = details & ~0x80000000;
 
     if (type == WebXInstruction::Mouse) {
         return this->createMouseInstruction(clientId, instructionId, buffer);
@@ -51,6 +54,9 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     } else if (type == WebXInstruction::Pong) {
         return this->createPongInstruction(clientId, instructionId, buffer);
+
+    } else if (type == WebXInstruction::DataAck) {
+        return this->createDataAckInstruction(clientId, instructionId, buffer);
     }
 
     return nullptr;
@@ -93,5 +99,12 @@ inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createQualityIns
 }
 
 inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createPongInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
-    return std::make_shared<WebXPongInstruction>(clientId, instructionId);
+    uint64_t sendTimestampMs = buffer.read<uint64_t>();
+    return std::make_shared<WebXPongInstruction>(clientId, instructionId, sendTimestampMs);
+}
+
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createDataAckInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    uint64_t sendTimestampMs = buffer.read<uint64_t>();
+    uint64_t dataLength = buffer.read<uint32_t>();
+    return std::make_shared<WebXDataAckInstruction>(clientId, instructionId, sendTimestampMs, dataLength);
 }
