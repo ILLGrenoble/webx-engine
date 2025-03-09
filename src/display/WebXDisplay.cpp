@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <X11/Xatom.h>
 #include <spdlog/spdlog.h>
-#include <input/WebXMouse.h>
-#include <input/WebXKeyboard.h>
+#include "input/WebXMouse.h"
+#include "input/WebXKeyboard.h"
 #include <models/WebXWindowCoverage.h>
 
 WebXDisplay::WebXDisplay(Display * display) :

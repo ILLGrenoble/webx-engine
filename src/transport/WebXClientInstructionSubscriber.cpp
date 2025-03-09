@@ -1,12 +1,11 @@
 #include "WebXClientInstructionSubscriber.h"
-#include "instruction/WebXInstruction.h"
+#include <models/instruction/WebXInstruction.h>
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientInstructionSubscriber::WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer) : 
+WebXClientInstructionSubscriber::WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway) : 
     _thread(NULL),
     _gateway(gateway),
-    _serializer(serializer),
     _eventBusAddr(settings.inprocEventBusAddress) {
 
     memcpy(this->_sessionId, settings.sessionId.data(), 16);
@@ -91,7 +90,7 @@ void WebXClientInstructionSubscriber::mainLoop() {
 #endif
                 if (retVal) {
                     // Deserialize instruction
-                    auto instruction = this->_serializer.deserialize((const unsigned char *)message.data(), message.size());
+                    auto instruction = this->_decoder.decode((const unsigned char *)message.data(), message.size());
                     if (instruction != NULL) {
                         // spdlog::debug("Received instruction type {}", (int)instruction->type);
                         // Handle message

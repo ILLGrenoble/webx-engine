@@ -2,7 +2,6 @@
 #define WEBX_TRANSPORT_H
 
 #include "WebXZMQ.h"
-#include <serializer/WebXBinarySerializer.h>
 #include <gateway/WebXGateway.h>
 #include <models/WebXSettings.h>
 
@@ -27,8 +26,6 @@ private:
     const WebXTransportSettings & _settings;
     WebXGateway & _gateway;
     bool _standAlone;
-
-    const WebXBinarySerializer _serializer;
 
     zmq::context_t _context;
     zmq::socket_t _eventBusPublisher;

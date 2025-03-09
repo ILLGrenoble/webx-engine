@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 #include "WebXDisplayEventType.h"
-#include <events/WebXEvent.h>
+#include "events/WebXEvent.h"
 #include <models/WebXSettings.h>
 #include <models/WebXWindowDamage.h>
 

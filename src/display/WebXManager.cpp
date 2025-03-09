@@ -2,7 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
-#include <events/WebXEventListener.h>
+#include "events/WebXEventListener.h"
 #include <X11/extensions/Xfixes.h>
 
 #include <stdio.h>

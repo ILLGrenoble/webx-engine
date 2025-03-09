@@ -1,8 +1,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>
 #include <chrono>
-#include <input/WebXMouse.h>
-#include <input/cursor/WebXMouseCursorFactory.h>
+#include <display/input/WebXMouse.h>
+#include <display/input/cursor/WebXMouseCursorFactory.h>
 #include <image/WebXImage.h>
 
 int main() {

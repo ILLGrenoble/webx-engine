@@ -5,7 +5,7 @@
 #include <X11/extensions/Xfixes.h>
 #include <cstring>
 #include <spdlog/spdlog.h>
-#include "input/cursor/WebXMouseCursor.h"
+#include "cursor/WebXMouseCursor.h"
 
 /**
  * Represents the current mouse state

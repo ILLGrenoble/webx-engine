@@ -2,11 +2,11 @@
 #include "WebXZMQ.h"
 #include <spdlog/spdlog.h>
 
-WebXClientMessagePublisher::WebXClientMessagePublisher(const WebXTransportSettings & settings, const WebXBinarySerializer & serializer) :
+WebXClientMessagePublisher::WebXClientMessagePublisher(const WebXTransportSettings & settings) :
     _thread(NULL),
     _running(false),
     _messageQueue(),
-    _serializer(serializer),
+    _encoder(settings.sessionId),
     _eventBusAddr(settings.inprocEventBusAddress) {
 }
 
@@ -47,7 +47,7 @@ void WebXClientMessagePublisher::mainLoop() {
            auto message = this->_messageQueue.get();
             if (message != NULL && this->_running) {
 
-                zmq::message_t * replyMessage = this->_serializer.serialize(message);
+                zmq::message_t * replyMessage = this->_encoder.encode(message);
 #ifdef COMPILE_FOR_CPPZMQ_BEFORE_4_3_1
                 messagePublisher.send(*replyMessage);
 #else

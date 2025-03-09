@@ -10,7 +10,7 @@
 #include "WebXStats.h"
 #include <display/WebXManager.h>
 #include <gateway/WebXGateway.h>
-#include <client/WebXClientRegistry.h>
+#include "client/WebXClientRegistry.h"
 #include <display/WebXWindowProperties.h>
 #include <display/WebXDisplayEventType.h>
 #include <models/WebXSettings.h>

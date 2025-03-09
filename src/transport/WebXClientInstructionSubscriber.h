@@ -1,7 +1,7 @@
 #ifndef WEBX_CLIENT_INSTRUCTION_SUBSCRIBER_H
 #define WEBX_CLIENT_INSTRUCTION_SUBSCRIBER_H
 
-#include <serializer/WebXBinarySerializer.h>
+#include "serializer/WebXInstructionDecoder.h"
 #include <gateway/WebXGateway.h>
 #include <models/WebXSettings.h>
 #include <thread>
@@ -18,7 +18,7 @@ class socket_t;
 
 class WebXClientInstructionSubscriber {
 public:
-    WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway, const WebXBinarySerializer & serializer);
+    WebXClientInstructionSubscriber(const WebXTransportSettings & settings, WebXGateway & gateway);
     virtual ~WebXClientInstructionSubscriber();
 
     void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr);
@@ -33,7 +33,7 @@ private:
     std::thread * _thread;
 
     WebXGateway & _gateway;
-    const WebXBinarySerializer & _serializer;
+    const WebXInstructionDecoder _decoder;
     zmq::context_t * _context;
     std::string _clientAddr;
     bool _bindToClientAddr;

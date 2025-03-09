@@ -1,7 +1,7 @@
 #ifndef WEBX_CLIENT_MESSAGE_PUBLISHER_H
 #define WEBX_CLIENT_MESSAGE_PUBLISHER_H
 
-#include <serializer/WebXBinarySerializer.h>
+#include "serializer/WebXMessageEncoder.h"
 #include <utils/WebXQueue.h>
 #include <models/WebXSettings.h>
 #include <thread>
@@ -16,7 +16,7 @@ class socket_t;
 
 class WebXClientMessagePublisher {
 public:
-    WebXClientMessagePublisher(const WebXTransportSettings & settings, const WebXBinarySerializer & serializer);
+    WebXClientMessagePublisher(const WebXTransportSettings & settings);
     virtual ~WebXClientMessagePublisher();
 
     void run(zmq::context_t * context, const std::string & clientAddr, bool bindToClientAddr);
@@ -36,7 +36,7 @@ private:
     bool _running;
     WebXQueue<std::shared_ptr<WebXMessage>> _messageQueue;
 
-    const WebXBinarySerializer & _serializer;
+    const WebXMessageEncoder _encoder;
     zmq::context_t * _context;
     std::string _eventBusAddr;
     std::string _clientAddr;

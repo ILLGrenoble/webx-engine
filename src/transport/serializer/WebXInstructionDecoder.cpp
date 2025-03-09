@@ -1,15 +1,15 @@
 #include "WebXInstructionDecoder.h"
 
-#include <instruction/WebXMouseInstruction.h>
-#include <instruction/WebXImageInstruction.h>
-#include <instruction/WebXScreenInstruction.h>
-#include <instruction/WebXWindowsInstruction.h>
-#include <instruction/WebXKeyboardInstruction.h>
-#include <instruction/WebXCursorImageInstruction.h>
-#include <instruction/WebXMouseInstruction.h>
-#include <instruction/WebXQualityInstruction.h>
-#include <instruction/WebXPongInstruction.h>
-#include <instruction/WebXDataAckInstruction.h>
+#include <models/instruction/WebXMouseInstruction.h>
+#include <models/instruction/WebXImageInstruction.h>
+#include <models/instruction/WebXScreenInstruction.h>
+#include <models/instruction/WebXWindowsInstruction.h>
+#include <models/instruction/WebXKeyboardInstruction.h>
+#include <models/instruction/WebXCursorImageInstruction.h>
+#include <models/instruction/WebXMouseInstruction.h>
+#include <models/instruction/WebXQualityInstruction.h>
+#include <models/instruction/WebXPongInstruction.h>
+#include <models/instruction/WebXDataAckInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {

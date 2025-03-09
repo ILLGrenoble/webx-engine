@@ -77,7 +77,7 @@ target_link_libraries(
     -lwebp
 )
 
-file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/input/* src/utils/* src/models/* src/image/* lib/crc32/*)
+file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/display/input/* src/utils/* src/models/* src/image/* lib/crc32/*)
 add_executable(testCursorImageEncoder ${TEST_CURSOR_IMAGE_ENCODER_SOURCES})
 target_link_libraries(
     testCursorImageEncoder

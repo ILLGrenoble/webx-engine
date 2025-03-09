@@ -7,12 +7,11 @@ WebXTransport::WebXTransport(WebXGateway & gateway, const WebXTransportSettings 
     _gateway(gateway),
     _settings(settings),
     _standAlone(standAlone),
-    _serializer(settings.sessionId),
     _context(1),
     _eventBusPublisher(this->createEventBusPublisher()),
     _connector(new WebXClientConnector(settings, _gateway)),
-    _publisher(new WebXClientMessagePublisher(settings, _serializer)),
-    _collector(new WebXClientInstructionSubscriber(settings, _gateway, _serializer)) {
+    _publisher(new WebXClientMessagePublisher(settings)),
+    _collector(new WebXClientInstructionSubscriber(settings, _gateway)) {
 }
 
 WebXTransport::~WebXTransport() {

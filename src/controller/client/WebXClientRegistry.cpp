@@ -1,8 +1,8 @@
 #include "WebXClientRegistry.h"
 #include "WebXClient.h"
-#include <message/WebXMessage.h>
-#include <message/WebXPingMessage.h>
-#include <message/WebXDisconnectMessage.h>
+#include <models/message/WebXMessage.h>
+#include <models/message/WebXPingMessage.h>
+#include <models/message/WebXDisconnectMessage.h>
 #include <spdlog/spdlog.h>
 
 WebXClientRegistry::WebXClientRegistry(const WebXSettings & settings) :
