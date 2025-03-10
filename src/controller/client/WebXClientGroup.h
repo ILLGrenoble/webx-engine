@@ -83,9 +83,9 @@ private:
     void calculateImageMbps();
 
 private:
-    const static int BITRATE_DATA_RETENTION_TIME_MS = 4000;
+    const static int BITRATE_DATA_RETENTION_TIME_MS = 10000;
     const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 1000;
-    const static int QUALITY_VERIFICATION_PERIOD_MS = 1000;
+    const static int QUALITY_VERIFICATION_PERIOD_MS = 5000;
 
     const WebXSettings & _settings;
     const WebXQuality & _quality;

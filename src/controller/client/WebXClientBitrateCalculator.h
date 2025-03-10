@@ -105,7 +105,7 @@ private:
 
 private:
     const static int LATENCY_DATA_RETENTION_TIME_MS = 60000;
-    const static int BITRATE_DATA_RETENTION_TIME_MS = 4000;
+    const static int BITRATE_DATA_RETENTION_TIME_MS = 10000;
     std::vector<WebXClientBitrateData> _bitrateDataPoints;
     std::vector<WebXClientLatencyData> _latencyDataPoints;
     WebXDataRate _avgBitrateMbps;
