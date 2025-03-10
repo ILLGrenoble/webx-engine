@@ -98,15 +98,15 @@ WebXDataRate WebXWindowQualityHandler::calculateImageMbps() {
 
     // Remove data points that are too old
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-    this->_dataPoints.erase(std::remove_if(this->_dataPoints.begin(), this->_dataPoints.end(), [&now](const WebXWindowQualityData & dataPoint) {
+    this->_dataPoints.erase(std::remove_if(this->_dataPoints.begin(), this->_dataPoints.end(), [&now](const WebXTransferData & dataPoint) {
         std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
         return durationMs.count() > WebXWindowQualityHandler::DATA_RETENTION_TIME_MS; 
     }), this->_dataPoints.end());
 
     if (this->_dataPoints.size() > 0) {
         float totalImageSizeKB = 0;
-        for (const WebXWindowQualityData & transferData : this->_dataPoints) {
-            totalImageSizeKB += transferData.imageSizeKB;
+        for (const WebXTransferData & transferData : this->_dataPoints) {
+            totalImageSizeKB += transferData.sizeKB;
         }
     
         std::chrono::duration<float, std::milli> durationMs = now - this->_dataPoints[0].timestamp;

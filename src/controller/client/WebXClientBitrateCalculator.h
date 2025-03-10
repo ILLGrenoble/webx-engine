@@ -39,11 +39,11 @@ public:
 
         this->calculateAverageRTTLatency();
 
-        spdlog::info("send time = {:d} recv time = {:d} avg RTT latency = {:f}", sendTimestampMs, recvTimestampMs, this->_avgRTTLatencyMs);
+        spdlog::debug("Client latency calculation: average RTT latency = {:f}", this->_avgRTTLatencyMs);
     }
 
     void updateBitrateData(uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
-        uint64_t adjustedRecvTimestampMs = recvTimestampMs - this->_avgRTTLatencyMs;
+        uint64_t adjustedRecvTimestampMs = recvTimestampMs - (uint64_t)this->_avgRTTLatencyMs;
         if (adjustedRecvTimestampMs > sendTimestampMs) {
             uint32_t transferTimeMs = adjustedRecvTimestampMs - sendTimestampMs;
             float bitrateMbps = (0.00762939 * dataLength) / transferTimeMs; // (b * 8 / 1024 / 1024) / (ms / 1000)
@@ -51,11 +51,33 @@ public:
 
             this->_bitrateDataPoints.push_back(WebXClientBitrateData(bitrateMbps));
         }
+    }
 
-        this->calculateAverageBitrate();
-        if (this->_avgBitrateMbps.valid) {
-            spdlog::info("Average bitrate = {:f} Mb/s", this->_avgBitrateMbps.Mbps);
+    WebXDataRate calculateAverageBitrate() {
+        // Remove expired data
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        this->_bitrateDataPoints.erase(std::remove_if(this->_bitrateDataPoints.begin(), this->_bitrateDataPoints.end(), [&now](const WebXClientBitrateData & dataPoint) {
+            std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
+            return durationMs.count() > BITRATE_DATA_RETENTION_TIME_MS; 
+        }), this->_bitrateDataPoints.end());
+
+        if (this->_bitrateDataPoints.size() > 1) {
+            float totalBitrate = 0.0;
+            for (const WebXClientBitrateData & data : this->_bitrateDataPoints) {
+                totalBitrate += data.bitrateMbps;
+            }
+
+            this->_avgBitrateMbps = WebXDataRate(totalBitrate / this->_bitrateDataPoints.size());
+
+        } else {
+            this->_avgBitrateMbps = WebXDataRate();
         }
+
+        return this->_avgBitrateMbps;
+    }
+
+    WebXDataRate getAverageBitrateMbps() const {
+        return this->_avgBitrateMbps;
     }
 
 private:
@@ -78,27 +100,6 @@ private:
 
         } else {
             this->_avgRTTLatencyMs = 0.0;
-        }
-    }
-
-    void calculateAverageBitrate() {
-        // Remove expired data
-        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-        this->_bitrateDataPoints.erase(std::remove_if(this->_bitrateDataPoints.begin(), this->_bitrateDataPoints.end(), [&now](const WebXClientBitrateData & dataPoint) {
-            std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
-            return durationMs.count() > BITRATE_DATA_RETENTION_TIME_MS; 
-        }), this->_bitrateDataPoints.end());
-
-        if (this->_bitrateDataPoints.size() > 1) {
-            float totalBitrate = 0.0;
-            for (const WebXClientBitrateData & data : this->_bitrateDataPoints) {
-                totalBitrate += data.bitrateMbps;
-            }
-
-            this->_avgBitrateMbps = WebXDataRate(totalBitrate / this->_bitrateDataPoints.size());
-
-        } else {
-            this->_avgBitrateMbps = WebXDataRate();
         }
     }
 

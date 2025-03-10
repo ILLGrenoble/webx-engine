@@ -294,6 +294,9 @@ float WebXController::updateClientWindows(WebXDisplay * display) {
         return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), WebXWindowImageTransferData::WebXWindowImageTransferStatus::Ignored));
     });
 
+    // Verify quality settings for each client
+    this->_clientRegistry.performQualityVerification();
+
     return totalImageSizeKB;
 }
 

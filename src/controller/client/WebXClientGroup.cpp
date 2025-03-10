@@ -5,7 +5,8 @@
 WebXClientGroup::WebXClientGroup(const WebXSettings & settings, const WebXQuality & quality) :
     _settings(settings),
     _quality(quality),
-    _clientIndexMask(0) {
+    _clientIndexMask(0),
+    _lastQualityVerificationTime(std::chrono::high_resolution_clock::now()) {
 
 }
 
@@ -47,6 +48,8 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
 
 void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc) {
 
+    float totalImageSizeKB = 0.0;
+
     // Handle all windows that have damage and need to be refreshed
     for (std::unique_ptr<WebXClientWindow> & window : this->_windows) {
 
@@ -64,6 +67,9 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
                 const WebXWindowImageTransferData & transferData = result.data();
                 window->onImageTransfer(transferData);
 
+                // Update total amount of data transferred
+                totalImageSizeKB += transferData.imageSizeKB;
+
             } else {
                 spdlog::error("Error handling damage for window 0x{:0x} with desired quality level {:d}: {:s}", window->getId(), this->_quality.index, result.error());
             }
@@ -71,5 +77,55 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
             // Remove the damage from the window
             window->resetDamage();
         }
+    }
+
+    this->_transferDataPoints.push_back(WebXTransferData(totalImageSizeKB));
+}
+
+void WebXClientGroup::performQualityVerification() {
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float, std::milli> durationMs = now - this->_lastQualityVerificationTime;
+    if (durationMs.count() >= QUALITY_VERIFICATION_PERIOD_MS) {
+        // Update the image data transfer calculation
+        this->calculateImageMbps();
+
+        // Update each client bitrate calculation
+        for (auto client : this->_clients) {
+            WebXDataRate clientDataRate = client->calculateAverageBitrate();
+            if (clientDataRate.valid) {
+                spdlog::info("Client {:08x}: Sending data at {:f} Mbps to client that receives at {:f} Mbps", client->getId(), this->_averageImageMbps, clientDataRate.Mbps);
+            }
+        }
+
+        this->_lastQualityVerificationTime = now;
+    }
+}
+
+void WebXClientGroup::calculateImageMbps() {
+    // Remove data points that are too old
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    this->_transferDataPoints.erase(std::remove_if(this->_transferDataPoints.begin(), this->_transferDataPoints.end(), [&now](const WebXTransferData & dataPoint) {
+        std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
+        return durationMs.count() > WebXClientGroup::BITRATE_DATA_RETENTION_TIME_MS; 
+    }), this->_transferDataPoints.end());
+
+    if (this->_transferDataPoints.size() > 0) {
+        float totalImageSizeKB = 0;
+        for (const WebXTransferData & transferData : this->_transferDataPoints) {
+            totalImageSizeKB += transferData.sizeKB;
+        }
+    
+        std::chrono::duration<float, std::milli> durationMs = now - this->_transferDataPoints[0].timestamp;
+        if (durationMs.count() > WebXClientGroup::TIME_FOR_VALID_IMAGE_KBPS_MS) {
+            this->_averageImageMbps = 7.8125 * totalImageSizeKB / durationMs.count(); // (KB * 8 / 1024) / (ms / 1000)
+        
+        } else {
+            // Consider it to be 0 if not enough time to make a coherent calculation
+            this->_averageImageMbps = 0.0;
+        }
+
+    } else {
+        // If no images have been sent after a specific time then consider the KB/s to be 0
+        this->_averageImageMbps = 0.0;
     }
 }

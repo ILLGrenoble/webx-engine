@@ -78,6 +78,13 @@ public:
         }
     }
 
+    void performQualityVerification() {
+        const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+        for (auto & group : this->_groups) {
+            group->performQualityVerification();
+        }
+    }
+
 private:
     std::shared_ptr<WebXClientGroup> getGroupByQuality(const WebXQuality & quality) const {
         auto it = std::find_if(this->_groups.begin(), this->_groups.end(), [&quality](const std::shared_ptr<WebXClientGroup> & group) {

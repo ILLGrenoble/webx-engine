@@ -9,20 +9,9 @@
 #include <models/WebXRectangle.h>
 #include <models/WebXWindowCoverage.h>
 #include <models/WebXDataRate.h>
+#include <models/WebXTransferData.h>
 
 class WebXWindowQualityHandler {
-private:
-    class WebXWindowQualityData {
-    public:
-        WebXWindowQualityData(float imageSizeKB) :
-            timestamp(std::chrono::high_resolution_clock::now()),
-            imageSizeKB(imageSizeKB) {}
-        virtual ~WebXWindowQualityData() {}
-
-        std::chrono::high_resolution_clock::time_point timestamp;
-        float imageSizeKB;
-    };
-
 public:
     WebXWindowQualityHandler(unsigned long windowId, const WebXQuality & desiredQuality, const WebXQualitySettings & settings);
     WebXWindowQualityHandler(unsigned long windowId, const WebXQuality & desiredQuality, const WebXWindowCoverage & coverage, const WebXQualitySettings & settings);
@@ -32,7 +21,7 @@ public:
 
     void onImageTransfer(const WebXWindowImageTransferData & transferData) {
         if (transferData.status != WebXWindowImageTransferData::WebXWindowImageTransferStatus::Ignored) {
-            this->_dataPoints.push_back(WebXWindowQualityData(transferData.imageSizeKB));
+            this->_dataPoints.push_back(WebXTransferData(transferData.imageSizeKB));
             this->calculateQuality();
         }
     }
@@ -76,7 +65,7 @@ private:
     WebXQuality _imageMbpsQuality;
     WebXQuality _currentQuality;
     
-    std::vector<WebXWindowQualityData> _dataPoints;
+    std::vector<WebXTransferData> _dataPoints;
     WebXDataRate _imageMbps;
     std::chrono::high_resolution_clock::time_point _imageMbpsInitTime;
     std::chrono::high_resolution_clock::time_point _lastRefreshTime;

@@ -64,6 +64,10 @@ public:
         this->_bitrateCalculator.updateBitrateData(sendTimestampMs, recvTimestampMs, dataLength);
     }
 
+    WebXDataRate calculateAverageBitrate() {
+        return this->_bitrateCalculator.calculateAverageBitrate();
+    }
+
 private:
     const static int PING_WAIT_INTERVAL_MS = 5000;
     const static int PONG_RESPONSE_TIMEOUT_MS = 10000;
