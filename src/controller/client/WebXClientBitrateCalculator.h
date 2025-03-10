@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <spdlog/spdlog.h>
+#include <models/WebXDataRate.h>
 
 class WebXClientBitrateCalculator {
 private:
@@ -15,17 +16,6 @@ private:
 
         float bitrateMbps;
         std::chrono::high_resolution_clock::time_point timestamp;
-    };
-
-public:
-    class WebXClientBitrate {
-    public:
-        WebXClientBitrate() : valid(false), bitrateMbps(0.0) {}
-        WebXClientBitrate(float bitrateMbps) : valid(true), bitrateMbps(bitrateMbps) {}
-        virtual ~WebXClientBitrate() {}
-
-        bool valid;
-        float bitrateMbps;
     };
 
 public:
@@ -50,11 +40,11 @@ public:
 
         this->calculateAverageBitrate();
         if (this->_averageMbps.valid) {
-            spdlog::info("Average bitrate = {:f} Mb/s", this->_averageMbps.bitrateMbps);
+            spdlog::info("Average bitrate = {:f} Mb/s", this->_averageMbps.Mbps);
         }
     }
 
-    WebXClientBitrate calculateAverageBitrate() {
+    WebXDataRate calculateAverageBitrate() {
         // Remove expired data
         std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
         this->_dataPoints.erase(std::remove_if(this->_dataPoints.begin(), this->_dataPoints.end(), [&now](const WebXClientBitrateData & dataPoint) {
@@ -68,10 +58,10 @@ public:
                 totalBitrate += data.bitrateMbps;
             }
 
-            this->_averageMbps = WebXClientBitrate(totalBitrate / this->_dataPoints.size());
+            this->_averageMbps = WebXDataRate(totalBitrate / this->_dataPoints.size());
 
         } else {
-            this->_averageMbps = WebXClientBitrate();
+            this->_averageMbps = WebXDataRate();
         }
 
         return this->_averageMbps;
@@ -80,7 +70,7 @@ public:
 private:
     const static int DATA_RETENTION_TIME_MS = 4000;
     std::vector<WebXClientBitrateData> _dataPoints;
-    WebXClientBitrate _averageMbps;
+    WebXDataRate _averageMbps;
     uint32_t _rttLatencyMs; // Round-Trip Time
 };
 

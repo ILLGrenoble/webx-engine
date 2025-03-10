@@ -8,6 +8,7 @@
 #include <models/WebXQuality.h>
 #include <models/WebXRectangle.h>
 #include <models/WebXWindowCoverage.h>
+#include <models/WebXDataRate.h>
 
 class WebXWindowQualityHandler {
 private:
@@ -20,11 +21,6 @@ private:
 
         std::chrono::high_resolution_clock::time_point timestamp;
         float imageSizeKB;
-    };
-
-    struct WebXDataRate {
-        bool valid;
-        float kbPerSecond;
     };
 
 public:
@@ -52,17 +48,17 @@ public:
     }
 
 private:
-    WebXDataRate calculateImageKbps();
+    WebXDataRate calculateImageMbps();
 
     void setCurrentQuality(const WebXQuality & quality) {
         // If change quality empty the data points (requires one second to get new data allowing time to obtain valid stats for new level)
         if (this->_currentQuality != quality) {
-            spdlog::trace("Window 0x{:x} (desired quality level {:d}) image KB/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index,  this->_imageKbps.kbPerSecond, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
+            spdlog::trace("Window 0x{:x} (desired quality level {:d}) image Mb/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index,  this->_imageMbps.Mbps, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
             this->_currentQuality = quality;
     
             // Reset data points to give image KB/s calc time to refresh with new values
             this->_dataPoints.clear();
-            this->_imageKbpsInitTime = std::chrono::high_resolution_clock::now();
+            this->_imageMbpsInitTime = std::chrono::high_resolution_clock::now();
         }
     }
 
@@ -77,12 +73,12 @@ private:
 
     WebXWindowCoverage _coverage;
     WebXQuality _coverageQuality;
-    WebXQuality _imageKbpsQuality;
+    WebXQuality _imageMbpsQuality;
     WebXQuality _currentQuality;
     
     std::vector<WebXWindowQualityData> _dataPoints;
-    WebXDataRate _imageKbps;
-    std::chrono::high_resolution_clock::time_point _imageKbpsInitTime;
+    WebXDataRate _imageMbps;
+    std::chrono::high_resolution_clock::time_point _imageMbpsInitTime;
     std::chrono::high_resolution_clock::time_point _lastRefreshTime;
 };
 

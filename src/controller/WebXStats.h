@@ -36,8 +36,8 @@ public:
         return this->_averageDurationMs;
     }
     
-    float averageImageKbps() const {
-        return this->_averageImageKbps;
+    float averageImageMbps() const {
+        return this->_averageImageMbps;
     }
 
 private:
@@ -54,7 +54,7 @@ private:
 
     float _averageFps;
     float _averageDurationMs;
-    float _averageImageKbps;
+    float _averageImageMbps;
 };
 
 

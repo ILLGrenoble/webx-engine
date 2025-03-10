@@ -29,9 +29,9 @@ void WebXStats::updateFrameData(float fps, float durationMs, float imageSizeKB) 
         this->_averageFps = totalFps / this->_frameDataStore.size();
         this->_averageDurationMs = totalDurationMs / this->_frameDataStore.size();
         std::chrono::duration<float, std::milli> durationMs = currentFrameData.timestamp - this->_frameDataStore[0].timestamp;
-        this->_averageImageKbps = 1000.0 * totalImageSizeKB / durationMs.count();
+        this->_averageImageMbps = 7.8125 * totalImageSizeKB / durationMs.count(); // (KB * 8 / 1024) / (ms / 1000)
 
-        spdlog::trace("Average FPS = {:f}, average frame duration = {:f}ms, average image data rate = {:f} KB/s", this->_averageFps, this->_averageDurationMs, this->_averageImageKbps);
+        spdlog::trace("Average FPS = {:f}, average frame duration = {:f}ms, average image data rate = {:f} Mb/s", this->_averageFps, this->_averageDurationMs, this->_averageImageMbps);
     
         this->_statsCalcTime = now;
     }
