@@ -39,7 +39,7 @@ public:
 
         this->calculateAverageRTTLatency();
 
-        spdlog::debug("Client latency calculation: average RTT latency = {:f}", this->_avgRTTLatencyMs);
+        spdlog::debug("Client latency calculation: instant RTT latency = {:f}, average RTT latency = {:f}", rttLatencyMs, this->_avgRTTLatencyMs);
     }
 
     void updateBitrateData(uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
