@@ -93,7 +93,7 @@ void WebXClientGroup::performQualityVerification() {
         for (auto client : this->_clients) {
             WebXDataRate clientDataRate = client->calculateAverageBitrate();
             if (clientDataRate.valid) {
-                spdlog::info("Client {:08x}: Sending data at {:f} Mbps to client that receives at {:f} Mbps", client->getId(), this->_averageImageMbps, clientDataRate.Mbps);
+                spdlog::info("Client {:08x}: Sending data at {:.2f} Mbps to client that receives at {:.2f} Mbps with {:.0f} ms latency", client->getId(), this->_averageImageMbps, clientDataRate.Mbps, client->getAverageRTTLatencyMs());
             }
         }
 

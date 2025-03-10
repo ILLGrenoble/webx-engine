@@ -68,8 +68,12 @@ public:
         return this->_bitrateCalculator.calculateAverageBitrate();
     }
 
+    float getAverageRTTLatencyMs() const {
+        return this->_bitrateCalculator.getAverageRTTLatencyMs();
+    }
+
 private:
-    const static int PING_WAIT_INTERVAL_MS = 5000;
+    const static int PING_WAIT_INTERVAL_MS = 2000;
     const static int PONG_RESPONSE_TIMEOUT_MS = 10000;
 
     uint32_t _id;
