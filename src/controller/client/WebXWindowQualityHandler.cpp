@@ -8,7 +8,7 @@ WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const
     _coverageQuality(WebXQuality::MaxQuality()),
     _imageMbpsQuality(WebXQuality::MaxQuality()),
     _currentQuality(desiredQuality),
-    _imageMbps(WebXDataRate(0.0)),
+    _imageMbps(WebXOptional<float>::Empty()),
     _imageMbpsInitTime(std::chrono::high_resolution_clock::now()),
     _lastRefreshTime(std::chrono::high_resolution_clock::now()) {
 }
@@ -20,7 +20,7 @@ WebXWindowQualityHandler::WebXWindowQualityHandler(unsigned long windowId, const
     _coverageQuality(WebXQuality::MaxQuality()),
     _imageMbpsQuality(WebXQuality::MaxQuality()),
     _currentQuality(desiredQuality),
-    _imageMbps(WebXDataRate(0.0)),
+    _imageMbps(WebXOptional<float>::Empty()),
     _imageMbpsInitTime(std::chrono::high_resolution_clock::now()),
     _lastRefreshTime(std::chrono::high_resolution_clock::now()) {
     
@@ -66,13 +66,13 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality() {
 
     if (this->_settings.limitQualityByDataRate) {
         // Only recalculate quality if we have a valid image KB/s value
-        if (this->_imageMbps.valid) {
+        if (this->_imageMbps.hasValue()) {
             // Start with coverage quality: if image KB/s > coverage quality KB/s then choose coverage quality, otherwise use desired quality
             // eg for a window with very low KB/S just keep good quality
-            WebXQuality quality = this->_coverageQuality.maxMbps < this->_imageMbps.Mbps ? this->_coverageQuality : this->_desiredQuality;
+            WebXQuality quality = this->_coverageQuality.maxMbps < this->_imageMbps.value() ? this->_coverageQuality : this->_desiredQuality;
 
             // If the image KB/s is too high for this quality then reduce it. If much lower then raise the quality level
-            this->_imageMbpsQuality = WebXQuality::QualityForImageMbps(this->_imageMbps.Mbps, quality, this->_currentQuality);
+            this->_imageMbpsQuality = WebXQuality::QualityForImageMbps(this->_imageMbps.value(), quality, this->_currentQuality);
 
             // Use min of image quality and previous quality (maxed to desired quality)
             // quality = this->_imageMbpsQuality < quality ? this->_imageMbpsQuality : quality;
@@ -94,7 +94,7 @@ const WebXQuality & WebXWindowQualityHandler::calculateQuality() {
     return this->_currentQuality;
 }
 
-WebXDataRate WebXWindowQualityHandler::calculateImageMbps() {
+WebXOptional<float> WebXWindowQualityHandler::calculateImageMbps() {
 
     // Remove data points that are too old
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -112,17 +112,17 @@ WebXDataRate WebXWindowQualityHandler::calculateImageMbps() {
         std::chrono::duration<float, std::milli> durationMs = now - this->_dataPoints[0].timestamp;
         if (durationMs.count() > WebXWindowQualityHandler::TIME_FOR_VALID_IMAGE_KBPS_MS) {
             float imageMbps = 7.8125 * totalImageSizeKB / durationMs.count(); // (KB * 8 / 1024) / (ms / 1000)
-            return WebXDataRate(imageMbps);
+            return WebXOptional<float>::Value(imageMbps);
         }
 
     } else {
         // If no images have been sent after a specific time then consider the KB/s to be 0
         std::chrono::duration<float, std::milli> timeSinceImageMbpsInit = now - this->_imageMbpsInitTime;
         if (timeSinceImageMbpsInit.count() > WebXWindowQualityHandler::NO_RECENT_WINDOW_UPDATE_TIME_MS) {
-            return WebXDataRate(0.0);
+            return WebXOptional<float>::Value(0.0);
         }
     }
 
-    return WebXDataRate();
+    return WebXOptional<float>::Empty();
 }
 

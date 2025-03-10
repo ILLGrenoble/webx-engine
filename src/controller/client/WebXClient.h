@@ -5,6 +5,7 @@
 #include <chrono>
 #include <spdlog/spdlog.h>
 #include "WebXClientBitrateCalculator.h"
+#include <utils/WebXOptional.h>
 
 class WebXClient {
 public:
@@ -21,7 +22,8 @@ public:
         _index(index),
         _pingStatus(PingStatus::WaitingToPing),
         _pingSentTime(std::chrono::high_resolution_clock::now()),
-        _pongReceivedTime(std::chrono::high_resolution_clock::now()) {}
+        _pongReceivedTime(std::chrono::high_resolution_clock::now()),
+        _bitrateRatio(WebXOptional<float>::Empty()) {}
     virtual ~WebXClient() {}
 
     uint32_t getId() const {
@@ -64,12 +66,25 @@ public:
         this->_bitrateCalculator.updateBitrateData(sendTimestampMs, recvTimestampMs, dataLength);
     }
 
-    WebXDataRate calculateAverageBitrate() {
-        return this->_bitrateCalculator.calculateAverageBitrate();
+    WebXOptional<float> calculateAverageBitrateMbps() {
+        return this->_bitrateCalculator.calculateAverageBitrateMbps();
     }
 
     float getAverageRTTLatencyMs() const {
         return this->_bitrateCalculator.getAverageRTTLatencyMs();
+    }
+
+    void resetBitrateData() {
+        this->_bitrateCalculator.resetBitrateData();
+        this->_bitrateRatio = WebXOptional<float>::Empty();
+    }
+
+    const WebXOptional<float> & getBitrateRatio() const {
+        return this->_bitrateRatio;
+    }
+
+    void setBitrateRatio(const WebXOptional<float> & bitrateRatio) {
+        this->_bitrateRatio = bitrateRatio;
     }
 
 private:
@@ -84,6 +99,7 @@ private:
     std::chrono::high_resolution_clock::time_point _pongReceivedTime;
 
     WebXClientBitrateCalculator _bitrateCalculator;
+    WebXOptional<float> _bitrateRatio;
 };
 
 

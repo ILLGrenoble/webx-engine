@@ -48,7 +48,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(defaultQuality);
     group->addClient(client);
 
-    spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
+    spdlog::trace("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
 
     // Return identifier clientid and index
     return WebXResult<std::pair<uint32_t, uint64_t>>::Ok(std::pair<uint32_t, uint64_t>(clientId, clientIndex));
@@ -64,7 +64,7 @@ const WebXResult<void> WebXClientRegistry::removeClient(uint32_t clientId) {
         if (it != this->_clients.end()) {
             this->_clients.erase(it);
         }
-        spdlog::debug("Removed client with Id {:08x} and index {:016x}. Now have {:d} clients connected", clientId, client->getIndex(), this->_clients.size());
+        spdlog::trace("Removed client with Id {:08x} and index {:016x}. Now have {:d} clients connected", clientId, client->getIndex(), this->_clients.size());
 
         // Remove clientIndex bits from mask
         this->_clientIndexMask &= ~client->getIndex();
@@ -101,7 +101,7 @@ void WebXClientRegistry::removeClientFromGroup(uint32_t clientId, const std::sha
             this->_groups.erase(it);
         }
 
-        spdlog::debug("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
+        spdlog::trace("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
     }
 }
 
@@ -118,7 +118,7 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
             const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
             group->addClient(client);
         
-            spdlog::debug("Added client with Id {:08x} and index {:016x} to group with quality index {:d}", clientId, client->getIndex(), quality.index);
+            spdlog::trace("Added client with Id {:08x} and index {:016x} to group with quality index {:d}", clientId, client->getIndex(), quality.index);
 
         } else if (oldGroup != nullptr && oldGroup->getQuality() != quality) {
             this->removeClientFromGroup(clientId, oldGroup);
@@ -126,8 +126,10 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
             const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
             group->addClient(client);
         
-            spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} index to group with quality index {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
+            spdlog::trace("Moved client with Id {:08x} and index {:016x} from group with quality {:d} index to group with quality index {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
         }
+
+        client->resetBitrateData();
     }
 }
 

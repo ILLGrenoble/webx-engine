@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include <spdlog/spdlog.h>
-#include <models/WebXDataRate.h>
+#include <utils/WebXOptional.h>
 
 class WebXClientBitrateCalculator {
 private:
@@ -30,7 +30,9 @@ private:
     };
 
 public:
-    WebXClientBitrateCalculator() : _avgRTTLatencyMs(0.0) {}
+    WebXClientBitrateCalculator() : 
+        _avgBitrateMbps(WebXOptional<float>::Empty()),
+        _avgRTTLatencyMs(0.0) {}
     virtual ~WebXClientBitrateCalculator() {}
 
     void updateLatency(uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
@@ -53,7 +55,12 @@ public:
         }
     }
 
-    WebXDataRate calculateAverageBitrate() {
+    void resetBitrateData() {
+        this->_bitrateDataPoints.clear();
+        this->_avgBitrateMbps = WebXOptional<float>::Empty();
+    }
+
+    WebXOptional<float> calculateAverageBitrateMbps() {
         // Remove expired data
         std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
         this->_bitrateDataPoints.erase(std::remove_if(this->_bitrateDataPoints.begin(), this->_bitrateDataPoints.end(), [&now](const WebXClientBitrateData & dataPoint) {
@@ -66,19 +73,19 @@ public:
             std::sort(this->_bitrateDataPoints.begin(), this->_bitrateDataPoints.end(), [](const WebXClientBitrateData & dataPoint1, const WebXClientBitrateData & dataPoint2) { return dataPoint1.bitrateMbps < dataPoint2.bitrateMbps; });
 
             if (n % 2 == 0) {
-                this->_avgBitrateMbps = WebXDataRate(0.5 * (this->_bitrateDataPoints[n / 2 - 1].bitrateMbps + this->_bitrateDataPoints[n / 2].bitrateMbps));
+                this->_avgBitrateMbps = WebXOptional<float>::Value(0.5 * (this->_bitrateDataPoints[n / 2 - 1].bitrateMbps + this->_bitrateDataPoints[n / 2].bitrateMbps));
             } else {
-                this->_avgBitrateMbps = WebXDataRate(this->_bitrateDataPoints[n / 2].bitrateMbps);
+                this->_avgBitrateMbps = WebXOptional<float>::Value(this->_bitrateDataPoints[n / 2].bitrateMbps);
             }
 
         } else {
-            this->_avgBitrateMbps = WebXDataRate();
+            this->_avgBitrateMbps = WebXOptional<float>::Empty();
         }
 
         return this->_avgBitrateMbps;
     }
 
-    WebXDataRate getAverageBitrateMbps() const {
+    WebXOptional<float> getAverageBitrateMbps() const {
         return this->_avgBitrateMbps;
     }
 
@@ -116,7 +123,7 @@ private:
     const static int BITRATE_DATA_RETENTION_TIME_MS = 10000;
     std::vector<WebXClientBitrateData> _bitrateDataPoints;
     std::vector<WebXClientLatencyData> _latencyDataPoints;
-    WebXDataRate _avgBitrateMbps;
+    WebXOptional<float> _avgBitrateMbps;
     float _avgRTTLatencyMs; // Round-Trip Time
 };
 

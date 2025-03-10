@@ -83,6 +83,26 @@ public:
         for (auto & group : this->_groups) {
             group->performQualityVerification();
         }
+
+        for (auto & client : this->_clients) {
+            const std::shared_ptr<WebXClientGroup> & clientGroup = this->getGroupWithClientId(client->getId());
+            const WebXQuality & quality = clientGroup->getQuality();
+
+            WebXOptional<float> bitrateRatio = client->getBitrateRatio();
+            if (bitrateRatio.hasValue() && bitrateRatio.value() > 0.8 ) {
+                if (quality.index > 1) {
+                    const WebXQuality & newQuality = WebXQuality::QualityForIndex(quality.index - 1);
+                    spdlog::info("Client {:08x}: Reducing quality to {:d} as bitrate ratio is too high ({:f})", client->getId(), newQuality.index, bitrateRatio.value());
+                    this->setClientQuality(client->getId(), newQuality);
+                }
+            } else if (bitrateRatio.hasValue() && bitrateRatio.value() < 0.3 ) {
+                if (quality.index < WebXQuality::MAX_QUALITY_INDEX) {
+                    const WebXQuality & newQuality = WebXQuality::QualityForIndex(quality.index + 1);
+                    spdlog::info("Client {:08x}: Increasing quality to {:d} as bitrate ratio is low ({:f})", client->getId(), newQuality.index, bitrateRatio.value());
+                    this->setClientQuality(client->getId(), newQuality);
+                }
+            }
+        }
     }
 
 private:
