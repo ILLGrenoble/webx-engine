@@ -10,6 +10,7 @@
 #include <models/WebXSettings.h>
 #include <models/WebXWindowDamage.h>
 #include <models/WebXTransferData.h>
+#include <utils/WebXOptional.h>
 
 class WebXWindowVisibility;
 
@@ -76,16 +77,20 @@ public:
     }
 
     void handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc);
-
-    void performQualityVerification();
+ 
+    void performQualityVerification() {
+        // Update each client bitrate calculation
+        for (auto client : this->_clients) {
+            client->performQualityVerification(this->_averageImageMbps);
+        }
+    }
 
 private:
     void calculateImageMbps();
 
 private:
-    const static int BITRATE_DATA_RETENTION_TIME_MS = 10000;
-    const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 1000;
-    const static int QUALITY_VERIFICATION_PERIOD_MS = 5000;
+    const static int BITRATE_DATA_RETENTION_TIME_MS = 3000;
+    const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 2000;
 
     const WebXSettings & _settings;
     const WebXQuality & _quality;
@@ -95,8 +100,7 @@ private:
     std::vector<std::unique_ptr<WebXClientWindow>> _windows;
 
     std::vector<WebXTransferData> _transferDataPoints;
-    float _averageImageMbps;
-    std::chrono::high_resolution_clock::time_point _lastQualityVerificationTime;
+    WebXOptional<float> _averageImageMbps;
 };
 
 

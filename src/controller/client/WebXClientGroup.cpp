@@ -6,8 +6,7 @@ WebXClientGroup::WebXClientGroup(const WebXSettings & settings, const WebXQualit
     _settings(settings),
     _quality(quality),
     _clientIndexMask(0),
-    _lastQualityVerificationTime(std::chrono::high_resolution_clock::now()) {
-
+    _averageImageMbps(WebXOptional<float>::Empty()) {
 }
 
 WebXClientGroup::~WebXClientGroup() {
@@ -80,29 +79,9 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
     }
 
     this->_transferDataPoints.push_back(WebXTransferData(totalImageSizeKB));
-}
 
-void WebXClientGroup::performQualityVerification() {
-    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float, std::milli> durationMs = now - this->_lastQualityVerificationTime;
-    if (durationMs.count() >= QUALITY_VERIFICATION_PERIOD_MS) {
-        // Update the image data transfer calculation
-        this->calculateImageMbps();
-
-        // Update each client bitrate calculation
-        for (auto client : this->_clients) {
-            WebXOptional<float> clientDataRate = client->calculateAverageBitrateMbps();
-            if (clientDataRate.hasValue()) {
-                spdlog::debug("Client {:08x}: Sending data at {:.2f} Mbps to client that receives at {:.2f} Mbps with {:.0f} ms latency", client->getId(), this->_averageImageMbps, clientDataRate.value(), client->getAverageRTTLatencyMs());
-                client->setBitrateRatio(WebXOptional<float>::Value(this->_averageImageMbps / clientDataRate.value()));
-            
-            } else {
-                client->setBitrateRatio(WebXOptional<float>::Empty());
-            }
-        }
-
-        this->_lastQualityVerificationTime = now;
-    }
+    // Update the image data transfer calculation
+    this->calculateImageMbps();
 }
 
 void WebXClientGroup::calculateImageMbps() {
@@ -121,15 +100,15 @@ void WebXClientGroup::calculateImageMbps() {
     
         std::chrono::duration<float, std::milli> durationMs = now - this->_transferDataPoints[0].timestamp;
         if (durationMs.count() > WebXClientGroup::TIME_FOR_VALID_IMAGE_KBPS_MS) {
-            this->_averageImageMbps = 7.8125 * totalImageSizeKB / durationMs.count(); // (KB * 8 / 1024) / (ms / 1000)
+            this->_averageImageMbps = WebXOptional<float>::Value(7.8125 * totalImageSizeKB / durationMs.count()); // (KB * 8 / 1024) / (ms / 1000)
         
         } else {
             // Consider it to be 0 if not enough time to make a coherent calculation
-            this->_averageImageMbps = 0.0;
+            this->_averageImageMbps = WebXOptional<float>::Empty();
         }
 
     } else {
         // If no images have been sent after a specific time then consider the KB/s to be 0
-        this->_averageImageMbps = 0.0;
+        this->_averageImageMbps = WebXOptional<float>::Value(0.0);
     }
 }

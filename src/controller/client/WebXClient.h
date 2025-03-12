@@ -23,7 +23,8 @@ public:
         _pingStatus(PingStatus::WaitingToPing),
         _pingSentTime(std::chrono::high_resolution_clock::now()),
         _pongReceivedTime(std::chrono::high_resolution_clock::now()),
-        _bitrateRatio(WebXOptional<float>::Empty()) {}
+        _bitrateRatio(WebXOptional<float>::Empty()),
+        _lastQualityVerificationTime(std::chrono::high_resolution_clock::now()) {}
     virtual ~WebXClient() {}
 
     uint32_t getId() const {
@@ -83,13 +84,32 @@ public:
         return this->_bitrateRatio;
     }
 
-    void setBitrateRatio(const WebXOptional<float> & bitrateRatio) {
-        this->_bitrateRatio = bitrateRatio;
-    }
-
+    void performQualityVerification(const WebXOptional<float> & averageImageMbps) {
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float, std::milli> durationMs = now - this->_lastQualityVerificationTime;
+    
+        if (averageImageMbps.hasValue() && durationMs.count() >= QUALITY_VERIFICATION_PERIOD_MS) {
+    
+            WebXOptional<float> clientDataRate = this->calculateAverageBitrateMbps();
+    
+            if (clientDataRate.hasValue()) {
+                spdlog::debug("Client {:08x}: Sending data at {:.2f} Mbps to client that receives at {:.2f} Mbps with {:.0f} ms latency", this->_id, averageImageMbps.value(), clientDataRate.value(), this->getAverageRTTLatencyMs());
+                this->_bitrateRatio = WebXOptional<float>::Value(averageImageMbps.value() / clientDataRate.value());
+            
+            } else {
+                this->_bitrateRatio = WebXOptional<float>::Empty();
+            }
+    
+            this->_lastQualityVerificationTime = now;
+        
+        } else {
+            this->_bitrateRatio = WebXOptional<float>::Empty();
+        }
+    }    
 private:
     const static int PING_WAIT_INTERVAL_MS = 2000;
     const static int PONG_RESPONSE_TIMEOUT_MS = 10000;
+    const static int QUALITY_VERIFICATION_PERIOD_MS = 2000;
 
     uint32_t _id;
     uint64_t _index;
@@ -100,6 +120,7 @@ private:
 
     WebXClientBitrateCalculator _bitrateCalculator;
     WebXOptional<float> _bitrateRatio;
+    std::chrono::high_resolution_clock::time_point _lastQualityVerificationTime;
 };
 
 

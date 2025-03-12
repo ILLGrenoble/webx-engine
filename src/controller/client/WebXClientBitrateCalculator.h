@@ -68,15 +68,13 @@ public:
             return durationMs.count() > BITRATE_DATA_RETENTION_TIME_MS; 
         }), this->_bitrateDataPoints.end());
 
-        size_t n = this->_bitrateDataPoints.size();
-        if (n > 0) {
-            std::sort(this->_bitrateDataPoints.begin(), this->_bitrateDataPoints.end(), [](const WebXClientBitrateData & dataPoint1, const WebXClientBitrateData & dataPoint2) { return dataPoint1.bitrateMbps < dataPoint2.bitrateMbps; });
-
-            if (n % 2 == 0) {
-                this->_avgBitrateMbps = WebXOptional<float>::Value(0.5 * (this->_bitrateDataPoints[n / 2 - 1].bitrateMbps + this->_bitrateDataPoints[n / 2].bitrateMbps));
-            } else {
-                this->_avgBitrateMbps = WebXOptional<float>::Value(this->_bitrateDataPoints[n / 2].bitrateMbps);
+        if (this->_bitrateDataPoints.size() > 1) {
+            float totalBitrate = 0.0;
+            for (const WebXClientBitrateData & data : this->_bitrateDataPoints) {
+                totalBitrate += data.bitrateMbps;
             }
+
+            this->_avgBitrateMbps = WebXOptional<float>::Value(totalBitrate / this->_bitrateDataPoints.size());
 
         } else {
             this->_avgBitrateMbps = WebXOptional<float>::Empty();
@@ -102,16 +100,14 @@ private:
             std::chrono::duration<double, std::milli> durationMs = now - dataPoint.timestamp;
             return durationMs.count() > LATENCY_DATA_RETENTION_TIME_MS; 
         }), this->_latencyDataPoints.end());
-
-        size_t n = this->_latencyDataPoints.size();
-        if (n > 0) {
-            std::sort(this->_latencyDataPoints.begin(), this->_latencyDataPoints.end(), [](const WebXClientLatencyData & dataPoint1, const WebXClientLatencyData & dataPoint2) { return dataPoint1.rttLatencyMs < dataPoint2.rttLatencyMs; });
-
-            if (n % 2 == 0) {
-                this->_avgRTTLatencyMs = 0.5 * (this->_latencyDataPoints[n / 2 - 1].rttLatencyMs + this->_latencyDataPoints[n / 2].rttLatencyMs);
-            } else {
-                this->_avgRTTLatencyMs = this->_latencyDataPoints[n / 2].rttLatencyMs;
+        
+        if (this->_latencyDataPoints.size() > 0) {
+            float totalLatencyMs = 0.0;
+            for (const WebXClientLatencyData & data : this->_latencyDataPoints) {
+                totalLatencyMs += data.rttLatencyMs;
             }
+
+            this->_avgRTTLatencyMs = totalLatencyMs / this->_latencyDataPoints.size();
 
         } else {
             this->_avgRTTLatencyMs = 0.0;

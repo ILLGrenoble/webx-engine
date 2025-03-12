@@ -48,7 +48,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(defaultQuality);
     group->addClient(client);
 
-    spdlog::trace("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
+    spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
 
     // Return identifier clientid and index
     return WebXResult<std::pair<uint32_t, uint64_t>>::Ok(std::pair<uint32_t, uint64_t>(clientId, clientIndex));
@@ -64,7 +64,7 @@ const WebXResult<void> WebXClientRegistry::removeClient(uint32_t clientId) {
         if (it != this->_clients.end()) {
             this->_clients.erase(it);
         }
-        spdlog::trace("Removed client with Id {:08x} and index {:016x}. Now have {:d} clients connected", clientId, client->getIndex(), this->_clients.size());
+        spdlog::debug("Removed client with Id {:08x} and index {:016x}. Now have {:d} clients connected", clientId, client->getIndex(), this->_clients.size());
 
         // Remove clientIndex bits from mask
         this->_clientIndexMask &= ~client->getIndex();
@@ -126,7 +126,7 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
             const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
             group->addClient(client);
         
-            spdlog::trace("Moved client with Id {:08x} and index {:016x} from group with quality {:d} index to group with quality index {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
+            spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} to {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
         }
 
         client->resetBitrateData();
@@ -165,6 +165,47 @@ void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_
             clientMessageHandler(message);
             client->onPingSent();
         }
+    }
+}
+
+void WebXClientRegistry::performQualityVerification() {
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+    for (auto & group : this->_groups) {
+        group->performQualityVerification();
+    }
+
+    for (auto & client : this->_clients) {
+        const std::shared_ptr<WebXClientGroup> & clientGroup = this->getGroupWithClientId(client->getId());
+        const WebXQuality & quality = clientGroup->getQuality();
+        WebXOptional<float> bitrateRatio = client->getBitrateRatio();
+
+        if (bitrateRatio.hasValue()) {
+            int suggestedQualityDelta = 0;
+            if (bitrateRatio.value() >= 1.0) {
+                suggestedQualityDelta = -3;
+            } else if (bitrateRatio.value() >= 0.9) {
+                suggestedQualityDelta = -2;
+            } else if (bitrateRatio.value() >= 0.8) {
+                suggestedQualityDelta = -1;
+
+            } else if (bitrateRatio.value() < 0.1) {
+                suggestedQualityDelta = +3;
+            } else if (bitrateRatio.value() < 0.2) {
+                suggestedQualityDelta = +2;
+            } else if (bitrateRatio.value() < 0.3) {
+                suggestedQualityDelta = +1;
+            }
+
+            int suggestedQualityIndex = quality.index + suggestedQualityDelta;
+            suggestedQualityIndex = suggestedQualityIndex < 1 ? 1 : suggestedQualityIndex > WebXQuality::MAX_QUALITY_INDEX ? WebXQuality::MAX_QUALITY_INDEX : suggestedQualityIndex;
+
+            const WebXQuality & newQuality = WebXQuality::QualityForIndex(suggestedQualityIndex);
+            if (newQuality != quality) {
+                spdlog::info("Client {:08x}: {:s} quality to {:d} as bitrate ratio is {:s} ({:f})", client->getId(), suggestedQualityDelta < 0 ? "Reducing" : "Increasing", newQuality.index, suggestedQualityDelta < 0 ? "too high" : "low", bitrateRatio.value());
+                this->setClientQuality(client->getId(), newQuality);
+            }
+        }
+
     }
 }
 
