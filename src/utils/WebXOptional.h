@@ -9,8 +9,7 @@ private:
         _hasValue(true) {
     }
     WebXOptional() :
-        _hasValue(false),
-        _value(0.0) {
+        _hasValue(false) {
     }
 
 public:

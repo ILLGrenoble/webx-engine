@@ -128,8 +128,6 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
         
             spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} to {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
         }
-
-        client->resetBitrateData();
     }
 }
 
@@ -177,22 +175,28 @@ void WebXClientRegistry::performQualityVerification() {
     for (auto & client : this->_clients) {
         const std::shared_ptr<WebXClientGroup> & clientGroup = this->getGroupWithClientId(client->getId());
         const WebXQuality & quality = clientGroup->getQuality();
-        WebXOptional<float> bitrateRatio = client->getBitrateRatio();
+        const WebXOptional<WebXClient::WebXClientBitrateMeans> & bitrateMeans = client->getBitrateMeans();
 
-        if (bitrateRatio.hasValue()) {
+        if (bitrateMeans.hasValue()) {
+            float meanBitrateRatio = bitrateMeans.value().meanBitrateRatio;
+            float meanBitrateMbps = bitrateMeans.value().meanBitrateMbps;
+            float meanImageMbps = bitrateMeans.value().meanImageMbps;
+            float meanRTTLatencyMs = bitrateMeans.value().meanRTTLatencyMs;
+            
             int suggestedQualityDelta = 0;
-            if (bitrateRatio.value() >= 1.0) {
-                suggestedQualityDelta = -3;
-            } else if (bitrateRatio.value() >= 0.9) {
-                suggestedQualityDelta = -2;
-            } else if (bitrateRatio.value() >= 0.8) {
+            // if (meanBitrateRatio >= 1.0) {
+            //     suggestedQualityDelta = -3;
+            // } else if (meanBitrateRatio >= 0.9) {
+            //     suggestedQualityDelta = -2;
+            // } else 
+            if (meanBitrateRatio >= 0.8) {
                 suggestedQualityDelta = -1;
 
-            } else if (bitrateRatio.value() < 0.1) {
-                suggestedQualityDelta = +3;
-            } else if (bitrateRatio.value() < 0.2) {
-                suggestedQualityDelta = +2;
-            } else if (bitrateRatio.value() < 0.3) {
+            // } else if (meanBitrateRatio < 0.1) {
+            //     suggestedQualityDelta = +3;
+            // } else if (meanBitrateRatio < 0.3) {
+            //     suggestedQualityDelta = +2;
+            } else if (meanBitrateRatio < 0.2) {
                 suggestedQualityDelta = +1;
             }
 
@@ -201,7 +205,7 @@ void WebXClientRegistry::performQualityVerification() {
 
             const WebXQuality & newQuality = WebXQuality::QualityForIndex(suggestedQualityIndex);
             if (newQuality != quality) {
-                spdlog::info("Client {:08x}: {:s} quality to {:d} as bitrate ratio is {:s} ({:f})", client->getId(), suggestedQualityDelta < 0 ? "Reducing" : "Increasing", newQuality.index, suggestedQualityDelta < 0 ? "too high" : "low", bitrateRatio.value());
+                spdlog::info("Client {:08x}: {:s} quality to {:d} as bitrate ratio is {:s} (bitrate ratio = {:.2f}, image Mbps = {:.2f}, client bandwidth = {:.2f}, client RTT Latency = {:.0f})", client->getId(), suggestedQualityDelta < 0 ? "Reducing" : "Increasing", newQuality.index, suggestedQualityDelta < 0 ? "too high" : "low", meanBitrateRatio, meanImageMbps, meanBitrateMbps, meanRTTLatencyMs);
                 this->setClientQuality(client->getId(), newQuality);
             }
         }

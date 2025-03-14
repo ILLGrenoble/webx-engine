@@ -37,6 +37,9 @@ public:
             // Add client and update client index mask
             this->_clients.push_back(client);
             this->_clientIndexMask |= client->getIndex();
+
+            // Reset bitrate data
+            client->resetBitrateData(this->_averageImageMbps);
         }
     }
 
@@ -89,7 +92,7 @@ private:
     void calculateImageMbps();
 
 private:
-    const static int BITRATE_DATA_RETENTION_TIME_MS = 3000;
+    const static int BITRATE_DATA_RETENTION_TIME_MS = 4000;
     const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 2000;
 
     const WebXSettings & _settings;

@@ -78,7 +78,9 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
         }
     }
 
-    this->_transferDataPoints.push_back(WebXTransferData(totalImageSizeKB));
+    if (totalImageSizeKB > 0.0) {
+        this->_transferDataPoints.push_back(WebXTransferData(totalImageSizeKB));
+    }
 
     // Update the image data transfer calculation
     this->calculateImageMbps();
@@ -93,13 +95,11 @@ void WebXClientGroup::calculateImageMbps() {
     }), this->_transferDataPoints.end());
 
     if (this->_transferDataPoints.size() > 0) {
-        float totalImageSizeKB = 0;
-        for (const WebXTransferData & transferData : this->_transferDataPoints) {
-            totalImageSizeKB += transferData.sizeKB;
-        }
-    
         std::chrono::duration<float, std::milli> durationMs = now - this->_transferDataPoints[0].timestamp;
         if (durationMs.count() > WebXClientGroup::TIME_FOR_VALID_IMAGE_KBPS_MS) {
+            float totalImageSizeKB = std::accumulate(this->_transferDataPoints.begin(), this->_transferDataPoints.end(), 0.0f, [](float sum, const WebXTransferData & data) { 
+                return sum + data.sizeKB; 
+            });
             this->_averageImageMbps = WebXOptional<float>::Value(7.8125 * totalImageSizeKB / durationMs.count()); // (KB * 8 / 1024) / (ms / 1000)
         
         } else {
@@ -110,5 +110,10 @@ void WebXClientGroup::calculateImageMbps() {
     } else {
         // If no images have been sent after a specific time then consider the KB/s to be 0
         this->_averageImageMbps = WebXOptional<float>::Value(0.0);
+    }
+
+    // Set the current Image Mbps in the clients
+    for (auto & client : this->_clients) {
+        client->setCurrentGroupImageMbps(this->_averageImageMbps);
     }
 }

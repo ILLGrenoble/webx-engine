@@ -42,7 +42,7 @@ private:
     void setCurrentQuality(const WebXQuality & quality) {
         // If change quality empty the data points (requires one second to get new data allowing time to obtain valid stats for new level)
         if (this->_currentQuality != quality) {
-            spdlog::trace("Window 0x{:x} (desired quality level {:d}) image Mb/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index, this->_imageMbps.hasValue() ? this->_imageMbps.value() : 0.0, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
+            spdlog::trace("Window 0x{:x} (desired quality level {:d}) image Mb/s = {:f} quality {:s} to level {:d}", this->_windowId, this->_desiredQuality.index, this->_imageMbps.hasValue() ? this->_imageMbps.value() : -1.0, this->_currentQuality < quality ? "increased" : "reduced", quality.index);
             this->_currentQuality = quality;
     
             // Reset data points to give image KB/s calc time to refresh with new values
@@ -54,7 +54,7 @@ private:
 private:
     const static int DATA_RETENTION_TIME_MS = 4000;
     const static int NO_RECENT_WINDOW_UPDATE_TIME_MS = 2000;
-    const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 1000;
+    const static int TIME_FOR_VALID_IMAGE_KBPS_MS = 2000;
     
     unsigned long _windowId;
     const WebXQualitySettings & _settings;

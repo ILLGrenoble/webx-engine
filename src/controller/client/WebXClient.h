@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <chrono>
+#include <vector>
 #include <spdlog/spdlog.h>
 #include "WebXClientBitrateCalculator.h"
 #include <utils/WebXOptional.h>
@@ -16,6 +17,22 @@ public:
         PongTimeout,
     };
 
+    class WebXClientBitrateMeans {
+        public:
+            WebXClientBitrateMeans() {}
+            WebXClientBitrateMeans(float meanImageMbps, float meanBitrateMbps, float meanRTTLatencyMs, float meanBitrateRatio) :
+                meanImageMbps(meanImageMbps),
+                meanBitrateMbps(meanBitrateMbps),
+                meanRTTLatencyMs(meanRTTLatencyMs),
+                meanBitrateRatio(meanBitrateRatio) {}
+            virtual ~WebXClientBitrateMeans() {}
+    
+            float meanImageMbps;
+            float meanBitrateMbps;
+            float meanRTTLatencyMs;
+            float meanBitrateRatio;
+        };
+
 public:
     WebXClient(uint32_t id, uint64_t index) :
         _id(id),
@@ -23,7 +40,7 @@ public:
         _pingStatus(PingStatus::WaitingToPing),
         _pingSentTime(std::chrono::high_resolution_clock::now()),
         _pongReceivedTime(std::chrono::high_resolution_clock::now()),
-        _bitrateRatio(WebXOptional<float>::Empty()),
+        _bitrateMeans(WebXOptional<WebXClientBitrateMeans>::Empty()),
         _lastQualityVerificationTime(std::chrono::high_resolution_clock::now()) {}
     virtual ~WebXClient() {}
 
@@ -67,49 +84,47 @@ public:
         this->_bitrateCalculator.updateBitrateData(sendTimestampMs, recvTimestampMs, dataLength);
     }
 
-    WebXOptional<float> calculateAverageBitrateMbps() {
-        return this->_bitrateCalculator.calculateAverageBitrateMbps();
+    void setCurrentGroupImageMbps(const WebXOptional<float> & currentGroupImageMbps) {
+        this->_bitrateCalculator.setCurrentGroupImageMbps(currentGroupImageMbps);
     }
 
-    float getAverageRTTLatencyMs() const {
-        return this->_bitrateCalculator.getAverageRTTLatencyMs();
+    void resetBitrateData(const WebXOptional<float> & currentGroupImageMbps) {
+        this->_bitrateCalculator.resetBitrateData(currentGroupImageMbps);
+        this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Empty();
     }
 
-    void resetBitrateData() {
-        this->_bitrateCalculator.resetBitrateData();
-        this->_bitrateRatio = WebXOptional<float>::Empty();
-    }
-
-    const WebXOptional<float> & getBitrateRatio() const {
-        return this->_bitrateRatio;
+    const WebXOptional<WebXClientBitrateMeans> & getBitrateMeans() const {
+        return this->_bitrateMeans;
     }
 
     void performQualityVerification(const WebXOptional<float> & averageImageMbps) {
         std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float, std::milli> durationMs = now - this->_lastQualityVerificationTime;
     
-        if (averageImageMbps.hasValue() && durationMs.count() >= QUALITY_VERIFICATION_PERIOD_MS) {
+        if (durationMs.count() >= QUALITY_VERIFICATION_PERIOD_MS) {
     
-            WebXOptional<float> clientDataRate = this->calculateAverageBitrateMbps();
-    
-            if (clientDataRate.hasValue()) {
-                spdlog::debug("Client {:08x}: Sending data at {:.2f} Mbps to client that receives at {:.2f} Mbps with {:.0f} ms latency", this->_id, averageImageMbps.value(), clientDataRate.value(), this->getAverageRTTLatencyMs());
-                this->_bitrateRatio = WebXOptional<float>::Value(averageImageMbps.value() / clientDataRate.value());
-            
-            } else {
-                this->_bitrateRatio = WebXOptional<float>::Empty();
-            }
-    
-            this->_lastQualityVerificationTime = now;
+            this->_bitrateCalculator.calculateAverageBitrateData();
+            const WebXOptional<float> & meanBitrateMbps = this->_bitrateCalculator.getMeanBitrateMbps();
+            const WebXOptional<float> & meanBitrateRatio = this->_bitrateCalculator.getMeanBitrateRatio();
+            float meanRTTLatencyMs = this->_bitrateCalculator.getMeanRTTLatencyMs();
+
+            if (averageImageMbps.hasValue() && meanBitrateMbps.hasValue() && meanBitrateRatio.hasValue()) {
+                this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Value(WebXClientBitrateMeans(averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs, meanBitrateRatio.value()));
+
+                spdlog::trace("Client {:08x}: Sending data at {:.2f} Mbps to client with bandwidth {:.2f} Mbps and latency {:.0f} (bitrate ratio = {:.2f})", 
+                    this->_id, averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs, meanBitrateRatio.value());
         
+                this->_lastQualityVerificationTime = now;
+            }
+
         } else {
-            this->_bitrateRatio = WebXOptional<float>::Empty();
+            this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Empty();
         }
     }    
 private:
-    const static int PING_WAIT_INTERVAL_MS = 2000;
+    const static int PING_WAIT_INTERVAL_MS = 1000;
     const static int PONG_RESPONSE_TIMEOUT_MS = 10000;
-    const static int QUALITY_VERIFICATION_PERIOD_MS = 2000;
+    const static int QUALITY_VERIFICATION_PERIOD_MS = 10000;
 
     uint32_t _id;
     uint64_t _index;
@@ -119,7 +134,7 @@ private:
     std::chrono::high_resolution_clock::time_point _pongReceivedTime;
 
     WebXClientBitrateCalculator _bitrateCalculator;
-    WebXOptional<float> _bitrateRatio;
+    WebXOptional<WebXClientBitrateMeans> _bitrateMeans;
     std::chrono::high_resolution_clock::time_point _lastQualityVerificationTime;
 };
 
