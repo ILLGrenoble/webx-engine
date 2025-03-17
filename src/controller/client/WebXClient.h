@@ -6,6 +6,7 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include "WebXClientBitrateCalculator.h"
+#include <models/WebXQuality.h>
 #include <utils/WebXOptional.h>
 
 class WebXClient {
@@ -34,9 +35,10 @@ public:
         };
 
 public:
-    WebXClient(uint32_t id, uint64_t index) :
+    WebXClient(uint32_t id, uint64_t index, const WebXQuality & maxQuality) :
         _id(id),
         _index(index),
+        _maxQuality(maxQuality),
         _pingStatus(PingStatus::WaitingToPing),
         _pingSentTime(std::chrono::high_resolution_clock::now()),
         _pongReceivedTime(std::chrono::high_resolution_clock::now()),
@@ -50,6 +52,14 @@ public:
 
     uint64_t getIndex() const {
         return this->_index;
+    }
+
+    const WebXQuality & getMaxQuality() const {
+        return this->_maxQuality;
+    }
+
+    void setMaxQuality(const WebXQuality & quality) {
+        this->_maxQuality = quality;
     }
 
     void updatePingStatus() {
@@ -128,6 +138,7 @@ private:
 
     uint32_t _id;
     uint64_t _index;
+    WebXQuality _maxQuality;
 
     PingStatus _pingStatus;
     std::chrono::high_resolution_clock::time_point _pingSentTime;

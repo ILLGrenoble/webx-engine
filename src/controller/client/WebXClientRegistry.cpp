@@ -38,13 +38,14 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
 
     } while (this->getClientById(clientId) != nullptr);
 
+    const WebXQuality & defaultQuality = WebXQuality::MaxQuality();
+
     // Create client and add index to mask
-    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex);
+    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex, defaultQuality);
     this->_clients.push_back(client);
     this->_clientIndexMask |= clientIndex;
 
     // Add to default group (create group if needed)
-    const WebXQuality & defaultQuality = WebXQuality::MaxQuality();
     const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(defaultQuality);
     group->addClient(client);
 
@@ -111,6 +112,8 @@ void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality &
     // Determine if client exists
     const std::shared_ptr<WebXClient> & client = this->getClientById(clientId);
     if (client != nullptr) {
+        client->setMaxQuality(quality);
+
         // Find associated group and check if quality is different
         const std::shared_ptr<WebXClientGroup> & oldGroup = this->getGroupWithClientId(clientId);
         if (oldGroup == nullptr) {
@@ -201,7 +204,11 @@ void WebXClientRegistry::performQualityVerification() {
             }
 
             int suggestedQualityIndex = quality.index + suggestedQualityDelta;
-            suggestedQualityIndex = suggestedQualityIndex < 1 ? 1 : suggestedQualityIndex > WebXQuality::MAX_QUALITY_INDEX ? WebXQuality::MAX_QUALITY_INDEX : suggestedQualityIndex;
+
+            // Get max quality for a client
+            int maxQualityIndex = client->getMaxQuality().index;
+
+            suggestedQualityIndex = suggestedQualityIndex < 1 ? 1 : suggestedQualityIndex > maxQualityIndex ? maxQualityIndex : suggestedQualityIndex;
 
             const WebXQuality & newQuality = WebXQuality::QualityForIndex(suggestedQualityIndex);
             if (newQuality != quality) {
