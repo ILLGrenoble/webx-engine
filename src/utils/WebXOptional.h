@@ -37,6 +37,13 @@ public:
         return this->_value;
     }
 
+    const ItemType & orElse(const ItemType & elseValue) const {
+        if (!this->_hasValue) {
+            return elseValue;
+        }
+        return this->_value;
+    }
+
     const bool hasValue() const {
         return this->_hasValue;
     }

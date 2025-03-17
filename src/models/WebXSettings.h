@@ -114,7 +114,7 @@ public:
 class WebXSettings {
 public:
     WebXSettings() :
-        logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "info")) {
+        logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "debug")) {
     }
 
     const std::string logging;

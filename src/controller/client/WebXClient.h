@@ -106,13 +106,13 @@ public:
             this->_bitrateCalculator.calculateAverageBitrateData();
             const WebXOptional<float> & meanBitrateMbps = this->_bitrateCalculator.getMeanBitrateMbps();
             const WebXOptional<float> & meanBitrateRatio = this->_bitrateCalculator.getMeanBitrateRatio();
-            float meanRTTLatencyMs = this->_bitrateCalculator.getMeanRTTLatencyMs();
+            const WebXOptional<float> & meanRTTLatencyMs = this->_bitrateCalculator.getMeanRTTLatencyMs();
 
-            if (averageImageMbps.hasValue() && meanBitrateMbps.hasValue() && meanBitrateRatio.hasValue()) {
-                this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Value(WebXClientBitrateMeans(averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs, meanBitrateRatio.value()));
+            if (averageImageMbps.hasValue() && meanBitrateMbps.hasValue() && meanBitrateRatio.hasValue() && meanRTTLatencyMs.hasValue()) {
+                this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Value(WebXClientBitrateMeans(averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs.value(), meanBitrateRatio.value()));
 
                 spdlog::trace("Client {:08x}: Sending data at {:.2f} Mbps to client with bandwidth {:.2f} Mbps and latency {:.0f} (bitrate ratio = {:.2f})", 
-                    this->_id, averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs, meanBitrateRatio.value());
+                    this->_id, averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs.value(), meanBitrateRatio.value());
         
                 this->_lastQualityVerificationTime = now;
             }

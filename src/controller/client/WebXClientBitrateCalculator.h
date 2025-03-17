@@ -35,8 +35,8 @@ public:
         _meanBitrateMbps(WebXOptional<float>::Empty()),
         _meanBitrateRatio(WebXOptional<float>::Empty()),
         _currentGroupImageMbps(WebXOptional<float>::Empty()),
-        _meanRTTLatencyMs(0.0),
-        _sdRTTLatencyMs(0.0) {}
+        _meanRTTLatencyMs(WebXOptional<float>::Empty()),
+        _sdRTTLatencyMs(WebXOptional<float>::Empty()) {}
     virtual ~WebXClientBitrateCalculator() {}
 
     void updateLatency(uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
@@ -49,15 +49,17 @@ public:
     }
 
     void updateBitrateData(uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
-        // Be pessimistic on bandwidth (use lower value latency)
-        uint64_t adjustedRecvTimestampMs = recvTimestampMs - (uint64_t)(this->_meanRTTLatencyMs - this->_sdRTTLatencyMs);
-        if (adjustedRecvTimestampMs > sendTimestampMs) {
-            uint32_t transferTimeMs = adjustedRecvTimestampMs - sendTimestampMs;
-            float bitrateMbps = (0.00762939 * dataLength) / transferTimeMs; // (B * 8 / 1024 / 1024) / (ms / 1000)
+        if (this->_meanRTTLatencyMs.hasValue()) {
+            // Be pessimistic on bandwidth (use lower value latency)
+            uint64_t adjustedRecvTimestampMs = recvTimestampMs - (uint64_t)(this->_meanRTTLatencyMs.value() - this->_sdRTTLatencyMs.value());
+            if (adjustedRecvTimestampMs > sendTimestampMs) {
+                uint32_t transferTimeMs = adjustedRecvTimestampMs - sendTimestampMs;
+                float bitrateMbps = (0.00762939 * dataLength) / transferTimeMs; // (B * 8 / 1024 / 1024) / (ms / 1000)
 
-            // spdlog::debug("transfer time = {:d} for {:d} bytes => bitrate = {:.2f} Mb/s (imageMbps = {:.2f}, ratio = {:.2f})", transferTimeMs, dataLength, bitrateMbps);
+                // spdlog::debug("transfer time = {:d} for {:d} bytes => bitrate = {:.2f} Mb/s (imageMbps = {:.2f}, ratio = {:.2f})", transferTimeMs, dataLength, bitrateMbps);
 
-            this->_bitrateDataPoints.push_back(WebXClientBitrateData(bitrateMbps));
+                this->_bitrateDataPoints.push_back(WebXClientBitrateData(bitrateMbps));
+            }
         }
 
         this->calculateAverageBitrateData();
@@ -99,12 +101,12 @@ public:
         }
 
         spdlog::trace("Bitrate data: image bitrate = {:2f} Mbps, bandwidth = {:.2f} Mbps ({:d} pts), ratio = {:.2f}, latency = {:.0f} ms (sd = {:.1f})", 
-            _currentGroupImageMbps.hasValue() ? _currentGroupImageMbps.value() : -1.0, 
-            _meanBitrateMbps.hasValue() ? _meanBitrateMbps.value() : -1.0,
-            _bitrateDataPoints.size(),
-            _meanBitrateRatio.hasValue() ? _meanBitrateRatio.value() : -1.0,
-            this->_meanRTTLatencyMs,
-            this->_sdRTTLatencyMs);
+            this->_currentGroupImageMbps.orElse(-1.0), 
+            this->_meanBitrateMbps.orElse(-1.0),
+            this->_bitrateDataPoints.size(),
+            this->_meanBitrateRatio.orElse(-1.0),
+            this->_meanRTTLatencyMs.orElse(-1.0),
+            this->_sdRTTLatencyMs.orElse(-1.0));
     }
 
     const WebXOptional<float> & getMeanBitrateMbps() const {
@@ -119,7 +121,7 @@ public:
         this->_currentGroupImageMbps = currentGroupImageMbps;
     }
 
-    float getMeanRTTLatencyMs() const {
+    const WebXOptional<float> & getMeanRTTLatencyMs() const {
         return this->_meanRTTLatencyMs;
     }
 
@@ -143,13 +145,13 @@ private:
                 return sum + diff * diff;
             });
     
-            this->_meanRTTLatencyMs = mean;
-            this->_sdRTTLatencyMs = std::sqrt(sumSquaredDiffs / this->_latencyDataPoints.size());
+            this->_meanRTTLatencyMs = WebXOptional<float>::Value(mean);
+            this->_sdRTTLatencyMs = WebXOptional<float>::Value(std::sqrt(sumSquaredDiffs / this->_latencyDataPoints.size()));
     
 
         } else {
-            this->_meanRTTLatencyMs = 0.0;
-            this->_sdRTTLatencyMs = 0.0;
+            this->_meanRTTLatencyMs = WebXOptional<float>::Empty();
+            this->_sdRTTLatencyMs = WebXOptional<float>::Empty();
         }
     }
 
@@ -164,9 +166,8 @@ private:
     WebXOptional<float> _meanBitrateMbps;
     WebXOptional<float> _meanBitrateRatio;
     WebXOptional<float> _currentGroupImageMbps;
-    
-    float _meanRTTLatencyMs;
-    float _sdRTTLatencyMs;
+    WebXOptional<float> _meanRTTLatencyMs;
+    WebXOptional<float> _sdRTTLatencyMs;
 };
 
 
