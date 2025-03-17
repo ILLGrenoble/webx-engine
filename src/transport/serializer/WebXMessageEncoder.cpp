@@ -9,6 +9,7 @@
 #include <models/message/WebXWindowsMessage.h>
 #include <models/message/WebXPingMessage.h>
 #include <models/message/WebXDisconnectMessage.h>
+#include <models/message/WebXQualityMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -46,6 +47,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::Disconnect: {
             auto disconnectMessage = std::static_pointer_cast<WebXDisconnectMessage>(message);
             return this->createDisconnectMessage(disconnectMessage);
+        }
+        case WebXMessage::Quality: {
+            auto qualityMessage = std::static_pointer_cast<WebXQualityMessage>(message);
+            return this->createQualityMessage(qualityMessage);
         }
 
         default:
@@ -206,6 +211,19 @@ zmq::message_t * WebXMessageEncoder::createDisconnectMessage(std::shared_ptr<Web
     size_t dataSize = MESSAGE_HEADER_LENGTH;
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+
+    return output;
+}
+
+zmq::message_t * WebXMessageEncoder::createQualityMessage(std::shared_ptr<WebXQualityMessage> message) const {
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 20;
+    zmq::message_t * output = new zmq::message_t(dataSize);
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+    buffer.write<int32_t>(message->quality.index);
+    buffer.write<float>(message->quality.imageFPS);
+    buffer.write<float>(message->quality.rgbQuality);
+    buffer.write<float>(message->quality.alphaQuality);
+    buffer.write<float>(message->quality.maxMbps);
 
     return output;
 }

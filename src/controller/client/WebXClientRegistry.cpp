@@ -3,10 +3,12 @@
 #include <models/message/WebXMessage.h>
 #include <models/message/WebXPingMessage.h>
 #include <models/message/WebXDisconnectMessage.h>
+#include <models/message/WebXQualityMessage.h>
 #include <spdlog/spdlog.h>
 
-WebXClientRegistry::WebXClientRegistry(const WebXSettings & settings) :
+WebXClientRegistry::WebXClientRegistry(const WebXSettings & settings, const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler) :
     _settings(settings),
+    _clientMessageHandler(clientMessageHandler),
     _randomNumberGenerator(std::random_device{}()),
     _clientIndexMask(0) {
 
@@ -84,57 +86,23 @@ const WebXResult<void> WebXClientRegistry::removeClient(uint32_t clientId) {
     }
 }
 
-void WebXClientRegistry::removeClientFromGroups(uint32_t clientId) {
-    // Find associated group and remove client from it
-    const std::shared_ptr<WebXClientGroup> & group = this->getGroupWithClientId(clientId);
-    if (group != nullptr) {
-        this->removeClientFromGroup(clientId, group);
-    }
-}
-
-void WebXClientRegistry::removeClientFromGroup(uint32_t clientId, const std::shared_ptr<WebXClientGroup> & group) {
-    group->removeClient(clientId);
-
-    // If group is empty then remove it
-    if (group->hasClients()) {
-        auto it = std::find(this->_groups.begin(), this->_groups.end(), group);
-        if (it != this->_groups.end()) {
-            this->_groups.erase(it);
-        }
-
-        spdlog::trace("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
-    }
-}
-
-void WebXClientRegistry::setClientQuality(uint32_t clientId, const WebXQuality & quality) {
+void WebXClientRegistry::setClientMaxQuality(uint32_t clientId, const WebXQuality & quality) {
     const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
 
     // Determine if client exists
     const std::shared_ptr<WebXClient> & client = this->getClientById(clientId);
     if (client != nullptr) {
         client->setMaxQuality(quality);
+        const std::shared_ptr<WebXClientGroup> & oldGroup = this->getGroupWithClientId(client->getId());
 
-        // Find associated group and check if quality is different
-        const std::shared_ptr<WebXClientGroup> & oldGroup = this->getGroupWithClientId(clientId);
-        if (oldGroup == nullptr) {
-            // shouldn't be here: a client should always be in a group
-            const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
-            group->addClient(client);
-        
-            spdlog::trace("Added client with Id {:08x} and index {:016x} to group with quality index {:d}", clientId, client->getIndex(), quality.index);
-
-        } else if (oldGroup != nullptr && oldGroup->getQuality() != quality) {
-            this->removeClientFromGroup(clientId, oldGroup);
-
-            const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
-            group->addClient(client);
-        
-            spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} to {:d}", clientId, client->getIndex(), oldGroup->getQuality().index, quality.index);
+        // Update the quality if too high
+        if (oldGroup == nullptr || oldGroup->getQuality() != quality) {
+            this->setClientQuality(client, quality);
         }
     }
 }
 
-void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler) {
+void WebXClientRegistry::handleClientPings() {
     const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
     
     // Update client ping statuses
@@ -152,8 +120,7 @@ void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_
         spdlog::debug("Ping Timeout for client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
 
         spdlog::trace("Sending Disconnect to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
-        auto message = std::make_shared<WebXDisconnectMessage>(client->getIndex());
-        clientMessageHandler(message);
+        this->_clientMessageHandler(std::make_shared<WebXDisconnectMessage>(client->getIndex()));
 
         this->removeClient(client->getId());
     }
@@ -162,8 +129,7 @@ void WebXClientRegistry::handleClientPings(const std::function<void(std::shared_
     for (auto & client : this->_clients) {
         if (client->getPingStatus() == WebXClient::RequiresPing) {
             spdlog::trace("Sending Ping to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
-            auto message = std::make_shared<WebXPingMessage>(client->getIndex());
-            clientMessageHandler(message);
+            this->_clientMessageHandler(std::make_shared<WebXPingMessage>(client->getIndex()));
             client->onPingSent();
         }
     }
@@ -213,10 +179,55 @@ void WebXClientRegistry::performQualityVerification() {
             const WebXQuality & newQuality = WebXQuality::QualityForIndex(suggestedQualityIndex);
             if (newQuality != quality) {
                 spdlog::info("Client {:08x}: {:s} quality to {:d} as bitrate ratio is {:s} (bitrate ratio = {:.2f}, image Mbps = {:.2f}, client bandwidth = {:.2f}, client RTT Latency = {:.0f})", client->getId(), suggestedQualityDelta < 0 ? "Reducing" : "Increasing", newQuality.index, suggestedQualityDelta < 0 ? "too high" : "low", meanBitrateRatio, meanImageMbps, meanBitrateMbps, meanRTTLatencyMs);
-                this->setClientQuality(client->getId(), newQuality);
+                this->setClientQuality(client, newQuality);
             }
         }
-
     }
 }
 
+void WebXClientRegistry::setClientQuality(std::shared_ptr<WebXClient> client, const WebXQuality & quality) {
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+    // Find associated group and check if quality is different
+    const std::shared_ptr<WebXClientGroup> & oldGroup = this->getGroupWithClientId(client->getId());
+    if (oldGroup == nullptr) {
+        // shouldn't be here: a client should always be in a group
+        const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
+        group->addClient(client);
+    
+        spdlog::trace("Added client with Id {:08x} and index {:016x} to group with quality index {:d}", client->getId(), client->getIndex(), quality.index);
+
+    } else if (oldGroup != nullptr && oldGroup->getQuality() != quality) {
+        this->removeClientFromGroup(client->getId(), oldGroup);
+
+        const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(quality);
+        group->addClient(client);
+    
+        spdlog::debug("Moved client with Id {:08x} and index {:016x} from group with quality {:d} to {:d}", client->getId(), client->getIndex(), oldGroup->getQuality().index, quality.index);
+    }
+
+    spdlog::trace("Sending Quality Message to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+    this->_clientMessageHandler(std::make_shared<WebXQualityMessage>(client->getIndex(), quality));
+}
+
+void WebXClientRegistry::removeClientFromGroups(uint32_t clientId) {
+    // Find associated group and remove client from it
+    const std::shared_ptr<WebXClientGroup> & group = this->getGroupWithClientId(clientId);
+    if (group != nullptr) {
+        this->removeClientFromGroup(clientId, group);
+    }
+}
+
+void WebXClientRegistry::removeClientFromGroup(uint32_t clientId, const std::shared_ptr<WebXClientGroup> & group) {
+    group->removeClient(clientId);
+
+    // If group is empty then remove it
+    if (group->hasClients()) {
+        auto it = std::find(this->_groups.begin(), this->_groups.end(), group);
+        if (it != this->_groups.end()) {
+            this->_groups.erase(it);
+        }
+
+        spdlog::trace("Removed empty group with with quality index {:d}. Now have {:d} client groups", group->getQuality().index, this->_groups.size());
+    }
+}

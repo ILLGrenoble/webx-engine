@@ -15,7 +15,7 @@ class WebXMessage;
 
 class WebXClientRegistry {
 public:
-    WebXClientRegistry(const WebXSettings & settings);
+    WebXClientRegistry(const WebXSettings & settings, const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler);
     virtual ~WebXClientRegistry();
 
     const WebXResult<std::pair<uint32_t, uint64_t>> addClient();
@@ -34,9 +34,9 @@ public:
         return (it != this->_clients.end()) ? *it : nullptr;
     }
 
-    void setClientQuality(uint32_t clientId, const WebXQuality & quality);
+    void setClientMaxQuality(uint32_t clientId, const WebXQuality & quality);
 
-    void handleClientPings(const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> clientMessageHandler);
+    void handleClientPings();
 
     void onPongReceived(uint32_t clientId, uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
         const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
@@ -113,12 +113,13 @@ private:
         return (it != this->_groups.end()) ? *it : nullptr;
     }
 
+    void setClientQuality(std::shared_ptr<WebXClient> client, const WebXQuality & quality);
     void removeClientFromGroups(uint32_t clientId);
     void removeClientFromGroup(uint32_t clientId, const std::shared_ptr<WebXClientGroup> & group);
 
-
 private:
     const WebXSettings & _settings;
+    const std::function<void(std::shared_ptr<WebXMessage> clientMessage)> _clientMessageHandler;
     std::mt19937 _randomNumberGenerator;
     uint64_t _clientIndexMask;
 

@@ -28,7 +28,9 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     _gateway(gateway),
     _settings(settings),
     _manager(settings, keyboardLayout),
-    _clientRegistry(settings),
+    _clientRegistry(settings, [&gateway](std::shared_ptr<WebXMessage> message) {
+        gateway.publishMessage(message);
+    }),
     _displayDirty(true),
     _cursorDirty(true),
     _threadSleepUs(1000000.0 / WebXController::THREAD_RATE),
@@ -191,7 +193,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
             uint32_t qualityIndex = qualityInstruction->qualityIndex;
-            this->_clientRegistry.setClientQuality(qualityInstruction->clientId, WebXQuality::QualityForIndex(qualityIndex));
+            this->_clientRegistry.setClientMaxQuality(qualityInstruction->clientId, WebXQuality::QualityForIndex(qualityIndex));
 
         } else if (instruction->type == WebXInstruction::Type::Pong) {
             auto pongInstruction = std::static_pointer_cast<WebXPongInstruction>(instruction);
@@ -215,9 +217,7 @@ void WebXController::notifyDisplayChanged(WebXDisplay * display) {
 }
 
 void WebXController::handleClientPings() {
-    this->_clientRegistry.handleClientPings([this](std::shared_ptr<WebXMessage> clientMessage) {
-        this->sendMessage(clientMessage);
-    });
+    this->_clientRegistry.handleClientPings();
 }
 
 float WebXController::updateClientWindows(WebXDisplay * display) {
@@ -309,7 +309,6 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
     auto message = std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     this->sendMessage(message);
 }
-
 
 void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
     message->commandId = commandId;

@@ -20,6 +20,7 @@ class WebXMessageEncoder;
 class WebXWindowsMessage;
 class WebXPingMessage;
 class WebXDisconnectMessage;
+class WebXQualityMessage;
 
 class WebXMessageEncoder {
     public:
@@ -173,6 +174,23 @@ private:
     //   padding: 4 bytes
     // Content:
     zmq::message_t * createDisconnectMessage(std::shared_ptr<WebXDisconnectMessage> message) const;
+
+    // Structure:
+    // Header: 48 bytes
+    //   sessionId: 16 bytes
+    //   clientIndexMask: 8 bytes
+    //   timestampMs: 8 bytes
+    //   type: 4 bytes
+    //   id: 4 bytes
+    //   length: 4 bytes
+    //   padding: 4 bytes
+    // Content:
+    //   index: 4 bytes
+    //   imageFPS: 4 bytes
+    //   rgbQuality: 4 bytes
+    //   alphaQuality: 4 bytes
+    //   maxMbps: 4 bytes
+    zmq::message_t * createQualityMessage(std::shared_ptr<WebXQualityMessage> message) const;
 
 private:
     const static int MESSAGE_HEADER_LENGTH = 48;
