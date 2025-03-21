@@ -106,8 +106,24 @@ void WebXClientConnector::mainLoop() {
                         const std::string ports = fmt::format("{},{}", this->_publisherPort, this->_collectorPort);
                         this->sendMessage(clientResponder, ports);
 
-                    } else if (instruction == "ping") {
-                        this->sendMessage(clientResponder, "pong");
+                    } else if (instruction.rfind("ping", 0) == 0) {
+                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        if (elements.size() == 1) {
+                            // Standard/legacy ping command
+                            this->sendMessage(clientResponder, "pong");
+
+                        } else {
+                            const std::string & sessionId = elements[1];
+                            if (sessionId != this->_sessionId) {
+                                spdlog::warn("Received ping with an invalid session Id: {}", sessionId);
+                                const std::string response = fmt::format("pang,{},Invalid session Id", sessionId);
+                                this->sendMessage(clientResponder, response);
+    
+                            } else {
+                                const std::string response = fmt::format("pong,{}", sessionId);
+                                this->sendMessage(clientResponder, response);
+                            }
+                        }
 
                     } else if (instruction.rfind("connect", 0) == 0) {
                         std::vector<std::string> elements = StringUtils::split(instruction, ',');
