@@ -96,14 +96,17 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(const WebXRectangle * imageRecta
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
+#ifdef ENABLE_DAMAGE_FIX
     // Fix for Ubuntu 20.04: xlib crashes if damage event occurs during XGetImage (specifically on a Chrome browser) 
     this->disableDamage();
-    
+#endif
+
     XImage * image = XGetImage(this->_display, this->_x11Window, rectangle.x(), rectangle.y(), rectangle.size().width(), rectangle.size().height(), AllPlanes, ZPixmap);
     std::shared_ptr<WebXImage> webXImage = nullptr;
 
-    // Fix for Ubuntu 20.04
+#ifdef ENABLE_DAMAGE_FIX
     this->enableDamage();
+#endif
 
     std::chrono::high_resolution_clock::time_point grab = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> grabDuration = grab - start;

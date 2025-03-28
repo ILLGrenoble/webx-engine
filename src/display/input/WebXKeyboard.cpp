@@ -103,7 +103,7 @@ void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) {
             this->updateLocks(keysymDef->locksToSet);
 
             // Press keysym->keycode mapping
-            spdlog::info("Press for keycode '{:d}' for kesym {:d} ('{:s}')", keysymDef->keycode, keysymDef->keysym, keysymDef->name);
+            spdlog::trace("Press for keycode '{:d}' for kesym {:d} ('{:s}')", keysymDef->keycode, keysymDef->keysym, keysymDef->name);
             XTestFakeKeyEvent(this->_x11Display, keysymDef->keycode, True, 0);
 
         } else {
