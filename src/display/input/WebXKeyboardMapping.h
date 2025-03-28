@@ -60,12 +60,15 @@
 #define WEBX_SHIFT_MODIFIER_KEY 1
 #define WEBX_ALTGR_MODIFIER_KEY 2
 
+#define WEBX_NUM_LOCK_KEY 1
+
 typedef struct WebXKeySymDefinition {
     std::string name;
     int keysym;
     int keycode;
     int modifiersToSet;
     int modifiersToClear;
+    int locksToSet;
 
 } WebXKeySymDefinition;
 

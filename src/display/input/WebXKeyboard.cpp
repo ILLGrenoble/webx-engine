@@ -10,7 +10,8 @@ std::string WebXKeyboard::DEFAULT_KEYBOARD_LAYOUT = "gb";
 
 WebXKeyboard::WebXKeyboard(Display * x11Display) :
     _x11Display(x11Display),
-    _keyboardMapping(NULL) {
+    _keyboardMapping(NULL),
+    _locksSet(0) {
 }
 
 WebXKeyboard::~WebXKeyboard() {
@@ -83,7 +84,7 @@ int WebXKeyboard::getMappedKey(int key) const {
 //     return XKeysymToKeycode(this->_x11Display, mappedKey);
 // }
 
-void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) const {
+void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) {
     if (this->_keyboardMapping == NULL) {
         return;
     }
@@ -95,16 +96,14 @@ void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) con
     const WebXKeySymDefinition * keysymDef = this->getKeySymDefinition(mappedKey);
     if (keysymDef != NULL && !ignoreKeysym(keysym)) {
         if (pressed) {
-            // Clear all modifier if from client
-            if (isFromClient) {
-                this->clearLocks();
-            }
-
             // Set all necessary modifiers
             this->updateModifiers(keysymDef->modifiersToSet, keysymDef->modifiersToClear);
 
+            // Set all necessary locks
+            this->updateLocks(keysymDef->locksToSet);
+
             // Press keysym->keycode mapping
-            spdlog::trace("Press for keycode '{:d}' for kesym {:d} ('{:s}')", keysymDef->keycode, keysymDef->keysym, keysymDef->name);
+            spdlog::info("Press for keycode '{:d}' for kesym {:d} ('{:s}')", keysymDef->keycode, keysymDef->keysym, keysymDef->name);
             XTestFakeKeyEvent(this->_x11Display, keysymDef->keycode, True, 0);
 
         } else {
@@ -114,6 +113,10 @@ void WebXKeyboard::handleKeySym(int keysym, bool pressed, bool isFromClient) con
 
             // Release all used modifiers to clean up the state
             this->releaseModifiers(keysymDef->modifiersToSet);
+
+            if (isFromClient) {
+                this->releaseLocks(keysymDef->locksToSet);
+            }
         }
 
         XFlush(this->_x11Display);
@@ -138,11 +141,7 @@ bool WebXKeyboard::ignoreKeysym(int keysym) const {
     return keysym == WEBX_KEYBOARD_KEYSYM_CAPS_LOCK;
 }
 
-void WebXKeyboard::clearLocks() const {
-    this->handleKeySym(WEBX_KEYBOARD_KEYSYM_CAPS_LOCK, false);
-}
-
-void WebXKeyboard::updateModifiers(int modifiersToSet, int modifiersToClear) const {
+void WebXKeyboard::updateModifiers(int modifiersToSet, int modifiersToClear) {
     if (modifiersToSet & WEBX_SHIFT_MODIFIER_KEY) {
         this->handleKeySym(WEBX_KEYBOARD_KEYSYM_LSHIFT, true);
     
@@ -161,12 +160,41 @@ void WebXKeyboard::updateModifiers(int modifiersToSet, int modifiersToClear) con
     }
 }
 
-void WebXKeyboard::releaseModifiers(int modifiers) const {
+void WebXKeyboard::releaseModifiers(int modifiers) {
     if (modifiers & WEBX_SHIFT_MODIFIER_KEY) {
         this->handleKeySym(WEBX_KEYBOARD_KEYSYM_LSHIFT, false);
     }
 
     if (modifiers & WEBX_ALTGR_MODIFIER_KEY) {
         this->handleKeySym(WEBX_KEYBOARD_KEYSYM_ALTGR, false);
+    }
+}
+
+void WebXKeyboard::clearLocks() {
+
+    if (this->_locksSet & WEBX_NUM_LOCK_KEY) {
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, true);
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, false);
+    }
+    this->_locksSet = 0;
+}
+
+void WebXKeyboard::updateLocks(int locks) {
+    if (locks & WEBX_NUM_LOCK_KEY && (this->_locksSet & WEBX_NUM_LOCK_KEY) == 0) {
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, true);
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, false);
+
+        // Set numlock bit
+        this->_locksSet |= WEBX_NUM_LOCK_KEY;
+    }
+}
+
+void WebXKeyboard::releaseLocks(int locks) {
+    if (locks & WEBX_NUM_LOCK_KEY && (this->_locksSet & WEBX_NUM_LOCK_KEY) != 0) {
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, true);
+        this->handleKeySym(WEBX_KEYBOARD_KEYSYM_NUM_LOCK, false);
+        
+        // Clear numlock bit
+        this->_locksSet &= ~WEBX_NUM_LOCK_KEY;
     }
 }
