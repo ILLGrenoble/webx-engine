@@ -1,10 +1,16 @@
 import { evdevKeycodes } from "./keycodes.js";
+import { modifiers } from "./parser.js";
 
 export const interpret = (symbols, keysymDefs) => {
   return symbols.map(({ layout, name, symbols }) => {
 
     console.log(`Interpreting ${name}`);
-    const interpreted = symbols.map(({charVal, rdpScancode, ...keysymExtra}) => {
+    const interpreted = symbols.map(({charVal, rdpScancode, locksSet, ...keysymExtra}) => {
+
+      // Remove any with caps lock set
+      if (locksSet != null && locksSet.includes(modifiers.CAPS_LOCK_KEY)) {
+        return null;
+      }
 
       // Convert keysm/unicode to X11 keysym
       const keysymEntry = keysymDefs.find(keysymDef => {
@@ -38,7 +44,7 @@ export const interpret = (symbols, keysymDefs) => {
         return null;
       } 
 
-      return {keysymValue: keysymEntry.value, keysymName: keysymEntry.name, keycode, charVal, ...keysymExtra};
+      return {keysymValue: keysymEntry.value, keysymName: keysymEntry.name, keycode, charVal, locksSet, ...keysymExtra};
 
     }).filter(entry => entry != null);
 
