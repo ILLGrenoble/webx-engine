@@ -44,6 +44,10 @@ export const translate = (symbolMappings) => {
             if (keysymMapping.modifiersClear.length > 0) {
                 mapping += ` | ${keysymMapping.modifiersClear.join(' | ')}`;
             }
+            mapping += ', 0';
+            if (keysymMapping.locksSet.length > 0) {
+                mapping += ` | ${keysymMapping.locksSet.join(' | ')}`;
+            }
 
             mapping += ' } }';
 

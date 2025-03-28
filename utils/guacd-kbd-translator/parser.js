@@ -9,9 +9,10 @@ export const modifiers = {
 
 
 const convertToModifier = (text) => {
-    if (text === 'caps') {
-        return {isLock: true, value: modifiers.CAPS_LOCK_KEY};
-    } else if (text === 'num') {
+    // if (text === 'caps') {
+    //     return {isLock: true, value: modifiers.CAPS_LOCK_KEY};
+    // } else 
+    if (text === 'num') {
         return {isLock: true, value: modifiers.NUM_LOCK_KEY};
     } else if (text === 'shift') {
         return {isLock: false, value: modifiers.SHIFT_MODIFIER_KEY};

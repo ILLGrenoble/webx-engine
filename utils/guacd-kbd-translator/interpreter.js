@@ -4,12 +4,7 @@ export const interpret = (symbols, keysymDefs) => {
   return symbols.map(({ layout, name, symbols }) => {
 
     console.log(`Interpreting ${name}`);
-    const interpreted = symbols.map(({charVal, rdpScancode, locksSet, ...keysymExtra}) => {
-
-      // Remove any mappings with locks
-      if (locksSet.length > 0) {
-        return null;
-      }
+    const interpreted = symbols.map(({charVal, rdpScancode, ...keysymExtra}) => {
 
       // Convert keysm/unicode to X11 keysym
       const keysymEntry = keysymDefs.find(keysymDef => {
