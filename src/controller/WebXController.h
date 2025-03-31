@@ -47,7 +47,9 @@ private:
     float updateClientWindows(WebXDisplay * display);
     void notifyMouseChanged(WebXDisplay * display);
 
-    void sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId = 0);
+    void sendMessage(std::shared_ptr<WebXMessage> message) {
+        this->_gateway.publishMessage(message);
+    }
 
 private:
     const static unsigned int THREAD_RATE = 60;

@@ -161,13 +161,13 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
     
         } else if (instruction->type == WebXInstruction::Type::Screen) {
             // Send message to specific client
-            auto message = std::make_shared<WebXScreenMessage>(client->getIndex(), display->getScreenSize());
-            this->sendMessage(message, instruction->id);
+            auto message = std::make_shared<WebXScreenMessage>(client->getIndex(), instruction->id, display->getScreenSize());
+            this->sendMessage(message);
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
             // Send message to specific client
-            auto message = std::make_shared<WebXWindowsMessage>(client->getIndex(), display->getVisibleWindowsProperties());
-            this->sendMessage(message, instruction->id);
+            auto message = std::make_shared<WebXWindowsMessage>(client->getIndex(), instruction->id, display->getVisibleWindowsProperties());
+            this->sendMessage(message);
         
         } else if (instruction->type == WebXInstruction::Type::Image) {
             auto imageInstruction = std::static_pointer_cast<WebXImageInstruction>(instruction);
@@ -176,8 +176,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             std::shared_ptr<WebXImage> image = display->getImage(imageInstruction->windowId, quality);
 
             // Send message to specific client
-            auto message = std::make_shared<WebXImageMessage>(client->getIndex(), imageInstruction->windowId, image);
-            this->sendMessage(message, instruction->id);
+            auto message = std::make_shared<WebXImageMessage>(client->getIndex(), instruction->id, imageInstruction->windowId, image);
+            this->sendMessage(message);
 
         } else if (instruction->type == WebXInstruction::Type::Cursor) {
             auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
@@ -187,8 +187,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorImageInstruction->cursorId);
             
             // Send message to specific client
-            auto message = std::make_shared<WebXCursorImageMessage>(client->getIndex(), mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
-            this->sendMessage(message, instruction->id);
+            auto message = std::make_shared<WebXCursorImageMessage>(client->getIndex(), instruction->id, mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage());
+            this->sendMessage(message);
 
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
@@ -308,10 +308,5 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
     // Send message to all clients
     auto message = std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     this->sendMessage(message);
-}
-
-void WebXController::sendMessage(std::shared_ptr<WebXMessage> message, uint32_t commandId) {
-    message->commandId = commandId;
-    this->_gateway.publishMessage(message);
 }
 

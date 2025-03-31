@@ -4,6 +4,14 @@
 #include <string>
 #include <cstdint>
 
+/**
+ * @class WebXMessage
+ * @brief Base class for all WebX messages.
+ * 
+ * This class serves as the base for various message types used in
+ * communication between the WebX Engine and clients. It provides common properties
+ * such as message type, client index mask, and command ID.
+ */
 class WebXMessage {
 public:
     enum Type {
@@ -22,11 +30,17 @@ public:
         type(type),
         clientIndexMask(clientIndexMask),
         commandId(-1) {}
+
+    WebXMessage(Type type, uint64_t clientIndexMask, uint32_t commandId) :
+        type(type),
+        clientIndexMask(clientIndexMask),
+        commandId(commandId) {}
+
     virtual ~WebXMessage() {}
 
-    Type type;
-    uint64_t clientIndexMask;
-    uint32_t commandId;
+    const Type type;
+    const uint64_t clientIndexMask;
+    const uint32_t commandId;
 };
 
 
