@@ -4,8 +4,6 @@
 #include <string>
 #include <map>
 
-
-
 /**
  * The X11 keysym for Num Lock.
  */
@@ -56,12 +54,24 @@
  */
 #define WEBX_KEYBOARD_KEYSYM_ALTGR 0xFE03
 
-
+/**
+ * Modifier key for Shift.
+ */
 #define WEBX_SHIFT_MODIFIER_KEY 1
+
+/**
+ * Modifier key for AltGr.
+ */
 #define WEBX_ALTGR_MODIFIER_KEY 2
 
+/**
+ * Lock key for Num Lock.
+ */
 #define WEBX_NUM_LOCK_KEY 1
 
+/**
+ * Represents a keysym definition, including its name, keysym, keycode, and modifier/lock settings.
+ */
 typedef struct WebXKeySymDefinition {
     std::string name;
     int keysym;
@@ -72,6 +82,9 @@ typedef struct WebXKeySymDefinition {
 
 } WebXKeySymDefinition;
 
+/**
+ * Represents a keyboard mapping, including its name, layout, and key mapping.
+ */
 typedef struct WebXKeyboardMapping {
     std::string name;
     std::string layout;
