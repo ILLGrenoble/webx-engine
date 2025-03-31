@@ -5,7 +5,10 @@
 #include <string>
 #include <spdlog/spdlog.h>
 
-
+/* 
+ * Utility function to get an integer value from an environment variable 
+ * or use a default value if the variable is not set or invalid.
+ */
 static int webx_settings_env_or_default(const std::string & envVarName, int defaultValue) {
     const char * envVar = std::getenv(envVarName.c_str());
     if (envVar) {
@@ -20,6 +23,10 @@ static int webx_settings_env_or_default(const std::string & envVarName, int defa
     return defaultValue;
 }
 
+/* 
+ * Utility function to get a boolean value from an environment variable 
+ * or use a default value if the variable is not set.
+ */
 static bool webx_settings_env_or_default(const std::string & envVarName, bool defaultValue) {
     const char * envVar = std::getenv(envVarName.c_str());
     if (envVar) {
@@ -28,6 +35,10 @@ static bool webx_settings_env_or_default(const std::string & envVarName, bool de
     return defaultValue;
 }
 
+/* 
+ * Utility function to get a string value from an environment variable 
+ * or use a default value if the variable is not set.
+ */
 static std::string webx_settings_env_or_default(const std::string & envVarName, const char * defaultValue) {
     const char * envVar = std::getenv(envVarName.c_str());
     if (envVar) {
@@ -37,15 +48,26 @@ static std::string webx_settings_env_or_default(const std::string & envVarName, 
     return defaultValue;
 }
 
-
+/* 
+ * Class to manage quality-related settings for WebX.
+ * Includes options for increasing quality on mouse over, 
+ * selecting a coverage quality function, and limiting quality by data rate.
+ */
 class WebXQualitySettings {
 public:
+    /* 
+     * Enum to define different coverage quality functions.
+     */
     enum CoverageQualityFunc {
-        Disabled = 0,
-        Linear,
-        Quadratic,
+        Disabled = 0,  /* Quality function is disabled */
+        Linear,        /* Linear quality function */
+        Quadratic,     /* Quadratic quality function */
     };
+
 public:
+    /* 
+     * Constructor initializes settings from environment variables or defaults.
+     */
     WebXQualitySettings() : 
         increaseQualityOnMouseOver(webx_settings_env_or_default("WEBX_ENGINE_INCREASED_QUALITY_ON_MOUSE_OVER", true)),
         coverageQualityFunc(convertCoverageQualityFuncString(webx_settings_env_or_default("WEBX_ENGINE_COVERAGE_QUALITY_FUNC", "quadratic"))),
@@ -56,6 +78,9 @@ public:
     bool limitQualityByDataRate;
 
 private:
+    /* 
+     * Helper function to convert a string to a CoverageQualityFunc enum.
+     */
     CoverageQualityFunc convertCoverageQualityFuncString(const std::string & coverageQualityFuncString) {
         if (coverageQualityFuncString == "linear") {
             return Linear;
@@ -67,8 +92,15 @@ private:
 
 };
 
+/* 
+ * Class to manage transport-related settings for WebX.
+ * Includes configuration for ports, IPC paths, and session identifiers.
+ */
 class WebXTransportSettings {
 public:
+    /* 
+     * Constructor initializes settings from environment variables or defaults.
+     */
     WebXTransportSettings() :
         connectorPort(webx_settings_env_or_default("WEBX_ENGINE_CONNECTOR_PORT", 5555)),
         collectorPort(webx_settings_env_or_default("WEBX_ENGINE_COLLECTOR_PORT", 5556)),
@@ -81,6 +113,10 @@ public:
         sessionIdString(webx_settings_env_or_default("WEBX_ENGINE_SESSION_ID", "00000000000000000000000000000000")) {
     }
 
+    /* 
+     * Helper function to convert a session ID string to a byte array.
+     * Exits the program if the session ID is invalid.
+     */
     std::array<unsigned char, 16> convertSessionIdStringToBytes(const std::string & sessionIdString) {
         if (sessionIdString.length() == 32) {
             std::array<unsigned char, 16> sessionId;
@@ -111,8 +147,15 @@ public:
     const std::string sessionIdString;
 };
 
+/* 
+ * Class to manage overall settings for WebX.
+ * Includes logging configuration, transport settings, and quality settings.
+ */
 class WebXSettings {
 public:
+    /* 
+     * Constructor initializes settings from environment variables or defaults.
+     */
     WebXSettings() :
         logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "debug")) {
     }

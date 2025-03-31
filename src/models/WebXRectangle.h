@@ -7,8 +7,16 @@
 #include <spdlog/spdlog.h>
 #include "WebXSize.h"
 
+/**
+ * @class WebXRectangle
+ * @brief Represents a rectangle with position, size, and utility methods for geometric operations.
+ */
 class WebXRectangle {
 public:
+    /**
+     * @brief Default constructor for WebXRectangle.
+     * Initializes the rectangle to (0, 0) with zero width and height.
+     */
     WebXRectangle() :
         _x(0),
         _y(0),
@@ -16,6 +24,14 @@ public:
         _right(0),
         _top(0),
         _bottom(0) {}
+
+    /**
+     * @brief Constructs a WebXRectangle object with specified position and size.
+     * @param x The x-coordinate of the bottom-left corner.
+     * @param y The y-coordinate of the bottom-left corner.
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     */
     WebXRectangle(int x, int y, int width, int height) :
         _x(x),
         _y(y),
@@ -24,6 +40,7 @@ public:
         _right(x + width),
         _top(y + height),
         _bottom(y) {}
+
     WebXRectangle(const WebXRectangle & rectangle) :
         _x(rectangle._x),
         _y(rectangle._y),
@@ -47,14 +64,19 @@ public:
         return *this;
     }
 
-    bool operator == (const WebXRectangle & rectangle) const {
+    bool operator==(const WebXRectangle & rectangle) const {
         return this->_left == rectangle._left && this->_right == rectangle._right && this->_top == rectangle._top && this->_bottom == rectangle._bottom;
     }
 
-    bool operator != (const WebXRectangle & rectangle) const {
+    bool operator!=(const WebXRectangle & rectangle) const {
         return !operator==(rectangle);
     }
 
+    /**
+     * @brief Checks if the rectangle is visible within a given viewport.
+     * @param viewport The viewport dimensions.
+     * @return True if the rectangle is visible, false otherwise.
+     */
     bool isVisible(const WebXSize & viewport) const {
         return
             this->_left < viewport.width() &&

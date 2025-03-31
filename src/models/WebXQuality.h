@@ -4,8 +4,20 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 
+/**
+ * @class WebXQuality
+ * @brief Represents quality settings for image transfer, including FPS, quality levels, and bandwidth limits.
+ */
 class WebXQuality {
 public:
+    /**
+     * @brief Constructs a WebXQuality object with specified parameters.
+     * @param index The quality index (1-10).
+     * @param imageFPS The frames per second for image updates.
+     * @param rgbQuality The quality level for RGB channels.
+     * @param alphaQuality The quality level for alpha channels.
+     * @param maxMbps The maximum bandwidth in Mbps.
+     */
     WebXQuality(int index, float imageFPS, float rgbQuality, float alphaQuality, float maxMbps) :
         index(index),
         imageFPS(imageFPS),
@@ -14,6 +26,10 @@ public:
         maxMbps(maxMbps),
         imageUpdateTimeUs(1000000.0 / imageFPS) {}
 
+    /**
+     * @brief Copy constructor for WebXQuality.
+     * @param quality The WebXQuality object to copy from.
+     */
     WebXQuality(const WebXQuality & quality) :
         index(quality.index),
         imageFPS(quality.imageFPS),
@@ -23,27 +39,55 @@ public:
         imageUpdateTimeUs(quality.imageUpdateTimeUs) {}
         virtual ~WebXQuality() {}
 
+    /**
+     * @brief Equality operator for WebXQuality.
+     * @param quality The WebXQuality object to compare with.
+     * @return True if both qualities have the same index, false otherwise.
+     */
     bool operator == (const WebXQuality & quality) const {
         return this->index == quality.index;
     }
 
+    /**
+     * @brief Inequality operator for WebXQuality.
+     * @param quality The WebXQuality object to compare with.
+     * @return True if the qualities have different indices, false otherwise.
+     */
     bool operator != (const WebXQuality & quality) const {
         return this->index != quality.index;
     }
 
+    /**
+     * @brief Less-than operator for WebXQuality.
+     * @param quality The WebXQuality object to compare with.
+     * @return True if this quality's index is less than the other's, false otherwise.
+     */
     bool operator < (const WebXQuality & quality) const {
         return this->index < quality.index;
     }
 
+    /**
+     * @brief Greater-than operator for WebXQuality.
+     * @param quality The WebXQuality object to compare with.
+     * @return True if this quality's index is greater than the other's, false otherwise.
+     */
     bool operator > (const WebXQuality & quality) const {
         return this->index > quality.index;
     }
 
+    /**
+     * @brief Gets the maximum quality setting.
+     * @return A reference to the maximum WebXQuality object.
+     */
     static const WebXQuality & MaxQuality() {
         return QUALITY_SETTINGS[QUALITY_SETTINGS.size() - 1];
     }
 
-
+    /**
+     * @brief Gets the quality setting for a specific index.
+     * @param qualityIndex The quality index (1-10).
+     * @return A reference to the WebXQuality object for the specified index.
+     */
     static const WebXQuality & QualityForIndex(uint32_t qualityIndex) {
         if (qualityIndex < 1 || qualityIndex > 10) {
             spdlog::warn("Attempt to get the quality for an invalid index ({:d})", qualityIndex);

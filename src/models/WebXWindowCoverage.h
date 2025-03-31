@@ -5,41 +5,79 @@
 #include <algorithm>
 #include "WebXRectangle.h"
 
+/**
+ * @class WebXWindowCoverage
+ * @brief Represents the coverage of a window, including the percentage of the window covered and whether the mouse is over it.
+ */
 class WebXWindowCoverage {
 private:
-    // Event structure for the sweep line algorithm
+    /**
+     * @struct SweepLineEvent
+     * @brief Represents an event in the sweep line algorithm for calculating coverage.
+     */
     struct SweepLineEvent {
-        int x, y1, y2, type; // x-coordinate, y range, event type (1 = entering, -1 = leaving)
+        int x, y1, y2, type; /**< x-coordinate, y range, and event type (1 = entering, -1 = leaving). */
         bool operator<(const SweepLineEvent& e) const {
-            return x < e.x; // Sort by x-coordinate
+            return x < e.x; /**< Sort by x-coordinate. */
         }
     };
 
 public:
+    /**
+     * @brief Default constructor for WebXWindowCoverage.
+     * Initializes coverage to 0.0 and mouseOver to false.
+     */
     WebXWindowCoverage() :
         coverage(0.0),
         mouseOver(false) {}
+
+    /**
+     * @brief Constructs a WebXWindowCoverage object with specified coverage and mouseOver state.
+     * @param coverage The percentage of the window covered (0.0 to 1.0).
+     * @param mouseOver Whether the mouse is over the window.
+     */
     WebXWindowCoverage(double coverage, bool mouseOver) :
         coverage(coverage),
         mouseOver(mouseOver) {}
+
+    /**
+     * @brief Destructor for WebXWindowCoverage.
+     */
     virtual ~WebXWindowCoverage() {}
 
-
-    bool operator == (const WebXWindowCoverage & coverage) const {
+    /**
+     * @brief Equality operator for WebXWindowCoverage.
+     * @param coverage The WebXWindowCoverage object to compare with.
+     * @return True if both coverage and mouseOver are equal, false otherwise.
+     */
+    bool operator==(const WebXWindowCoverage & coverage) const {
         return this->coverage == coverage.coverage && this->mouseOver == coverage.mouseOver;
     }
 
-    bool operator != (const WebXWindowCoverage & coverage) const {
+    /**
+     * @brief Inequality operator for WebXWindowCoverage.
+     * @param coverage The WebXWindowCoverage object to compare with.
+     * @return True if either coverage or mouseOver are not equal, false otherwise.
+     */
+    bool operator!=(const WebXWindowCoverage & coverage) const {
         return !operator==(coverage);
     }
 
+    /**
+     * @brief Calculates the overlap coverage of a base rectangle with a set of covering rectangles.
+     * @param base The base rectangle.
+     * @param coveringRectangles A vector of rectangles covering the base rectangle.
+     * @param mouseX The x-coordinate of the mouse position.
+     * @param mouseY The y-coordinate of the mouse position.
+     * @return A WebXWindowCoverage object representing the coverage percentage and mouseOver state.
+     */
     static WebXWindowCoverage OverlapCalc(const WebXRectangle & base, const std::vector<WebXRectangle> & coveringRectangles, int mouseX, int mouseY) {
         std::vector<SweepLineEvent> events;
 
         // Collect all vertical edges as events
         for (const auto& rect : coveringRectangles) {
             if (!base.overlap(rect)) {
-                 // Ignore completely outside rectangles
+                // Ignore completely outside rectangles
                 continue;
             }
     
@@ -54,7 +92,7 @@ public:
         int coveredArea = 0;
         std::multiset<std::pair<int, int>> activeIntervals; // Stores active y-intervals
 
-        // Check if mouse if over window
+        // Check if mouse is over the window
         bool mouseOver = (base.right() >= mouseX && base.left() <= mouseX && base.top() >= mouseY && base.bottom() <= mouseY);
 
         for (const auto& event : events) {
