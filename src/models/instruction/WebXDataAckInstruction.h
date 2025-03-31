@@ -32,9 +32,9 @@ public:
      */
     virtual ~WebXDataAckInstruction() {}
 
-    uint64_t sendTimestampMs;
-    uint64_t recvTimestampMs;
-    uint32_t dataLength;
+    const uint64_t sendTimestampMs;
+    const uint64_t recvTimestampMs;
+    const uint32_t dataLength;
 };
 
 #endif //WEBX_DATA_ACK_INSTRUCTION_H

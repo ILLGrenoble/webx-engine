@@ -32,8 +32,8 @@ public:
     virtual ~WebXKeyboardInstruction() {
     }
 
-    int key;
-    bool pressed;
+    const int key;
+    const bool pressed;
 
 };
 

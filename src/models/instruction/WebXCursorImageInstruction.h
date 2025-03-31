@@ -30,7 +30,7 @@ public:
     virtual ~WebXCursorImageInstruction() {
     }
 
-    uint32_t cursorId;
+    const uint32_t cursorId;
 };
 
 #endif //WEBX_CURSOR_INSTRUCTION_H

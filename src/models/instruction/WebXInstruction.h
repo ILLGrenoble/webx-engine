@@ -45,9 +45,9 @@ public:
      */
     virtual ~WebXInstruction() {}
 
-    Type type;
-    uint32_t clientId;
-    uint32_t id;
+    const Type type;
+    const uint32_t clientId;
+    const uint32_t id;
 
 };
 

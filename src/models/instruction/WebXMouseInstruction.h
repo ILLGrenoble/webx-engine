@@ -34,23 +34,9 @@ public:
     virtual ~WebXMouseInstruction() {
     }
 
-    /**
-     * @brief Updates the values of the mouse instruction.
-     * @param id The unique ID of the instruction.
-     * @param x The x-coordinate of the mouse.
-     * @param y The y-coordinate of the mouse.
-     * @param buttonMask The state of mouse buttons.
-     */
-    void setValues(uint32_t id, int x, int y, unsigned int buttonMask) {
-        this->id = id;
-        this->x = x;
-        this->y = y;
-        this->buttonMask = buttonMask;
-    }
-
-    int x;
-    int y;
-    unsigned int buttonMask;
+    const int x;
+    const int y;
+    const unsigned int buttonMask;
 
 };
 

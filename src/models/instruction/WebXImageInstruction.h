@@ -30,7 +30,7 @@ public:
     virtual ~WebXImageInstruction() {
     }
 
-    uint32_t windowId;
+    const uint32_t windowId;
 };
 
 #endif //WEBX_IMAGE_INSTRUCTION_H

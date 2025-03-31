@@ -31,7 +31,7 @@ public:
     virtual ~WebXQualityInstruction() {
     }
 
-    uint32_t qualityIndex; ///< The quality index for the instruction.
+    const uint32_t qualityIndex;
 };
 
 #endif //WEBX_QUALITY_INSTRUCTION_H

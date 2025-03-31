@@ -31,8 +31,8 @@ public:
      */
     virtual ~WebXPongInstruction() {}
 
-    uint64_t sendTimestampMs;
-    uint64_t recvTimestampMs;
+    const uint64_t sendTimestampMs;
+    const uint64_t recvTimestampMs;
 };
 
 #endif //WEBX_PONG_INSTRUCTION_H
