@@ -10,6 +10,14 @@
 
 static WebXController * controller = nullptr;
 
+/**
+ * @brief Signal handler for handling system signals.
+ * 
+ * This function handles the SIGINT signal to gracefully shut down the application.
+ * It stops the WebXController if it is running.
+ * 
+ * @param signal The signal number received.
+ */
 static void signalHandler(int signal) {
     if (signal == SIGINT) {
         spdlog::info("Shutdown");
@@ -20,6 +28,17 @@ static void signalHandler(int signal) {
     }
 }
 
+/**
+ * @brief Entry point of the WebX application.
+ * 
+ * This function initializes the application, processes command-line arguments,
+ * sets up the necessary components (controller, transport, etc.), and starts
+ * the WebX server. It also handles graceful shutdown on receiving SIGINT.
+ * 
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line arguments.
+ * @return int Exit status of the application.
+ */
 int main(int argc, char *argv[]) {  
     spdlog::set_level(spdlog::level::info);
     std::signal(SIGINT, signalHandler);

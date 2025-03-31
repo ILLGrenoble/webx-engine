@@ -11,7 +11,7 @@
 /**
  * Template class defining a parallel queue. The access is sequentialised to avoid concurrent access problems. We put or get elements from
  * the queue. The queue is initialised with a size. The call to put is blocking when the queue is full. The call to get is also blocking when 
- * the queue is empty. The queue can be stopped. Any call to put or get lead to the UnavalaibleException.  
+ * the queue is empty. The queue can be stopped. Any call to put or get lead to the UnavailableException.  
  */
 template<typename ItemType>
 class WebXQueue {
@@ -29,17 +29,24 @@ public:
 	virtual ~WebXQueue();
 
 	/**
-	 * Puts the item in the correct postion corresponding to its priority. Is blocking when the queue is full. Waits for the queue to be not full. 
+	 * Puts the item in the correct position corresponding to its priority. Is blocking when the queue is full. Waits for the queue to be not full. 
+	 * 
+	 * @param item The item to insert into the queue.
+	 * @param priority The priority of the item (default is 0).
 	 */
 	void put(ItemType item, int priority = 0);
 
 	/**
 	 * Gets the item. Is blocking when the queue is empty. Waits for the queue to be not empty.
+	 * 
+	 * @return The item retrieved from the queue.
 	 */
 	ItemType get();
 
 	/**
-	 * Gets the size.
+	 * Gets the number of items in the queue.
+	 * 
+	 * @return The number of items in the queue.
 	 */
 	long getNumberOfItems();
 	
@@ -48,6 +55,11 @@ public:
 	 */
 	void stop();
 
+	/**
+	 * Returns the current size of the queue.
+	 * 
+	 * @return The size of the queue.
+	 */
 	int size() {
 		return this->_queue.size();
 	}

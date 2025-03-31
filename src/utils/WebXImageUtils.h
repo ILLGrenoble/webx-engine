@@ -3,7 +3,14 @@
 
 #include <stdlib.h>
 
-
+/**
+ * Counts the number of transparent pixels in the given image data.
+ * 
+ * @param data Pointer to the image data.
+ * @param length The number of pixels in the image.
+ * @param exitOnFound If true, stops counting after finding the first transparent pixel.
+ * @return The number of transparent pixels.
+ */
 inline int webx_countTransparentPixels(const u_int32_t * data, size_t length, bool exitOnFound = false) {
 
     int alphaCount = 0;
@@ -47,6 +54,12 @@ inline int webx_countTransparentPixels(const u_int32_t * data, size_t length, bo
     return alphaCount;
 }
 
+/**
+ * Converts the given image data to alpha-only format.
+ * 
+ * @param data Pointer to the image data.
+ * @param length The number of pixels in the image.
+ */
 inline void webx_convertToAlpha(u_int32_t * data, size_t length) {
 
     u_int32_t * src = data;

@@ -13,7 +13,7 @@
  * can be sent to/from Host, IO and Clusters and deserialisation on the receiver side. It uses an optimisation
  * of data storage to statically offset member data in custom classes.
  *
- * WebXBinaryBuffer is intended for use with generated classes using the k1bufferc generator. The user write .k1b
+ * WebXBinaryBuffer is intended for use with generated classes using the k1bufferc generator. The user writes .k1b
  * IDL files containing information on the structure of the messages. The generator creates C++ classes inheriting
  * from the WebXBinaryBuffer.
  *
@@ -199,10 +199,14 @@ public:
 		_readOffset = sizeof(MessageHeader);
 	}
 
+    /**
+     * Advances the read offset by the specified increment.
+     * 
+     * @param increment The number of bytes to advance the read offset.
+     */
     inline void advanceReadOffset(unsigned int increment) {
         _readOffset += increment;
     }
-
 
 private:
 	/**

@@ -8,6 +8,12 @@
 #include <image/WebXImage.h>
 #include <models/WebXRectangle.h>
 
+/**
+ * Checks if the given XImage contains any transparent pixels.
+ * 
+ * @param image Pointer to the XImage to check.
+ * @return True if the image contains transparent pixels, false otherwise.
+ */
 inline bool checkTransparent(XImage * image) {
     if (image->depth == 24) {
         return false;
@@ -31,6 +37,15 @@ inline bool checkTransparent(XImage * image) {
     return transparencyCount > 0;
 }
 
+/**
+ * Modifies the given XImage to make it opaque within the specified subwindow rectangle.
+ * 
+ * @param image Pointer to the XImage to modify.
+ * @param mainWindowRectangle Rectangle representing the main window.
+ * @param subWindowRectangle Rectangle representing the subwindow to make opaque.
+ * @param imageRectangle Rectangle representing the image bounds.
+ * @return True if the image was modified, false otherwise.
+ */
 inline bool makeOpaque(XImage * image, WebXRectangle * mainWindowRectangle, WebXRectangle * subWindowRectangle, WebXRectangle * imageRectangle) {
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
