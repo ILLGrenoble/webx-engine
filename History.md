@@ -1,3 +1,36 @@
+1.0.0 01/04/2025
+================
+ * Full code documentation
+ * Add release build for Ubuntu 20.04 
+ * Fix bug: avoid removing damage listener when retreiving window images to avoid graphical discrepencies
+ * Fix bug: handle numerical keyboard correctly
+ * Add maximum quality settings from client and send quality data to client
+ * Modify quality group of each client depending on ratio of image transfer rate from engine to network datarate calculated for client
+ * Calculate mean bitrate of each individual client through ACK instructions as response to image transfer messages
+ * Calculate mean and standard-deviation Round-Trip Time latency between engine and each client
+ * Handle ping-pong messages from engine to each client: disconnect clients if no response after 10s (send disconnect message to relay)
+ * Remove window image updates from WebXController and delegate to each individual group (each with different refresh times)
+ * Quality management for each group using ClientWindow (representing update times and pending damage for each quality level)
+ * Add client index mask to all messages: messages can be sent to individual, groups or all clients depending on bitmask value
+ * Ignore instructions that come from unknown clients
+ * client added/removed through connection/disconnection request: assigned unique Id and Index bitmask
+ * Handle multi-client connections: group clients by quality
+ * Add settings to manage window quality options
+ * Refactoring of directory structure; separation between models and utils classes
+ * Adjust quality of window quickly when it is brought to top, reduce slowly when covered
+ * Limit image transfer bitrate for each individual window (max at 12 Mbps), modify according to quality
+ * Improve window image quality if mouse is over a visible portion of a window
+ * Performance improvement: only update window layout once per frame
+ * Separate image quality for alpha image
+ * Calculate overlap coverage of windows: modify quality if window is more covered
+ * Independent quality level applied to each window
+ * Removal on managed windows in WebXDisplay (obsoleted code)
+ * Loose coupling between transport and controller layers using a gateway. Remove all singletons.
+ * Generation of WebXWindowProperties on request (rather than maintaining permanent separate list)
+ * Metrics test script
+ * Performance improvement on alpha image creation: use unrolled loop
+ * Performance improvement on transparency check: exit on first transparent pixel
+
 0.1.4 10/02/2025
 ================
  * Build releases versions also for Debian 12 and Ubuntu 24
