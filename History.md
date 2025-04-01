@@ -1,5 +1,6 @@
 1.0.0 01/04/2025
 ================
+ * Add release builds for ARM architecture
  * Full code documentation
  * Add release build for Ubuntu 20.04 
  * Fix bug: avoid removing damage listener when retreiving window images to avoid graphical discrepencies
