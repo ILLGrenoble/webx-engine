@@ -62,7 +62,7 @@ RUN cpack -G DEB
 FROM ubuntu:20.04 AS ubuntu20
 
 RUN apt update
-RUN apt install -y file cmake dpkg-dev pkg-config build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev libxcomposite-dev libxkbfile-dev libxtst-dev
+RUN DEBIAN_FRONTEND=noninteractive apt install -y file cmake dpkg-dev pkg-config build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrender-dev libxext-dev libxfixes-dev libxcomposite-dev libxkbfile-dev libxtst-dev
 
 WORKDIR /app
 
