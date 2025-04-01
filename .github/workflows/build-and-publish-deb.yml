@@ -31,6 +31,7 @@ jobs:
           CONTAINER_ID=$(docker create webx-engine-builder)
           docker cp $CONTAINER_ID:/app/target/debian11/. ./debian11
           docker cp $CONTAINER_ID:/app/target/debian12/. ./debian12
+          docker cp $CONTAINER_ID:/app/target/ubuntu20/. ./ubuntu20
           docker cp $CONTAINER_ID:/app/target/ubuntu22/. ./ubuntu22
           docker cp $CONTAINER_ID:/app/target/ubuntu24/. ./ubuntu24
           docker rm -f $CONTAINER_ID
