@@ -6,10 +6,22 @@
 #include <spdlog/spdlog.h>
 #include <utils/WebXOptional.h>
 
+/**
+ * @class WebXClientBitrateCalculator
+ * @brief Calculates and manages bitrate and latency statistics for WebX clients.
+ */
 class WebXClientBitrateCalculator {
 private:
+    /**
+     * @class WebXClientBitrateData
+     * @brief Represents a single bitrate data point with its timestamp.
+     */
     class WebXClientBitrateData {
     public:
+        /**
+         * @brief Constructs a WebXClientBitrateData object.
+         * @param bitrateMbps The bitrate in Mbps.
+         */
         WebXClientBitrateData(float bitrateMbps) :
             bitrateMbps(bitrateMbps),
             timestamp(std::chrono::high_resolution_clock::now()) {}
@@ -19,8 +31,16 @@ private:
         std::chrono::high_resolution_clock::time_point timestamp;
     };
 
+    /**
+     * @class WebXClientLatencyData
+     * @brief Represents a single latency data point with its timestamp.
+     */
     class WebXClientLatencyData {
     public:
+        /**
+         * @brief Constructs a WebXClientLatencyData object.
+         * @param rttLatencyMs The round-trip time latency in milliseconds.
+         */
         WebXClientLatencyData(float rttLatencyMs) :
             rttLatencyMs(rttLatencyMs),
             timestamp(std::chrono::high_resolution_clock::now()) {}
@@ -31,6 +51,9 @@ private:
     };
 
 public:
+    /**
+     * @brief Constructs a WebXClientBitrateCalculator object.
+     */
     WebXClientBitrateCalculator() : 
         _meanBitrateMbps(WebXOptional<float>::Empty()),
         _meanBitrateRatio(WebXOptional<float>::Empty()),
@@ -39,6 +62,11 @@ public:
         _sdRTTLatencyMs(WebXOptional<float>::Empty()) {}
     virtual ~WebXClientBitrateCalculator() {}
 
+    /**
+     * @brief Updates latency statistics based on send and receive timestamps.
+     * @param sendTimestampMs The send timestamp in milliseconds.
+     * @param recvTimestampMs The receive timestamp in milliseconds.
+     */
     void updateLatency(uint64_t sendTimestampMs, uint64_t recvTimestampMs) {
         float rttLatencyMs = recvTimestampMs - sendTimestampMs;
         this->_latencyDataPoints.push_back(WebXClientLatencyData(rttLatencyMs));
@@ -48,6 +76,12 @@ public:
         // spdlog::debug("Client latency calculation: instant RTT latency = {:f}, mean RTT latency = {:f} sd = {:f}", rttLatencyMs, this->_meanRTTLatencyMs, this->_sdRTTLatencyMs);
     }
 
+    /**
+     * @brief Updates bitrate statistics based on data transfer information.
+     * @param sendTimestampMs The send timestamp in milliseconds.
+     * @param recvTimestampMs The receive timestamp in milliseconds.
+     * @param dataLength The length of the data transferred in bytes.
+     */
     void updateBitrateData(uint64_t sendTimestampMs, uint64_t recvTimestampMs, uint32_t dataLength) {
         if (this->_meanRTTLatencyMs.hasValue()) {
             // Be pessimistic on bandwidth (use lower value latency)
@@ -65,6 +99,10 @@ public:
         this->calculateAverageBitrateData();
     }
 
+    /**
+     * @brief Resets bitrate data and sets the current group image bitrate.
+     * @param currentGroupImageMbps The current group image bitrate in Mbps.
+     */
     void resetBitrateData(const WebXOptional<float> & currentGroupImageMbps) {
         this->_bitrateDataPoints.clear();
         this->_meanBitrateMbps = WebXOptional<float>::Empty();
@@ -72,6 +110,9 @@ public:
         this->_currentGroupImageMbps = currentGroupImageMbps;
     }
 
+    /**
+     * @brief Calculates average bitrate statistics from the collected data points.
+     */
     void calculateAverageBitrateData() {
         // Remove expired data
         std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -109,23 +150,42 @@ public:
             this->_sdRTTLatencyMs.orElse(-1.0));
     }
 
+    /**
+     * @brief Gets the mean bitrate in Mbps.
+     * @return The mean bitrate as a WebXOptional<float>.
+     */
     const WebXOptional<float> & getMeanBitrateMbps() const {
         return this->_meanBitrateMbps;
     }
 
+    /**
+     * @brief Gets the mean bitrate ratio.
+     * @return The mean bitrate ratio as a WebXOptional<float>.
+     */
     const WebXOptional<float> & getMeanBitrateRatio() const {
         return this->_meanBitrateRatio;
     }
     
+    /**
+     * @brief Sets the current group image bitrate.
+     * @param currentGroupImageMbps The current group image bitrate in Mbps.
+     */
     void setCurrentGroupImageMbps(const WebXOptional<float> & currentGroupImageMbps) {
         this->_currentGroupImageMbps = currentGroupImageMbps;
     }
 
+    /**
+     * @brief Gets the mean round-trip time (RTT) latency in milliseconds.
+     * @return The mean RTT latency as a WebXOptional<float>.
+     */
     const WebXOptional<float> & getMeanRTTLatencyMs() const {
         return this->_meanRTTLatencyMs;
     }
 
 private:
+    /**
+     * @brief Calculates RTT latency statistics (mean and standard deviation).
+     */
     void calculateRTTLatencyStats() {
 
         // Remove expired data
@@ -169,6 +229,5 @@ private:
     WebXOptional<float> _meanRTTLatencyMs;
     WebXOptional<float> _sdRTTLatencyMs;
 };
-
 
 #endif /* WEBX_CLIENT_BITRATE_CALCULATOR_H */

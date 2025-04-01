@@ -14,15 +14,40 @@
 
 class WebXWindowVisibility;
 
+/**
+ * @class WebXClientGroup
+ * @brief Represents a group of clients sharing the same quality level.
+ * 
+ * This class manages a collection of clients and their associated windows, handling
+ * quality verification, window damage, and visibility updates.
+ */
 class WebXClientGroup {
 public:
+    /**
+     * @brief Constructor for initializing a client group with specific quality settings.
+     * @param settings The global settings for the group.
+     * @param quality The quality level associated with the group.
+     */
     WebXClientGroup(const WebXSettings & settings, const WebXQuality & quality);
+
+    /**
+     * @brief Destructor for cleaning up resources.
+     */
     virtual ~WebXClientGroup();
 
+    /**
+     * @brief Gets the quality level associated with the group.
+     * @return The quality level.
+     */
     const WebXQuality & getQuality() const {
         return this->_quality;
     }
 
+    /**
+     * @brief Retrieves a client by its unique ID.
+     * @param id The unique ID of the client.
+     * @return A shared pointer to the client if found, otherwise nullptr.
+     */
     std::shared_ptr<WebXClient> getClientById(uint32_t id) const {
         auto it = std::find_if(this->_clients.begin(), this->_clients.end(), [&id](const std::shared_ptr<WebXClient> & client) {
             return client->getId() == id;
@@ -31,6 +56,10 @@ public:
         return (it != this->_clients.end()) ? *it : nullptr;
     }
 
+    /**
+     * @brief Adds a client to the group if it does not already exist.
+     * @param client A shared pointer to the client to be added.
+     */
     void addClient(const std::shared_ptr<WebXClient> & client) {
         if (this->getClientById(client->getId()) == nullptr) {
 
@@ -43,6 +72,10 @@ public:
         }
     }
 
+    /**
+     * @brief Removes a client from the group by its unique ID.
+     * @param clientId The unique ID of the client to be removed.
+     */
     void removeClient(uint32_t clientId) {
         // Determine if client exists in vector and remove it
         const std::shared_ptr<WebXClient> & client = this->getClientById(clientId);
@@ -57,12 +90,24 @@ public:
         }
     }
 
+    /**
+     * @brief Checks if the group has any clients.
+     * @return True if the group has no clients, otherwise false.
+     */
     bool hasClients() const {
         return this->_clients.empty();
     }
 
+    /**
+     * @brief Updates the visibility of windows based on the provided visibility data.
+     * @param windowVisibilities A vector of visibility data for windows.
+     */
     void updateVisibleWindows(const std::vector<const WebXWindowVisibility *> & windowVisibilities);
 
+    /**
+     * @brief Adds damage information to a window or creates a new window if it does not exist.
+     * @param damage The damage information to be added.
+     */
     void addWindowDamage(const WebXWindowDamage & damage) {
         // See if window exists or create new one
         auto it = std::find_if(this->_windows.begin(), this->_windows.end(), [&damage](const std::unique_ptr<WebXClientWindow> & window) {
@@ -79,8 +124,15 @@ public:
         }
     }
 
+    /**
+     * @brief Handles window damage by invoking a provided handler function.
+     * @param damageHandlerFunc A function to process window damage and return transfer data.
+     */
     void handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc);
  
+    /**
+     * @brief Performs quality verification for all clients in the group.
+     */
     void performQualityVerification() {
         // Update each client bitrate calculation
         for (auto client : this->_clients) {
@@ -89,6 +141,9 @@ public:
     }
 
 private:
+    /**
+     * @brief Calculates the average image Mbps based on transfer data points.
+     */
     void calculateImageMbps();
 
 private:
