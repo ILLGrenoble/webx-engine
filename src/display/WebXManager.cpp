@@ -2,6 +2,7 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
+#include "WebXClipboard.h"
 #include "events/WebXEventListener.h"
 #include <X11/extensions/Xfixes.h>
 
@@ -18,6 +19,7 @@ WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyb
     _x11Display(NULL),
     _display(NULL),
     _eventListener(NULL),
+    _clipboard(NULL),
     _displayRequiresUpdate(false) {
 
     this->init(keyboardLayout);
@@ -25,6 +27,11 @@ WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyb
 
 WebXManager::~WebXManager() {
     spdlog::info("Stopping manager...");
+    if (this->_clipboard) {
+        delete this->_clipboard;
+        this->_clipboard = NULL;
+    }
+
     if (this->_eventListener) {
         delete this->_eventListener;
         this->_eventListener = NULL;
@@ -60,6 +67,10 @@ void WebXManager::init(const std::string & keyboardLayout) {
     this->_display = new WebXDisplay(this->_x11Display);
     this->_display->init();
 
+    this->_clipboard = new WebXClipboard(this->_x11Display, this->_display->getRootWindow()->getX11Window(), [](const std::string & content) {
+        spdlog::info("Clipboard text: {}", content);
+    });
+
     this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
     this->_eventListener->addEventHandler(WebXEventType::Create, std::bind(&WebXManager::handleWindowCreateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Destroy, std::bind(&WebXManager::handleWindowDestroyEvent, this, _1));
@@ -71,11 +82,19 @@ void WebXManager::init(const std::string & keyboardLayout) {
     this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
+    this->_eventListener->addEventHandler(WebXEventType::ClipboardNotify, [this](const WebXEvent & event) {
+        if (event.getSelectionProperty() == None) {
+            return;
+        } else {
+            this->_clipboard->onClipboardDataReceived();
+        }
+    });
 
     this->_display->loadKeyboardLayout(keyboardLayout);
 }
 
 void WebXManager::handlePendingEvents() {
+    this->_clipboard->updateClipboard();
     this->_eventListener->flushQueuedEvents();
     this->updateDisplay();
 }

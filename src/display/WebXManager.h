@@ -13,6 +13,7 @@
 class WebXWindow;
 class WebXDisplay;
 class WebXEventListener;
+class WebXClipboard;
 
 /**
  * @class WebXManager
@@ -171,6 +172,7 @@ private:
     Display * _x11Display;
     WebXDisplay * _display;
     WebXEventListener * _eventListener;
+    WebXClipboard * _clipboard;
     bool _displayRequiresUpdate;
 
     std::function<void(WebXDisplayEventType eventType)> _onDisplayEvent;

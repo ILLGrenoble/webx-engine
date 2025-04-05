@@ -18,7 +18,8 @@ enum WebXEventType {
     Circulate,
     Damaged,
     Other,
-    MouseCursor
+    MouseCursor,
+    ClipboardNotify,
 };
 
 /**
@@ -104,6 +105,14 @@ public:
         return WebXRectangle(this->_x, this->_y, this->_width, this->_height);
     }
 
+    /**
+     * Gets the selection property associated with the Selection event.
+     * @return The selection property.
+     */
+    Atom getSelectionProperty() const {
+        return this->_selectionProperty;
+    }
+
 private:
     /**
      * Converts the X11 event into a WebXEvent by extracting relevant information.
@@ -119,6 +128,7 @@ private:
     int _y;
     int _width;
     int _height;
+    Atom _selectionProperty;
     Window _parent;
     int _damageEventBase;
     int _fixesEventBase;
