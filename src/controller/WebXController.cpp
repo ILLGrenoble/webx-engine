@@ -94,7 +94,8 @@ void WebXController::run() {
             // Handling of mouse movement
             WebXPosition initialMousePosition(mouse->getState()->getX(), mouse->getState()->getY());
 
-            // Manually get mouse position after given delay (this is only useful if mouse is moved by something other than this webx-engine instance)
+            // Manually get mouse position after given delay and send an event if it has changed and delay has been reached. This logic is to 
+            // avoid sending too many events to the clients when they are moving the mouse to avoid "jerky" behavior.
             // Increase delay until mouse has moved again to avoid updating every frame: update quickyl only if movement has just occurred.
             if (timeSinceMouseRefreshUs.count() > mouseRefreshUs) {
                 mouse->updatePosition();
