@@ -246,8 +246,8 @@ public:
                 spdlog::trace("Client {:08x}: Sending data at {:.2f} Mbps to client with bandwidth {:.2f} Mbps and latency {:.0f} (bitrate ratio = {:.2f})", 
                     this->_id, averageImageMbps.value(), meanBitrateMbps.value(), meanRTTLatencyMs.value(), meanBitrateRatio.value());
         
-                this->_lastQualityVerificationTime = now;
             }
+            this->_lastQualityVerificationTime = now;
 
         } else {
             this->_bitrateMeans = WebXOptional<WebXClientBitrateMeans>::Empty();
