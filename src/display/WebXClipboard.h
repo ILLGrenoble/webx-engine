@@ -2,6 +2,7 @@
 #define WEBX_CLIPBOARD_H
 
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <chrono>
 #include <functional>
 #include <string>
@@ -13,10 +14,14 @@ public:
         _onClipboardContentChange(onClipboardContentChange),
         _clipboard(XInternAtom(x11Display, "CLIPBOARD", False)),
         _utf8(XInternAtom(x11Display, "UTF8_STRING", False)),
+        _targets(XInternAtom(x11Display, "TARGETS", False)),
         _webXClipboardProperty(XInternAtom(x11Display, "WEBX_CLIPBOARD", False)),
         _clipboardWindow(XCreateSimpleWindow(x11Display, rootWindow, -10, -10, 1, 1, 0, 0, 0)) {
     }
+    
     virtual ~WebXClipboard() {
+        XDestroyWindow(this->_x11Display, this->_clipboardWindow);
+        XFlush(this->_x11Display);
     }
 
     void updateClipboard() {
@@ -25,7 +30,7 @@ public:
         if (durationMs.count() > CLIPBOARD_REFRESH_RATE_MS) {
             // Request clipboard content from X11.... and wait for the response
             Window clipboardOwner = XGetSelectionOwner(this->_x11Display, this->_clipboard);
-            if (clipboardOwner != None) {
+            if (clipboardOwner != None && clipboardOwner != this->_clipboardWindow) {
                 XConvertSelection(this->_x11Display, this->_clipboard, this->_utf8, this->_webXClipboardProperty, this->_clipboardWindow, CurrentTime);
             }
 
@@ -67,6 +72,7 @@ public:
    }
 
    void onClipboardContentRequest(const XSelectionRequestEvent * selectionRequestEvent) const {
+
         XSelectionEvent ssev;
         ssev.type = SelectionNotify;
         ssev.requestor = selectionRequestEvent->requestor;
@@ -74,12 +80,17 @@ public:
         ssev.target = selectionRequestEvent->target;
         ssev.time = selectionRequestEvent->time;
 
-        // Send None response if target not UTF8 or if client is "obsolete" (property set to None)
-        if (selectionRequestEvent->target != this->_utf8 || selectionRequestEvent->property == None) {
-            ssev.property = None;
-
-        } else {
+        if (selectionRequestEvent->target == this->_targets) {
+            Atom supportedTargets[] = { this->_utf8, XA_STRING, this->_targets };
+            XChangeProperty(this->_x11Display, selectionRequestEvent->requestor, selectionRequestEvent->property, XA_ATOM, 32, PropModeReplace, reinterpret_cast<unsigned char *>(supportedTargets), 2);
+            ssev.property = selectionRequestEvent->property;
+            
+        } else if (selectionRequestEvent->target == this->_utf8 || selectionRequestEvent->target == XA_STRING) {
             XChangeProperty(this->_x11Display, selectionRequestEvent->requestor, selectionRequestEvent->property, this->_utf8, 8, PropModeReplace, (unsigned char *)this->_clipboardContent.c_str(), this->_clipboardContent.size());
+            ssev.property = selectionRequestEvent->property;
+        
+        } else {
+            ssev.property = None;
         }
 
         XSendEvent(this->_x11Display, selectionRequestEvent->requestor, True, NoEventMask, (XEvent *)&ssev);
@@ -88,16 +99,16 @@ public:
    void setClipboardContent(const std::string & content) {
         this->_clipboardContent = content;
         XSetSelectionOwner(this->_x11Display, this->_clipboard, this->_clipboardWindow, CurrentTime);
-        XChangeProperty(this->_x11Display, this->_clipboardWindow, this->_webXClipboardProperty, this->_utf8, 8, PropModeReplace, reinterpret_cast<const unsigned char *>(this->_clipboardContent.c_str()), this->_clipboardContent.size());
     }
 
 private:
     const static int CLIPBOARD_REFRESH_RATE_MS = 500;
 
     Display * _x11Display;
-    Atom _clipboard;
-    Atom _utf8;
-    Atom _webXClipboardProperty;
+    const Atom _clipboard;
+    const Atom _utf8;
+    const Atom _targets;
+    const Atom _webXClipboardProperty;
     Window _clipboardWindow;
 
     std::function<void(const std::string & content)> _onClipboardContentChange;

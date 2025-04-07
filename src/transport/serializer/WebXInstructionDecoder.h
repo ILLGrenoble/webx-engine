@@ -151,6 +151,20 @@ private:
      */
     std::shared_ptr<WebXInstruction> createDataAckInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
+    /*
+     * Create a clipboard instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content:
+     *     clipboardContentLength: 4 bytes
+     *     clipboardContent: N bytes
+     */
+    std::shared_ptr<WebXInstruction> createClipboardInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+
 private:
 
 };

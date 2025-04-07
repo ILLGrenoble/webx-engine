@@ -10,6 +10,7 @@
 #include <models/message/WebXPingMessage.h>
 #include <models/message/WebXDisconnectMessage.h>
 #include <models/message/WebXQualityMessage.h>
+#include <models/message/WebXClipboardMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -51,6 +52,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::Quality: {
             auto qualityMessage = std::static_pointer_cast<WebXQualityMessage>(message);
             return this->createQualityMessage(qualityMessage);
+        }
+        case WebXMessage::Clipboard: {
+            auto clipboardMessage = std::static_pointer_cast<WebXClipboardMessage>(message);
+            return this->createClipboardMessage(clipboardMessage);
         }
 
         default:
@@ -224,6 +229,18 @@ zmq::message_t * WebXMessageEncoder::createQualityMessage(std::shared_ptr<WebXQu
     buffer.write<float>(message->quality.rgbQuality);
     buffer.write<float>(message->quality.alphaQuality);
     buffer.write<float>(message->quality.maxMbps);
+
+    return output;
+}
+
+zmq::message_t * WebXMessageEncoder::createClipboardMessage(std::shared_ptr<WebXClipboardMessage> message) const {
+    const std::string & clipboardContent = message->clipboardContent;
+
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 4 + clipboardContent.size();
+    zmq::message_t * output = new zmq::message_t(dataSize);
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+    buffer.write<uint32_t>(clipboardContent.size());
+    buffer.append((unsigned char *)clipboardContent.c_str(), clipboardContent.size());
 
     return output;
 }

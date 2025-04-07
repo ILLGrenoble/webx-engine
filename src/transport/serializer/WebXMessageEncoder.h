@@ -25,6 +25,7 @@ class WebXWindowsMessage;
 class WebXPingMessage;
 class WebXDisconnectMessage;
 class WebXQualityMessage;
+class WebXClipboardMessage;
 
 class WebXMessageEncoder {
     public:
@@ -227,6 +228,22 @@ private:
      *   maxMbps: 4 bytes
      */
     zmq::message_t * createQualityMessage(std::shared_ptr<WebXQualityMessage> message) const;
+
+    /*
+     * Structure:
+     * Header: 48 bytes
+     *   sessionId: 16 bytes
+     *   clientIndexMask: 8 bytes
+     *   timestampMs: 8 bytes
+     *   type: 4 bytes
+     *   id: 4 bytes
+     *   length: 4 bytes
+     *   padding: 4 bytes
+     * Content:
+     *   clipboardContentLength: 4 bytes
+     *   clipboardContent: n bytes
+     */
+    zmq::message_t * createClipboardMessage(std::shared_ptr<WebXClipboardMessage> message) const;
 
 private:
     const static int MESSAGE_HEADER_LENGTH = 48;

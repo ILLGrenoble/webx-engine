@@ -192,6 +192,18 @@ public:
 		return *((T *)(&_bufferContent[valueOffset]));
 	}
 
+
+	inline std::string readSring(size_t length) {
+		if (_readOffset + length > _bufferLength) {
+			throw OverflowException(_readOffset, length, _bufferLength);
+		}
+
+		std::string value(reinterpret_cast<const char *>(&_bufferContent[_readOffset]), length);
+		_readOffset += length;
+
+		return value;
+	}
+
 	/**
 	 * Resets the dynamic payload data offset
 	 */
