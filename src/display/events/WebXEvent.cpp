@@ -68,22 +68,12 @@ void WebXEvent::convert() {
 
     case SelectionNotify:
         this->_type = WebXEventType::ClipboardNotify;
-        this->_selectionProperty = this->_xEvent.xselection.property;
 
         break;
 
     case SelectionRequest:
-        spdlog::info("SelectionRequest event");
-        this->_type = WebXEventType::Other;
-        this->_x11Window = 0;
+        this->_type = WebXEventType::ClipboardContentRequest;
 
-        break;
-
-    case SelectionClear:
-        spdlog::info("SelectionClear event");
-
-        this->_type = WebXEventType::Other;
-        this->_x11Window = 0;
         break;
 
     default:

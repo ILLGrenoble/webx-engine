@@ -7,6 +7,7 @@
 #include <models/instruction/WebXQualityInstruction.h>
 #include <models/instruction/WebXPongInstruction.h>
 #include <models/instruction/WebXDataAckInstruction.h>
+#include <models/instruction/WebXClipboardInstruction.h>
 #include <models/message/WebXScreenMessage.h>
 #include <models/message/WebXWindowsMessage.h>
 #include <models/message/WebXImageMessage.h>
@@ -49,6 +50,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     // Listen to events from the display
     this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
     this->_manager.setDamageEventHandler([this](const WebXWindowDamage damage) { this->_clientRegistry.addWindowDamage(damage); });
+    this->_manager.setClipboardEventHandler([this](const std::string clipboardContent) { this->onClipboardEvent(clipboardContent); });
 }
 
 WebXController::~WebXController() {
@@ -203,6 +205,10 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::DataAck) {
             auto dataAckInstruction = std::static_pointer_cast<WebXDataAckInstruction>(instruction);
             this->_clientRegistry.onDataAckReceived(dataAckInstruction->clientId, dataAckInstruction->sendTimestampMs, dataAckInstruction->recvTimestampMs, dataAckInstruction->dataLength);
+
+        } else if (instruction->type == WebXInstruction::Type::Clipboard) {
+            auto clipboardInstruction = std::static_pointer_cast<WebXClipboardInstruction>(instruction);
+            this->_manager.setClipboardContent(clipboardInstruction->clipboardContent);
         }
     }
 

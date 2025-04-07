@@ -20,6 +20,7 @@ enum WebXEventType {
     Other,
     MouseCursor,
     ClipboardNotify,
+    ClipboardContentRequest,
 };
 
 /**
@@ -47,6 +48,14 @@ public:
      */
     Window getX11Window() const {
         return this->_x11Window;
+    }
+
+    /**
+     * Gets the X11 event associated with this WebXEvent.
+     * @return The X11 event.
+     */
+    const XEvent & getX11Event() const {
+        return this->_xEvent;
     }
 
     /**
@@ -105,14 +114,6 @@ public:
         return WebXRectangle(this->_x, this->_y, this->_width, this->_height);
     }
 
-    /**
-     * Gets the selection property associated with the Selection event.
-     * @return The selection property.
-     */
-    Atom getSelectionProperty() const {
-        return this->_selectionProperty;
-    }
-
 private:
     /**
      * Converts the X11 event into a WebXEvent by extracting relevant information.
@@ -128,7 +129,6 @@ private:
     int _y;
     int _width;
     int _height;
-    Atom _selectionProperty;
     Window _parent;
     int _damageEventBase;
     int _fixesEventBase;

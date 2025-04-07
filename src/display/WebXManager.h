@@ -74,6 +74,20 @@ public:
         this->_onDamageEvent = handler;
     }
 
+    /**
+     * @brief Sets the handler for clipboard-related events.
+     * @param handler Function to handle clipboard events.
+     */
+    void setClipboardEventHandler(std::function<void(const std::string & clipboardContent)> handler) {
+        this->_onClipboardEvent = handler;
+    }
+
+    /**
+     * @brief Sets the content of the clipboard.
+     * @param clipboardContent The content to set in the clipboard.
+     */
+    void setClipboardContent(const std::string & clipboardContent);
+
 private:
     /**
      * @brief Initializes the manager with the specified keyboard layout.
@@ -166,6 +180,16 @@ private:
         }
     }
 
+    /**
+     * @brief Sends a clipboard event to the registered handler.
+     * @param clipboardContent The content of the clipboard.
+     */
+    void sendClipboardEvent(const std::string & clipboardContent) {
+        if (this->_onClipboardEvent) {
+            this->_onClipboardEvent(clipboardContent);
+        }
+    }
+
 private:
     const WebXSettings & _settings;
 
@@ -177,6 +201,7 @@ private:
 
     std::function<void(WebXDisplayEventType eventType)> _onDisplayEvent;
     std::function<void(const WebXWindowDamage & damage)> _onDamageEvent;
+    std::function<void(const std::string & clipboardContent)> _onClipboardEvent;
 };
 
 

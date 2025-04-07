@@ -33,7 +33,11 @@ public:
         }
     }
 
-    void onClipboardDataReceived() {
+    void onClipboardDataNotify(const XSelectionEvent * selectionEvent) {
+        if (selectionEvent->property == None) {
+            return;
+        }
+        
         Atom type;
         int format;
         unsigned long size, dummy;
@@ -61,6 +65,31 @@ public:
             this->_onClipboardContentChange(this->_clipboardContent);
         }
    }
+
+   void onClipboardContentRequest(const XSelectionRequestEvent * selectionRequestEvent) const {
+        XSelectionEvent ssev;
+        ssev.type = SelectionNotify;
+        ssev.requestor = selectionRequestEvent->requestor;
+        ssev.selection = selectionRequestEvent->selection;
+        ssev.target = selectionRequestEvent->target;
+        ssev.time = selectionRequestEvent->time;
+
+        // Send None response if target not UTF8 or if client is "obsolete" (property set to None)
+        if (selectionRequestEvent->target != this->_utf8 || selectionRequestEvent->property == None) {
+            ssev.property = None;
+
+        } else {
+            XChangeProperty(this->_x11Display, selectionRequestEvent->requestor, selectionRequestEvent->property, this->_utf8, 8, PropModeReplace, (unsigned char *)this->_clipboardContent.c_str(), this->_clipboardContent.size());
+        }
+
+        XSendEvent(this->_x11Display, selectionRequestEvent->requestor, True, NoEventMask, (XEvent *)&ssev);
+   }
+
+   void setClipboardContent(const std::string & content) {
+        this->_clipboardContent = content;
+        XSetSelectionOwner(this->_x11Display, this->_clipboard, this->_clipboardWindow, CurrentTime);
+        XChangeProperty(this->_x11Display, this->_clipboardWindow, this->_webXClipboardProperty, this->_utf8, 8, PropModeReplace, reinterpret_cast<const unsigned char *>(this->_clipboardContent.c_str()), this->_clipboardContent.size());
+    }
 
 private:
     const static int CLIPBOARD_REFRESH_RATE_MS = 500;

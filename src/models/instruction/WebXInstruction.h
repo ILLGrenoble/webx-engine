@@ -26,6 +26,7 @@ public:
         Quality,
         Pong,
         DataAck,
+        Clipboard,
     };
 
     /**

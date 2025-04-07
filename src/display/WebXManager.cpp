@@ -67,27 +67,24 @@ void WebXManager::init(const std::string & keyboardLayout) {
     this->_display = new WebXDisplay(this->_x11Display);
     this->_display->init();
 
-    this->_clipboard = new WebXClipboard(this->_x11Display, this->_display->getRootWindow()->getX11Window(), [](const std::string & content) {
-        spdlog::info("Clipboard text: {}", content);
+    this->_clipboard = new WebXClipboard(this->_x11Display, this->_display->getRootWindow()->getX11Window(), [this](const std::string & content) {
+        this->sendClipboardEvent(content);
     });
 
     this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
-    this->_eventListener->addEventHandler(WebXEventType::Create, std::bind(&WebXManager::handleWindowCreateEvent, this, _1));
-    this->_eventListener->addEventHandler(WebXEventType::Destroy, std::bind(&WebXManager::handleWindowDestroyEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Map, std::bind(&WebXManager::handleWindowMapEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Unmap, std::bind(&WebXManager::handleWindowUnmapEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Reparent, std::bind(&WebXManager::handleWindowReparentEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Configure, std::bind(&WebXManager::handleWindowConfigureEvent, this, _1));
-    this->_eventListener->addEventHandler(WebXEventType::Gravity, std::bind(&WebXManager::handleWindowGravityEvent, this, _1));
-    this->_eventListener->addEventHandler(WebXEventType::Circulate, std::bind(&WebXManager::handleWindowCirculateEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Damaged, std::bind(&WebXManager::handleWindowDamageEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::MouseCursor, std::bind(&WebXManager::handleMouseCursorEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::ClipboardNotify, [this](const WebXEvent & event) {
-        if (event.getSelectionProperty() == None) {
-            return;
-        } else {
-            this->_clipboard->onClipboardDataReceived();
-        }
+        XSelectionEvent * selectionEvent = (XSelectionEvent *)&(event.getX11Event().xselection);
+        this->_clipboard->onClipboardDataNotify(selectionEvent);
+    });
+    this->_eventListener->addEventHandler(WebXEventType::ClipboardContentRequest, [this](const WebXEvent & event) {
+        XSelectionRequestEvent * selectionRequestEvent = (XSelectionRequestEvent *)&(event.getX11Event().xselectionrequest);
+        this->_clipboard->onClipboardContentRequest(selectionRequestEvent);
     });
 
     this->_display->loadKeyboardLayout(keyboardLayout);
@@ -99,14 +96,8 @@ void WebXManager::handlePendingEvents() {
     this->updateDisplay();
 }
 
-void WebXManager::handleWindowCreateEvent(const WebXEvent & event) {
-    spdlog::trace("Got Create Event for window 0x{:x}", event.getX11Window());
-
-}
-
-void WebXManager::handleWindowDestroyEvent(const WebXEvent & event) {
-    spdlog::trace("Got Destroy Event for window 0x{:x", event.getX11Window());
-
+void WebXManager::setClipboardContent(const std::string & clipboardContent) {
+    this->_clipboard->setClipboardContent(clipboardContent);
 }
 
 void WebXManager::handleWindowMapEvent(const WebXEvent & event) {
@@ -145,14 +136,6 @@ void WebXManager::handleWindowConfigureEvent(const WebXEvent & event) {
     }
 
     this->_displayRequiresUpdate = true;
-}
-
-void WebXManager::handleWindowGravityEvent(const WebXEvent & event) {
-    spdlog::trace("Got Gravity Event for window 0x{:x}", event.getX11Window());
-}
-
-void WebXManager::handleWindowCirculateEvent(const WebXEvent & event) {
-    spdlog::trace("Got Window Circulate Event for window 0x{:x}", event.getX11Window());
 }
 
 void WebXManager::handleWindowDamageEvent(const WebXEvent & event) {

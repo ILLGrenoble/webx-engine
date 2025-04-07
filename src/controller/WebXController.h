@@ -14,6 +14,7 @@
 #include <display/WebXWindowProperties.h>
 #include <display/WebXDisplayEventType.h>
 #include <models/WebXSettings.h>
+#include <models/message/WebXClipboardMessage.h>
 
 class WebXDisplay;
 class WebXInstruction;
@@ -69,7 +70,16 @@ private:
             this->_displayDirty = true;
         }
     }
-    
+   
+    /**
+     * @brief Handles clipboard events (clipboard content changed) and sends them to clients.
+     * @param clipboardContent The content of the clipboard.
+     */
+    void onClipboardEvent(const std::string & clipboardContent) const {
+        auto message = std::make_shared<WebXClipboardMessage>(GLOBAL_CLIENT_INDEX_MASK, clipboardContent);
+        this->sendMessage(message);
+    }
+
     /**
      * @brief Processes client instructions for a given display.
      * @param display Pointer to the WebXDisplay instance.
@@ -104,7 +114,7 @@ private:
      * @brief Sends a message to the gateway to be published to clients.
      * @param message Shared pointer to the WebXMessage to be sent.
      */
-    void sendMessage(std::shared_ptr<WebXMessage> message) {
+    void sendMessage(std::shared_ptr<WebXMessage> message) const {
         this->_gateway.publishMessage(message);
     }
 

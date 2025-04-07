@@ -24,6 +24,7 @@ public:
         Ping,
         Disconnect,
         Quality,
+        Clipboard,
     };
 
     WebXMessage(Type type, uint64_t clientIndexMask) :
