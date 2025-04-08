@@ -2,6 +2,7 @@
 #define WEBX_EVENT_LISTENER_H
 
 #include <X11/Xlib.h>
+#include <X11/extensions/Xdamage.h>
 #include <map>
 #include <functional>
 #include "WebXEvent.h"
@@ -52,6 +53,61 @@ private:
      */
     void handleEvent(const WebXEvent & event);
 
+    /**
+     * Filter function to wait for a ConfigureNotify event and set up a filter for damage events
+     * when the configure event is received.
+     * @param event The X11 event to filter.
+     * @return True if the event should be processed, false if it should be ignored.
+     */
+    bool waitForConfigureEventFilter(const XEvent * event) {
+        if (event->type == ConfigureNotify) {
+            XConfigureEvent * configureEvent = (XConfigureEvent *)event;
+            XID filterWindow = configureEvent->window;
+            unsigned long filterSerial = configureEvent->serial;
+
+            /**
+             * Set up the new filter function to handle damage events for the specified window
+             * and serial number.
+             */
+            this->_filterFunction = [this, filterWindow, filterSerial](const XEvent * event) {
+                return this->damageEventFilter(event, filterWindow, filterSerial);
+            };
+        }
+        return true;
+    }
+
+    /**
+     * Filter function to handle damage events and ignore them if they match the specified
+     * window and serial number. These damage events occur immediately after the ConfigureNotify
+     * and have the same serial number. These Damage events have a "more" flag that indicates if
+     * there are more events to come. On the last one we reset the filter function to wait
+     * for the next ConfigureNotify event.
+     * @param event The X11 event to filter.
+     * @param filterWindow The window to filter events for.
+     * @param filterSerial The serial number to filter events for.
+     * @return True if the event should be processed, false if it should be ignored.
+     */
+    bool damageEventFilter(const XEvent * event, const XID filterWindow, const unsigned long filterSerial) {
+        if (event->type == this->_damageEventBase + XDamageNotify) {
+            XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *) event;
+            if (damageEvent->drawable == filterWindow && damageEvent->serial == filterSerial) {
+                spdlog::trace("Ignoring damage event for window 0x{:08x} with serial {:d}", damageEvent->drawable, damageEvent->serial);
+    
+                /**
+                 * When the last damage event is received, reset the filter function to wait for
+                 * the next ConfigureNotify event.
+                 */
+                if (!damageEvent->more) {
+                    this->_filterFunction = [this](const XEvent * event) {
+                        return this->waitForConfigureEventFilter(event);
+                    };
+                }
+                return false;
+            }    
+        }
+        return true;
+    }
+
 private:
     Display * _x11Display;
     Window _rootWindow;
@@ -62,6 +118,8 @@ private:
     int _damageErrorBase;
     int _xfixesEventBase;
     int _xfixesErrorBase;
+
+    std::function<bool(const XEvent * event)> _filterFunction;
 };
 
 #endif /* WEBX_EVENT_LISTENER_H */

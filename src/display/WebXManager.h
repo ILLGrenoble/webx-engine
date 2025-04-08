@@ -96,18 +96,6 @@ private:
     void init(const std::string & keyboardLayout = "");
 
     /**
-     * @brief Handles the creation of a window.
-     * @param event The event data.
-     */
-    void handleWindowCreateEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles the destruction of a window.
-     * @param event The event data.
-     */
-    void handleWindowDestroyEvent(const WebXEvent & event);
-
-    /**
      * @brief Handles the mapping of a window.
      * @param event The event data.
      */
@@ -130,18 +118,6 @@ private:
      * @param event The event data.
      */
     void handleWindowConfigureEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles the gravity changes of a window.
-     * @param event The event data.
-     */
-    void handleWindowGravityEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles the circulation of a window.
-     * @param event The event data.
-     */
-    void handleWindowCirculateEvent(const WebXEvent & event);
 
     /**
      * @brief Handles damage events for a window.

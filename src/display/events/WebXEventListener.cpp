@@ -45,14 +45,22 @@ WebXEventListener::~WebXEventListener() {
 
 void WebXEventListener::flushQueuedEvents() {
     XEvent x11Event;
+    
+    // Initially, we set the filter function to wait for a ConfigureNotify event.
+    this->_filterFunction = [this](const XEvent * event) {
+        return this->waitForConfigureEventFilter(event);
+    };
 
     XFlush(this->_x11Display);
     int qLength = QLength(this->_x11Display);
 
+    // Loop through all events in the queue. Filter them using the filter function (removes excesss damage events created when the ConfigureNotify event is received)
     for (int i = 0; i < qLength; i++) {
         XNextEvent(this->_x11Display, &x11Event);
-        WebXEvent event(x11Event, this->_damageEventBase, this->_xfixesEventBase);
-        this->handleEvent(event);
+        if (this->_filterFunction(&x11Event)) {
+            WebXEvent event(x11Event, this->_damageEventBase, this->_xfixesEventBase);
+            this->handleEvent(event);
+        }
     }
 }
 
