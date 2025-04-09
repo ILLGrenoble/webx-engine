@@ -71,7 +71,7 @@ void WebXManager::init(const std::string & keyboardLayout) {
         this->sendClipboardEvent(content);
     });
 
-    this->_eventListener = new WebXEventListener(this->_x11Display, this->_display->getRootWindow()->getX11Window());
+    this->_eventListener = new WebXEventListener(this->_settings, this->_x11Display, this->_display->getRootWindow()->getX11Window());
     this->_eventListener->addEventHandler(WebXEventType::Map, std::bind(&WebXManager::handleWindowMapEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Unmap, std::bind(&WebXManager::handleWindowUnmapEvent, this, _1));
     this->_eventListener->addEventHandler(WebXEventType::Reparent, std::bind(&WebXManager::handleWindowReparentEvent, this, _1));

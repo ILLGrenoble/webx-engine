@@ -6,6 +6,7 @@
 #include <map>
 #include <functional>
 #include "WebXEvent.h"
+#include <models/WebXSettings.h>
 
 class WebXDamageOverride;
 
@@ -21,7 +22,7 @@ public:
      * @param display Pointer to the X11 display.
      * @param rootWindow The root window of the X11 display.
      */
-    WebXEventListener(Display * display, Window rootWindow);
+    WebXEventListener(const WebXSettings & settings, Display * display, Window rootWindow);
 
     /**
      * Destructor to clean up resources used by the event listener.
@@ -119,6 +120,7 @@ private:
     int _xfixesEventBase;
     int _xfixesErrorBase;
 
+    std::function<bool(const XEvent * event)> _defaultFilterFunction;
     std::function<bool(const XEvent * event)> _filterFunction;
 };
 

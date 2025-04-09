@@ -162,6 +162,21 @@ public:
     bool imageCheckumEnabled;
 };
 
+/**
+ * Class to manage event-related settings for WebX.
+ * Includes configuration for filtering damage events after configure notify.
+ */
+class WebXEventSettings {
+public:
+    /* 
+     * Constructor initializes settings from environment variables or defaults.
+     */
+    WebXEventSettings() : 
+    filterDamageAfterConfigureNotify(webx_settings_env_or_default("WEBX_ENGINE_EVENT_FILTER_DAMAGE_AFTER_CONFIGURE_NOTIFY", true)) {}
+
+    bool filterDamageAfterConfigureNotify;
+};
+
 /* 
  * Class to manage overall settings for WebX.
  * Includes logging configuration, transport settings, and quality settings.
@@ -176,6 +191,7 @@ public:
     }
 
     const std::string logging;
+    const WebXEventSettings event;
     const WebXControllerSettings controller;
     const WebXTransportSettings transport;
     const WebXQualitySettings quality;

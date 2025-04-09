@@ -2,6 +2,7 @@
 #include "WebXEvent.h"
 #include "WebXDamageOverride.h"
 #include <display/WebXWindow.h>
+#include <models/WebXSettings.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
@@ -9,7 +10,7 @@
 #include <spdlog/spdlog.h>
 
 
-WebXEventListener::WebXEventListener(Display * display, Window rootWindow) :
+WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * display, Window rootWindow) :
     _x11Display(display),
     _rootWindow(rootWindow),
     _damageEventBase(0),
@@ -30,6 +31,15 @@ WebXEventListener::WebXEventListener(Display * display, Window rootWindow) :
         exit(1);
     }
 
+    if (settings.event.filterDamageAfterConfigureNotify) {
+        // Set up the filter function to wait for a ConfigureNotify event
+        this->_defaultFilterFunction = [this](const XEvent * event) { return this->waitForConfigureEventFilter(event);};
+
+    } else {
+        // Set up the filter function to keep all events
+        this->_defaultFilterFunction = [](const XEvent * event) { return true; };
+    }
+
     // Create and enable the damage overrider
     this->_damageOverride = new WebXDamageOverride(display, this->_damageEventBase);
     this->_damageOverride->enable();
@@ -46,10 +56,8 @@ WebXEventListener::~WebXEventListener() {
 void WebXEventListener::flushQueuedEvents() {
     XEvent x11Event;
     
-    // Initially, we set the filter function to wait for a ConfigureNotify event.
-    this->_filterFunction = [this](const XEvent * event) {
-        return this->waitForConfigureEventFilter(event);
-    };
+    // Initialise the filter function as the default
+    this->_filterFunction = this->_defaultFilterFunction;
 
     XFlush(this->_x11Display);
     int qLength = QLength(this->_x11Display);
