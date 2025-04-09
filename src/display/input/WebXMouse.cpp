@@ -8,7 +8,8 @@ WebXMouse::WebXMouse(Display * x11Display, Window rootWindow) :
     _x11Display(x11Display),
     _rootWindow(rootWindow),
     _cursorFactory(x11Display),
-    _state(createDefaultMouseState()) {
+    _state(createDefaultMouseState()),
+    _isDirty(false) {
 }
 
 WebXMouse::~WebXMouse() {
@@ -19,6 +20,10 @@ void WebXMouse::sendClientInstruction(int x, int y, unsigned int buttonMask) {
     sendMouseMovement(x, y);
     sendMouseButtons(buttonMask);
     _state->setState(x, y, buttonMask);
+
+    // Force an update of the position (read from X11) so that we can be sure that the state is stable
+    this->updatePosition();
+    this->_isDirty = false;
 }
 
 void WebXMouse::sendMouseButtons(unsigned int newButtonMask) {
@@ -64,17 +69,18 @@ std::shared_ptr<WebXMouseCursor> WebXMouse::getCursor(uint32_t cursorId) {
     }
 }
 
-void WebXMouse::updatePosition(int x, int y) {
-    this->_state->setPosition(x, y);
-}
-
 void WebXMouse::updatePosition() {
     // Get the mouse cursor position
     int win_x, win_y, root_x, root_y = 0;
     unsigned int mask = 0;
     Window child_win, root_win;
     XQueryPointer(this->_x11Display, this->_rootWindow, &child_win, &root_win, &root_x, &root_y, &win_x, &win_y, &mask);
-    this->_state->setPosition(root_x, root_y);
+
+    // Check if the position has changed
+    if (this->_state->getX() != root_x || this->_state->getY() != root_y) {
+        this->_state->setPosition(root_x, root_y);
+        this->_isDirty = true;
+    }
 }
 
 WebXMouseState * WebXMouse::createDefaultMouseState() {

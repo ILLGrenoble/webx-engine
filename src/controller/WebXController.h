@@ -18,6 +18,8 @@
 
 class WebXDisplay;
 class WebXInstruction;
+class WebXMouse;
+class WebXMouseInstruction;
 class WebXMessage;
 
 /**
@@ -118,10 +120,18 @@ private:
     float updateClientWindows(WebXDisplay * display);
 
     /**
-     * @brief Notifies that the mouse state has changed.
+     * Handles client mouse instructions. Updates the display and sends the mouse position to clients.
      * @param display Pointer to the WebXDisplay instance.
+     * @param instruction Shared pointer to the WebXInstruction instance.
+     * @param client Shared pointer to the WebXClient that sent the instruction.
      */
-    void notifyMouseChanged(WebXDisplay * display);
+    void onClientMouseInstruction(WebXDisplay * display, const std::shared_ptr<WebXMouseInstruction> & mouseInstruction, const std::shared_ptr<WebXClient> &);
+
+    /**
+     * @brief Notifies that the mouse state has changed.
+     * @param mouse Pointer to the WebXMouse instance.
+     */
+    void notifyMouseChanged(WebXMouse * mouse);
 
     /**
      * @brief Verifies if an image update is needed and returns the verification data.
@@ -144,8 +154,7 @@ private:
 private:
     const static unsigned int THREAD_RATE = 60;
     const static unsigned int DEFAULT_IMAGE_REFRESH_RATE = 30;
-    const static unsigned int MOUSE_MIN_REFRESH_DELAY_US = 15000;
-    const static unsigned int MOUSE_MAX_REFRESH_DELAY_US = 500000;
+    const static unsigned int MOUSE_REFRESH_DELAY_US = 50000;
     const static uint64_t GLOBAL_CLIENT_INDEX_MASK; // Sets all bits
 
     WebXGateway & _gateway;

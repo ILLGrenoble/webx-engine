@@ -44,7 +44,7 @@ public:
      * Get the current mouse state.
      * @return A pointer to the WebXMouseState object.
      */
-    WebXMouseState * getState() {
+    WebXMouseState * getState() const {
         return this->_state;
     }
 
@@ -61,16 +61,26 @@ public:
     std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
 
     /**
-     * Update the mouse position.
-     * @param x The new x position.
-     * @param y The new y position.
-     */
-    void updatePosition(int x, int y);
-
-    /**
      * Update the mouse position based on the current state.
      */
     void updatePosition();
+
+    /**
+     * Check if the mouse position is dirty (requires client notification)
+     * @return True if the mouse position is dirty, false otherwise.
+     * This is used to determine if the mouse position has changed and needs to be sent to clients.
+     */
+    bool isDirty() const {
+        return this->_isDirty;
+    }
+
+    /**
+     * Set the mouse dirty state.
+     * @param dirty The new dirty state.
+     */
+    void setDirty(bool dirty) {
+        this->_isDirty = dirty;
+    }
 
 private:
     /**
@@ -103,7 +113,8 @@ private:
     Display * _x11Display;
     Window  _rootWindow;
     WebXMouseCursorFactory _cursorFactory;
-    WebXMouseState  * _state;
+    WebXMouseState * _state;
+    bool _isDirty;
 };
 
 #endif //WEBX_MOUSE_H
