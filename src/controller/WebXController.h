@@ -60,6 +60,19 @@ private:
     };
 
     /**
+     * @struct WebXImageUpdateVerification
+     * @brief Represents the verification data for image updates.
+     * @param rgbChecksum Checksum for the RGB data.
+     * @param alphaChecksum Checksum for the alpha data.
+     * @param hasChanged Flag indicating if the image has changed.
+     */
+    struct WebXImageUpdateVerification {
+        uint32_t rgbChecksum;
+        uint32_t alphaChecksum;
+        bool hasChanged;
+    };
+
+    /**
      * @brief Handles display events and updates internal state flags.
      * @param eventType The type of display event.
      */
@@ -109,6 +122,16 @@ private:
      * @param display Pointer to the WebXDisplay instance.
      */
     void notifyMouseChanged(WebXDisplay * display);
+
+    /**
+     * @brief Verifies if an image update is needed and returns the verification data.
+     * @param image Shared pointer to the WebXImage to be verified.
+     * @param window Unique pointer to the WebXClientWindow to be verified.
+     * @return Verification data containing checksums and change status.
+     * @note This function checks if the image has changed and updates the alpha channel if necessary.
+     * @note It also handles the case where the image is null.
+     */
+    WebXImageUpdateVerification verifyImageUpdate(std::shared_ptr<WebXImage> & image, const std::unique_ptr<WebXClientWindow> & window);
 
     /**
      * @brief Sends a message to the gateway to be published to clients.

@@ -147,6 +147,21 @@ public:
     const std::string sessionIdString;
 };
 
+/**
+ * Class to manage controller-related settings for WebX.
+ * Includes configuration for image checksum verification.
+ */
+class WebXControllerSettings {
+public:
+    /* 
+     * Constructor initializes settings from environment variables or defaults.
+     */
+    WebXControllerSettings() : 
+        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", true)) {}
+
+    bool imageCheckumEnabled;
+};
+
 /* 
  * Class to manage overall settings for WebX.
  * Includes logging configuration, transport settings, and quality settings.
@@ -161,6 +176,7 @@ public:
     }
 
     const std::string logging;
+    const WebXControllerSettings controller;
     const WebXTransportSettings transport;
     const WebXQualitySettings quality;
 

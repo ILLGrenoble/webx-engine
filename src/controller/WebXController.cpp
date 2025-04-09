@@ -237,34 +237,20 @@ float WebXController::updateClientWindows(WebXDisplay * display) {
         const WebXWindowDamage & windowDamage = window->getDamage();
         if (window->isFullWindowDamage() || window->getDamageAreaRatio() > 0.9) {
             std::shared_ptr<WebXImage> image = display->getImage(window->getId(), window->getCurrentQuality());
-            if (image) {
-                // Calculate the image checksums
-                uint64_t rgbChecksum = image->calculateImageChecksum();
-                uint64_t alphaChecksum = image->calculateAlphaChecksum();
 
-                // Send event if checksum has changed
-                if (rgbChecksum != window->getRGBChecksum()) {
+            WebXController::WebXImageUpdateVerification verification = this->verifyImageUpdate(image, window);
+            if (verification.hasChanged) {
+                spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", window->getId(), image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
 
-                    // Compare alpha checksums
-                    if (alphaChecksum == window->getAlphaChecksum()) {
-                        bool removed = image->removeAlpha();
-                        if (removed) {
-                            spdlog::trace("Removed alpha from image for window 0x{:01x}", window->getId());
-                        }
-                    }
+                // Send message group of clients for the window full image update
+                this->sendMessage(std::make_shared<WebXImageMessage>(clientIndexMask, window->getId(), image));
 
-                    spdlog::trace("Window 0x{:x} sending encoded image {:d} x {:d} x {:d} @ {:d}KB (rgb = {:d}KB alpha = {:d}KB in {:d}ms)", window->getId(), image->getWidth(), image->getHeight(), image->getDepth(), (int)((1.0 * image->getFullDataSize()) / 1024), (int)((1.0 * image->getRawDataSize()) / 1024), (int)((1.0 * image->getAlphaDataSize()) / 1024), (int)(image->getEncodingTimeUs() / 1000));
+                // Update stats
+                float imageSizeKB = image->getFullDataSize() / 1024.0;
+                totalImageSizeKB += imageSizeKB;
 
-                    // Send message group of clients for the window full image update
-                    this->sendMessage(std::make_shared<WebXImageMessage>(clientIndexMask, window->getId(), image));
-
-                    // Update stats
-                    float imageSizeKB = image->getFullDataSize() / 1024.0;
-                    totalImageSizeKB += imageSizeKB;
-
-                    // Return full window transfer data
-                    return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), imageSizeKB, rgbChecksum, alphaChecksum));
-                }
+                // Return full window transfer data
+                return WebXResult<WebXWindowImageTransferData>::Ok(WebXWindowImageTransferData(window->getId(), imageSizeKB, verification.rgbChecksum, verification.alphaChecksum));
             }
 
         } else {
@@ -315,5 +301,38 @@ void WebXController::notifyMouseChanged(WebXDisplay * display) {
     // Send message to all clients
     auto message = std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId());
     this->sendMessage(message);
+}
+
+WebXController::WebXImageUpdateVerification WebXController::verifyImageUpdate(std::shared_ptr<WebXImage> & image, const std::unique_ptr<WebXClientWindow> & window) {
+    // Verify that the image is not null
+    if (image == nullptr) {
+        return WebXImageUpdateVerification{0, 0, false};
+    }
+
+    if (this->_settings.controller.imageCheckumEnabled) {
+        // Calculate the image checksums
+        uint32_t rgbChecksum = image->calculateImageChecksum();
+        uint32_t alphaChecksum = image->calculateAlphaChecksum();
+
+        // Send event if checksum has changed
+        if (rgbChecksum != window->getRGBChecksum()) {
+
+            // Compare alpha checksums
+            if (alphaChecksum == window->getAlphaChecksum()) {
+                bool removed = image->removeAlpha();
+                if (removed) {
+                    spdlog::trace("Removed alpha from image for window 0x{:01x}", window->getId());
+                }
+            }
+
+            return WebXImageUpdateVerification{rgbChecksum, alphaChecksum, true};
+        }
+
+        return WebXImageUpdateVerification{rgbChecksum, alphaChecksum, false};
+    
+    } else {
+        // No checksum verification: always return true
+        return WebXImageUpdateVerification{0, 0, true};
+    }
 }
 
