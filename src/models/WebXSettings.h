@@ -156,8 +156,8 @@ public:
     /* 
      * Constructor initializes settings from environment variables or defaults.
      */
-    WebXControllerSettings() : 
-        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", true)) {}
+    WebXControllerSettings(bool defaultImageCheckumEnabled) : 
+        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", defaultImageCheckumEnabled)) {}
 
     bool imageCheckumEnabled;
 };
@@ -172,7 +172,7 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXEventSettings() : 
-    filterDamageAfterConfigureNotify(webx_settings_env_or_default("WEBX_ENGINE_EVENT_FILTER_DAMAGE_AFTER_CONFIGURE_NOTIFY", true)) {}
+        filterDamageAfterConfigureNotify(webx_settings_env_or_default("WEBX_ENGINE_EVENT_FILTER_DAMAGE_AFTER_CONFIGURE_NOTIFY", true)) {}
 
     bool filterDamageAfterConfigureNotify;
 };
@@ -187,8 +187,10 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXSettings() :
-        logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "debug")) {
-    }
+        logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "debug")),
+        event(WebXEventSettings()),
+        controller(WebXControllerSettings(!this->event.filterDamageAfterConfigureNotify))  // default checksum enabled: true if filtering not enabled, false if filtering enabled
+        { }
 
     const std::string logging;
     const WebXEventSettings event;

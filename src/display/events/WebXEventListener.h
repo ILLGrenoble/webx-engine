@@ -5,6 +5,7 @@
 #include <X11/extensions/Xdamage.h>
 #include <map>
 #include <functional>
+#include <chrono>
 #include "WebXEvent.h"
 #include <models/WebXSettings.h>
 
@@ -55,59 +56,29 @@ private:
     void handleEvent(const WebXEvent & event);
 
     /**
-     * Filter function to wait for a ConfigureNotify event and set up a filter for damage events
-     * when the configure event is received.
-     * @param event The X11 event to filter.
-     * @return True if the event should be processed, false if it should be ignored.
-     */
-    bool waitForConfigureEventFilter(const XEvent * event) {
-        if (event->type == ConfigureNotify) {
-            XConfigureEvent * configureEvent = (XConfigureEvent *)event;
-            XID filterWindow = configureEvent->window;
-            unsigned long filterSerial = configureEvent->serial;
-
-            /**
-             * Set up the new filter function to handle damage events for the specified window
-             * and serial number.
-             */
-            this->_filterFunction = [this, filterWindow, filterSerial](const XEvent * event) {
-                return this->damageEventFilter(event, filterWindow, filterSerial);
-            };
-        }
-        return true;
-    }
-
-    /**
-     * Filter function to handle damage events and ignore them if they match the specified
-     * window and serial number. These damage events occur immediately after the ConfigureNotify
+     * Filter function to handle damage events and ignore them if they match
+     * window and serial numbers from configuration notify events. 
+     * These damage events occur immediately after the ConfigureNotify
      * and have the same serial number. These Damage events have a "more" flag that indicates if
-     * there are more events to come. On the last one we reset the filter function to wait
-     * for the next ConfigureNotify event.
+     * there are more events to come. On the last one we remove the associated filter.
+     * To avoid potential leaks, the damage filters are remove from the list if they are older than 1 second
      * @param event The X11 event to filter.
-     * @param filterWindow The window to filter events for.
-     * @param filterSerial The serial number to filter events for.
-     * @return True if the event should be processed, false if it should be ignored.
+     * @return true if the event should be processed, false if it should be ignored.
      */
-    bool damageEventFilter(const XEvent * event, const XID filterWindow, const unsigned long filterSerial) {
-        if (event->type == this->_damageEventBase + XDamageNotify) {
-            XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *) event;
-            if (damageEvent->drawable == filterWindow && damageEvent->serial == filterSerial) {
-                spdlog::trace("Ignoring damage event for window 0x{:08x} with serial {:d}", damageEvent->drawable, damageEvent->serial);
-    
-                /**
-                 * When the last damage event is received, reset the filter function to wait for
-                 * the next ConfigureNotify event.
-                 */
-                if (!damageEvent->more) {
-                    this->_filterFunction = [this](const XEvent * event) {
-                        return this->waitForConfigureEventFilter(event);
-                    };
-                }
-                return false;
-            }    
-        }
-        return true;
-    }
+    bool filter(const XEvent * event);
+
+private:
+    class WebXDamageFilter {
+    public:
+        WebXDamageFilter(const XID window, const unsigned long serial) :
+            timestamp(std::chrono::high_resolution_clock::now()),
+            window(window), 
+            serial(serial) {}
+            
+        const std::chrono::high_resolution_clock::time_point timestamp;
+        const XID window;
+        const unsigned long serial;
+    };
 
 private:
     Display * _x11Display;
@@ -120,7 +91,7 @@ private:
     int _xfixesEventBase;
     int _xfixesErrorBase;
 
-    std::function<bool(const XEvent * event)> _defaultFilterFunction;
+    std::vector<std::unique_ptr<WebXDamageFilter>> _damageFilters;
     std::function<bool(const XEvent * event)> _filterFunction;
 };
 

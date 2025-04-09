@@ -32,12 +32,12 @@ WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * di
     }
 
     if (settings.event.filterDamageAfterConfigureNotify) {
-        // Set up the filter function to wait for a ConfigureNotify event
-        this->_defaultFilterFunction = [this](const XEvent * event) { return this->waitForConfigureEventFilter(event);};
+        // Set up the filter function to filter damage events after configure notify
+        this->_filterFunction = [this](const XEvent * event) { return this->filter(event); };
 
     } else {
         // Set up the filter function to keep all events
-        this->_defaultFilterFunction = [](const XEvent * event) { return true; };
+        this->_filterFunction = [](const XEvent * event) { return true; };
     }
 
     // Create and enable the damage overrider
@@ -55,9 +55,6 @@ WebXEventListener::~WebXEventListener() {
 
 void WebXEventListener::flushQueuedEvents() {
     XEvent x11Event;
-    
-    // Initialise the filter function as the default
-    this->_filterFunction = this->_defaultFilterFunction;
 
     XFlush(this->_x11Display);
     int qLength = QLength(this->_x11Display);
@@ -69,6 +66,47 @@ void WebXEventListener::flushQueuedEvents() {
             WebXEvent event(x11Event, this->_damageEventBase, this->_xfixesEventBase);
             this->handleEvent(event);
         }
+    }
+
+    // Remove old damage filters (older than 1 second)
+    auto now = std::chrono::high_resolution_clock::now();
+    this->_damageFilters.erase(std::remove_if(this->_damageFilters.begin(), this->_damageFilters.end(),
+        [&now](const std::unique_ptr<WebXDamageFilter> & damageFilter) {
+            return (now - damageFilter->timestamp) > std::chrono::seconds(1);
+        }), this->_damageFilters.end());
+}
+
+bool WebXEventListener::filter(const XEvent * event) {
+    if (event->type == this->_damageEventBase + XDamageNotify) {
+        // Handle damage event
+        XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *) event;
+        auto it = std::find_if(this->_damageFilters.begin(), this->_damageFilters.end(), 
+        [&damageEvent](const std::unique_ptr<WebXDamageFilter> & damageFilter) {
+            return damageFilter->window == damageEvent->drawable && damageFilter->serial == damageEvent->serial;
+        });
+
+        // Damage event is not associated to a configure notify
+        if (it == this->_damageFilters.end()) {
+            return true;
+        }
+
+        // Remove the filter if there are no more damage events
+        if (!damageEvent->more) {
+            this->_damageFilters.erase(it);
+        }
+
+        return false;
+
+    } else if (event->type == ConfigureNotify) {
+        // Handle configure event
+        XConfigureEvent * configureEvent = (XConfigureEvent *) event;
+        this->_damageFilters.push_back(std::unique_ptr<WebXDamageFilter>(new WebXDamageFilter(configureEvent->window, configureEvent->serial)));
+
+        return true;
+    
+    } else {
+        // All other events
+        return true;
     }
 }
 
