@@ -1,3 +1,13 @@
+1.1.0 09/04/2025
+================
+ * Modify settings defaults depending on event filtering configuration: if filtering enabled, default to false the checksum verification
+ * Add settings options to enable/disable the filter of damage events that occur immediately after a configuration notify.
+ * Add settings option to disable the checksum generation of images: reduces CPU but increase bandwidth.
+ * Filter DamangeNotify events that occur immediately after a ConfigureNotify event (created excessive load on the window checksum calculations and do not indicate that any damage has occurred to the window)
+ * Add messages and instructions ot include clipboard into the controller.
+ * Handle setting the clipboard content in the X11 server and handling requests to obtain the clipboard content. 
+ * Add Clipboard class to obtain current clipboard value of X11 windows.
+
 1.0.0 01/04/2025
 ================
  * Add release builds for ARM architecture
