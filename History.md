@@ -1,5 +1,6 @@
 1.1.0 09/04/2025
 ================
+ * Modify handling of mouse messages: when receiving a mouse instruction, immediately send messages to all other clients to notify them. Regularly check if mouse position has been set outside of webx.
  * Modify settings defaults depending on event filtering configuration: if filtering enabled, default to false the checksum verification
  * Add settings options to enable/disable the filter of damage events that occur immediately after a configuration notify.
  * Add settings option to disable the checksum generation of images: reduces CPU but increase bandwidth.
