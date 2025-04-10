@@ -1,3 +1,7 @@
+1.1.1 10/04/2025
+================
+ * Send cursor notification message to client that sends mouse instruction: updates the cursor but not the position of the client mouse. Fixes bug that client mouse cursor never updated.
+
 1.1.0 09/04/2025
 ================
  * Modify handling of mouse messages: when receiving a mouse instruction, immediately send messages to all other clients to notify them. Regularly check if mouse position has been set outside of webx.
