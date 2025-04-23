@@ -81,11 +81,13 @@ public:
      * @param id The unique identifier of the client.
      * @param index The index mask associated with the client.
      * @param maxQuality The maximum quality level allowed for the client.
+     * @param pingResponseTimeoutMs The timeout in milliseconds for receiving a ping response from a client
      */
-    WebXClient(uint32_t id, uint64_t index, const WebXQuality & maxQuality) :
+    WebXClient(uint32_t id, uint64_t index, const WebXQuality & maxQuality, const int pingResponseTimeoutMs) :
         _id(id),
         _index(index),
         _maxQuality(maxQuality),
+        _pingResponseTimeoutMs(pingResponseTimeoutMs),
         _pingStatus(PingStatus::WaitingToPing),
         _pingSentTime(std::chrono::high_resolution_clock::now()),
         _pongReceivedTime(std::chrono::high_resolution_clock::now()),
@@ -158,7 +160,7 @@ public:
         
         } else if (this->_pingStatus == WaitingForPong) {
             std::chrono::duration<double, std::milli> timeSincePing = now - this->_pingSentTime;
-            this->_pingStatus = timeSincePing.count() > PONG_RESPONSE_TIMEOUT_MS ? PongTimeout : WaitingForPong;
+            this->_pingStatus = timeSincePing.count() > this->_pingResponseTimeoutMs ? PongTimeout : WaitingForPong;
         }
     }
 
@@ -255,12 +257,12 @@ public:
     }    
 private:
     const static int PING_WAIT_INTERVAL_MS = 1000;
-    const static int PONG_RESPONSE_TIMEOUT_MS = 10000;
     const static int QUALITY_VERIFICATION_PERIOD_MS = 10000;
 
-    uint32_t _id;
-    uint64_t _index;
+    const uint32_t _id;
+    const uint64_t _index;
     WebXQuality _maxQuality;
+    const int _pingResponseTimeoutMs;
 
     PingStatus _pingStatus;
     std::chrono::high_resolution_clock::time_point _pingSentTime;

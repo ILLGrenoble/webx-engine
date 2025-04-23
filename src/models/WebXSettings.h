@@ -73,9 +73,9 @@ public:
         coverageQualityFunc(convertCoverageQualityFuncString(webx_settings_env_or_default("WEBX_ENGINE_COVERAGE_QUALITY_FUNC", "quadratic"))),
         limitQualityByDataRate(webx_settings_env_or_default("WEBX_ENGINE_LIMIT_QUALITY_BY_DATA_RATE", true)) {}
 
-    bool increaseQualityOnMouseOver;
-    CoverageQualityFunc coverageQualityFunc;
-    bool limitQualityByDataRate;
+    const bool increaseQualityOnMouseOver;
+    const CoverageQualityFunc coverageQualityFunc;
+    const bool limitQualityByDataRate;
 
 private:
     /* 
@@ -157,9 +157,11 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXControllerSettings(bool defaultImageCheckumEnabled) : 
-        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", defaultImageCheckumEnabled)) {}
+        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", defaultImageCheckumEnabled)),
+        clientPingResponseTimeoutMs(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_CLIENT_PING_RESPONSE_TIMEOUT_MS", 15000)) {}
 
-    bool imageCheckumEnabled;
+    const bool imageCheckumEnabled;
+    const int clientPingResponseTimeoutMs;
 };
 
 /**
@@ -174,7 +176,7 @@ public:
     WebXEventSettings() : 
         filterDamageAfterConfigureNotify(webx_settings_env_or_default("WEBX_ENGINE_EVENT_FILTER_DAMAGE_AFTER_CONFIGURE_NOTIFY", true)) {}
 
-    bool filterDamageAfterConfigureNotify;
+    const bool filterDamageAfterConfigureNotify;
 };
 
 /* 

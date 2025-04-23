@@ -43,7 +43,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const WebXQuality & defaultQuality = WebXQuality::MaxQuality();
 
     // Create client and add index to mask
-    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex, defaultQuality);
+    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex, defaultQuality, this->_settings.controller.clientPingResponseTimeoutMs);
     this->_clients.push_back(client);
     this->_clientIndexMask |= clientIndex;
 
