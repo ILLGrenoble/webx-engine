@@ -185,6 +185,19 @@ void WebXClientRegistry::performQualityVerification() {
     }
 }
 
+void WebXClientRegistry::disconnectAll() {
+    spdlog::info("Disconnecting all clients");
+    const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
+
+    for (const std::shared_ptr<WebXClient> & client : this->_clients) {
+        spdlog::trace("Sending Disconnect to client with Id {:08x} and index {:016x}", client->getId(), client->getIndex());
+        this->_clientMessageHandler(std::make_shared<WebXDisconnectMessage>(client->getIndex()));
+    }
+
+    this->_clients.clear();
+    this->_groups.clear();
+}
+
 void WebXClientRegistry::setClientQuality(std::shared_ptr<WebXClient> client, const WebXQuality & quality) {
     const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
 

@@ -60,6 +60,9 @@ void WebXController::stop() {
     spdlog::info("Shutdown");
     this->_state = WebXControllerState::Stopped;
 
+    // Disconnect all clients
+    this->_clientRegistry.disconnectAll();
+
     // Remove the instruction handler
     this->_gateway.setInstructionHandlerFunc(nullptr);
 
@@ -89,7 +92,7 @@ void WebXController::run() {
         if (this->_state != WebXControllerState::Stopped) {
             std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::micro> delayUs = start - lastTime;
-            std::chrono::duration<double, std::micro> timeSinceMouseRefreshUs = start - lastMouseRefreshTime;
+            std::chrono::duration<double, std::milli> timeSinceMouseRefreshMs = start - lastMouseRefreshTime;
             lastTime = start;
 
             // Handle all client instructions
@@ -98,9 +101,15 @@ void WebXController::run() {
             // Handle all pending X11 events
             this->_manager.handlePendingEvents();
 
+            // If window layout has changed, send layout to clients
             if (this->_displayDirty) {
-                // Dispatch display event to connectors
                 this->notifyDisplayChanged(display);
+            }
+
+            // If cursor has changed, send cursorlayout to clients
+            if (this->_cursorDirty) {
+                // Dispatch display event to connectors
+                this->notifyCursorChanged(mouse);
             }
 
             // Handle client pings
@@ -110,10 +119,10 @@ void WebXController::run() {
             float imageSizeKB = this->updateClientWindows(display);
 
             // Check if the mouse has been moved by some other application (or locally)
-            if (timeSinceMouseRefreshUs.count() > MOUSE_REFRESH_DELAY_US) {
+            if (timeSinceMouseRefreshMs.count() > MOUSE_REFRESH_DELAY_MS) {
                 mouse->updatePosition();
                 if (mouse->isDirty()) {
-                    this->notifyMouseChanged(mouse);
+                    this->notifyMousePositionChanged(mouse);
                     mouse->setDirty(false);
                     lastMouseRefreshTime = std::chrono::high_resolution_clock::now();
                 }
@@ -299,9 +308,16 @@ void WebXController::onClientMouseInstruction(WebXDisplay * display, const std::
     }
 }
 
-void WebXController::notifyMouseChanged(WebXMouse * mouse) {
+void WebXController::notifyCursorChanged(WebXMouse * mouse) {
     this->_cursorDirty = false;
 
+    const WebXMouseState * mouseState = mouse->getState();
+
+    // Send message to all clients
+    this->sendMessage(std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, -1, -1, mouseState->getCursor()->getId()));
+}
+
+void WebXController::notifyMousePositionChanged(WebXMouse * mouse) {
     const WebXMouseState * mouseState = mouse->getState();
 
     // Send message to all clients

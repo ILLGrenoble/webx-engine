@@ -152,6 +152,11 @@ public:
      */
     void performQualityVerification();
 
+    /**
+     * Disconnects all clients
+     */
+    void disconnectAll();
+
 private:
     /**
      * @brief Retrieves a client group by its quality.
