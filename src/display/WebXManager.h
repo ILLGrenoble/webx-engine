@@ -6,7 +6,7 @@
 #include <vector>
 #include <functional>
 #include "WebXDisplayEventType.h"
-#include "events/WebXEvent.h"
+#include "events/WebXConfigureEvent.h"
 #include <models/WebXSettings.h>
 #include <models/WebXWindowDamage.h>
 
@@ -96,40 +96,10 @@ private:
     void init(const std::string & keyboardLayout = "");
 
     /**
-     * @brief Handles the mapping of a window.
-     * @param event The event data.
-     */
-    void handleWindowMapEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles the unmapping of a window.
-     * @param event The event data.
-     */
-    void handleWindowUnmapEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles the reparenting of a window.
-     * @param event The event data.
-     */
-    void handleWindowReparentEvent(const WebXEvent & event);
-
-    /**
      * @brief Handles the configuration of a window.
      * @param event The event data.
      */
-    void handleWindowConfigureEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles damage events for a window.
-     * @param event The event data.
-     */
-    void handleWindowDamageEvent(const WebXEvent & event);
-
-    /**
-     * @brief Handles mouse cursor events.
-     * @param event The event data.
-     */
-    void handleMouseCursorEvent(const WebXEvent & event);
+    void handleWindowConfigureEvent(const WebXConfigureEvent & event);
 
     /**
      * @brief Updates the display state.

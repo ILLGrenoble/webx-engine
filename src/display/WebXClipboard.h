@@ -38,8 +38,8 @@ public:
         }
     }
 
-    void onClipboardDataNotify(const XSelectionEvent * selectionEvent) {
-        if (selectionEvent->property == None) {
+    void onClipboardDataNotify(const XSelectionEvent & selectionEvent) {
+        if (selectionEvent.property == None) {
             return;
         }
         
@@ -71,29 +71,29 @@ public:
         }
    }
 
-   void onClipboardContentRequest(const XSelectionRequestEvent * selectionRequestEvent) const {
+   void onClipboardContentRequest(const XSelectionRequestEvent & selectionRequestEvent) const {
 
         XSelectionEvent ssev;
         ssev.type = SelectionNotify;
-        ssev.requestor = selectionRequestEvent->requestor;
-        ssev.selection = selectionRequestEvent->selection;
-        ssev.target = selectionRequestEvent->target;
-        ssev.time = selectionRequestEvent->time;
+        ssev.requestor = selectionRequestEvent.requestor;
+        ssev.selection = selectionRequestEvent.selection;
+        ssev.target = selectionRequestEvent.target;
+        ssev.time = selectionRequestEvent.time;
 
-        if (selectionRequestEvent->target == this->_targets) {
+        if (selectionRequestEvent.target == this->_targets) {
             Atom supportedTargets[] = { this->_utf8, XA_STRING, this->_targets };
-            XChangeProperty(this->_x11Display, selectionRequestEvent->requestor, selectionRequestEvent->property, XA_ATOM, 32, PropModeReplace, reinterpret_cast<unsigned char *>(supportedTargets), 2);
-            ssev.property = selectionRequestEvent->property;
+            XChangeProperty(this->_x11Display, selectionRequestEvent.requestor, selectionRequestEvent.property, XA_ATOM, 32, PropModeReplace, reinterpret_cast<unsigned char *>(supportedTargets), 2);
+            ssev.property = selectionRequestEvent.property;
             
-        } else if (selectionRequestEvent->target == this->_utf8 || selectionRequestEvent->target == XA_STRING) {
-            XChangeProperty(this->_x11Display, selectionRequestEvent->requestor, selectionRequestEvent->property, this->_utf8, 8, PropModeReplace, (unsigned char *)this->_clipboardContent.c_str(), this->_clipboardContent.size());
-            ssev.property = selectionRequestEvent->property;
+        } else if (selectionRequestEvent.target == this->_utf8 || selectionRequestEvent.target == XA_STRING) {
+            XChangeProperty(this->_x11Display, selectionRequestEvent.requestor, selectionRequestEvent.property, this->_utf8, 8, PropModeReplace, (unsigned char *)this->_clipboardContent.c_str(), this->_clipboardContent.size());
+            ssev.property = selectionRequestEvent.property;
         
         } else {
             ssev.property = None;
         }
 
-        XSendEvent(this->_x11Display, selectionRequestEvent->requestor, True, NoEventMask, (XEvent *)&ssev);
+        XSendEvent(this->_x11Display, selectionRequestEvent.requestor, True, NoEventMask, (XEvent *)&ssev);
    }
 
    void setClipboardContent(const std::string & content) {

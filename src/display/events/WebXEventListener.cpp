@@ -1,5 +1,4 @@
 #include "WebXEventListener.h"
-#include "WebXEvent.h"
 #include "WebXDamageOverride.h"
 #include <display/WebXWindow.h>
 #include <models/WebXSettings.h>
@@ -13,6 +12,14 @@
 WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * display, Window rootWindow) :
     _x11Display(display),
     _rootWindow(rootWindow),
+    _mapEventHandler([](const WebXMapEvent &) {}),
+    _unmapEventHandler([](const WebXUnmapEvent &) {}),
+    _reparentEventHandler([](const WebXReparentEvent &) {}),
+    _configureEventHandler([](const WebXConfigureEvent &) {}),
+    _selectionEventHandler([](const WebXSelectionEvent &) {}),
+    _selectionRequestEventHandler([](const WebXSelectionRequestEvent &) {}),
+    _damageEventHandler([](const WebXDamageEvent &) {}),
+    _cursorEventHandler([](const WebXCursorEvent &) {}),
     _damageEventBase(0),
     _damageErrorBase(0),
     _xfixesEventBase(0),
@@ -63,8 +70,7 @@ void WebXEventListener::flushQueuedEvents() {
     for (int i = 0; i < qLength; i++) {
         XNextEvent(this->_x11Display, &x11Event);
         if (this->_filterFunction(&x11Event)) {
-            WebXEvent event(x11Event, this->_damageEventBase, this->_xfixesEventBase);
-            this->handleEvent(event);
+            this->handleXEvent(&x11Event);
         }
     }
 
@@ -74,6 +80,37 @@ void WebXEventListener::flushQueuedEvents() {
         [&now](const std::unique_ptr<WebXDamageFilter> & damageFilter) {
             return (now - damageFilter->timestamp) > std::chrono::seconds(1);
         }), this->_damageFilters.end());
+}
+
+void WebXEventListener::handleXEvent(const XEvent * event) {
+    if (event->type == MapNotify) {
+        this->_mapEventHandler(WebXMapEvent(event->xmap));
+
+    } else if (event->type == UnmapNotify) {
+        this->_unmapEventHandler(WebXUnmapEvent(event->xunmap));
+
+    } else if (event->type == ReparentNotify) {
+        this->_reparentEventHandler(WebXReparentEvent(event->xreparent));
+
+    } else if (event->type == ConfigureNotify) {
+        this->_configureEventHandler(WebXConfigureEvent(event->xconfigure));
+
+    } else if (event->type == SelectionNotify) {
+        this->_selectionEventHandler(WebXSelectionEvent(event->xselection));
+
+    } else if (event->type == SelectionRequest) {
+        this->_selectionRequestEventHandler(WebXSelectionRequestEvent(event->xselectionrequest));
+
+    } else if (event->type == this->_damageEventBase +  XDamageNotify) {
+        XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *)event;
+        this->_damageEventHandler(WebXDamageEvent(*damageEvent));
+
+    } else if (event->type == this->_xfixesEventBase + XFixesCursorNotify) {
+        this->_cursorEventHandler(WebXCursorEvent());
+    
+    // } else {
+    //     spdlog::info("type = {:d} serial = {:d}", event->type, event->xany.serial);
+    }
 }
 
 bool WebXEventListener::filter(const XEvent * event) {
@@ -110,23 +147,3 @@ bool WebXEventListener::filter(const XEvent * event) {
     }
 }
 
-void WebXEventListener::handleEvent(const WebXEvent & event) {
-    std::map<WebXEventType, std::function<void(const WebXEvent &)>>::iterator it = this->_eventHandlers.find(event.getType());
-
-    if (it != this->_eventHandlers.end()) {
-        std::function<void(const WebXEvent &)> handler = it->second;
-
-        handler(event);
-    }
-}
-
-void WebXEventListener::addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler) {
-    this->_eventHandlers[eventType] = handler;
-}
-
-void WebXEventListener::removeEventHandler(WebXEventType eventType) {
-    std::map<WebXEventType, std::function<void(const WebXEvent &)>>::iterator it = this->_eventHandlers.find(eventType);
-    if (it != this->_eventHandlers.end()) {
-        this->_eventHandlers.erase(it);
-    }
-}

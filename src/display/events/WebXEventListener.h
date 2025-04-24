@@ -2,12 +2,18 @@
 #define WEBX_EVENT_LISTENER_H
 
 #include <X11/Xlib.h>
-#include <X11/extensions/Xdamage.h>
 #include <map>
 #include <functional>
-#include <chrono>
-#include "WebXEvent.h"
 #include <models/WebXSettings.h>
+
+#include "WebXMapEvent.h"
+#include "WebXUnmapEvent.h"
+#include "WebXReparentEvent.h"
+#include "WebXConfigureEvent.h"
+#include "WebXSelectionEvent.h"
+#include "WebXSelectionRequestEvent.h"
+#include "WebXDamageEvent.h"
+#include "WebXCursorEvent.h"
 
 class WebXDamageOverride;
 
@@ -36,24 +42,75 @@ public:
     void flushQueuedEvents();
 
     /**
-     * Adds an event handler for a specific event type.
-     * @param eventType The type of event to handle.
-     * @param handler A function to handle the event.
+     * Sets the event handler for the map event
+     * @param handler The handler for the map event
      */
-    void addEventHandler(WebXEventType eventType, std::function<void(const WebXEvent &)> handler);
+    void setMapEventHandler(std::function<void(const WebXMapEvent &)> handler) {
+        this->_mapEventHandler = handler;
+    }
 
     /**
-     * Removes the event handler for a specific event type.
-     * @param eventType The type of event whose handler should be removed.
+     * Sets the event handler for the unmap event
+     * @param handler The handler for the unmap event
      */
-    void removeEventHandler(WebXEventType eventType);
+    void setUnmapEventHandler(std::function<void(const WebXUnmapEvent &)> handler) {
+        this->_unmapEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the reparent event
+     * @param handler The handler for the reparent event
+     */
+    void setReparentEventHandler(std::function<void(const WebXReparentEvent &)> handler) {
+        this->_reparentEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the configuration event
+     * @param handler The handler for the configuration event
+     */
+    void setConfigureEventHandler(std::function<void(const WebXConfigureEvent &)> handler) {
+        this->_configureEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the selection event
+     * @param handler The handler for the selection event
+     */
+    void setSelectionEventHandler(std::function<void(const WebXSelectionEvent &)> handler) {
+        this->_selectionEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the selection request event
+     * @param handler The handler for the selection request event
+     */
+    void setSelectionRequestEventHandler(std::function<void(const WebXSelectionRequestEvent &)> handler) {
+        this->_selectionRequestEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the damage event
+     * @param handler The handler for the damage event
+     */
+    void setDamageEventHandler(std::function<void(const WebXDamageEvent &)> handler) {
+        this->_damageEventHandler = handler;
+    }
+
+    /**
+     * Sets the event handler for the cursor event
+     * @param handler The handler for the cursor event
+     */
+    void setCursorEventHandler(std::function<void(const WebXCursorEvent &)> handler) {
+        this->_cursorEventHandler = handler;
+    }
 
 private:
     /**
-     * Internal method to handle an incoming event and dispatch it to the appropriate handler.
-     * @param event The event to handle.
+     * Handles all the XEvents and converts the to WebX events
+     * @param event the XEvent to be handled
      */
-    void handleEvent(const WebXEvent & event);
+    void handleXEvent(const XEvent * event);
 
     /**
      * Filter function to handle damage events and ignore them if they match
@@ -83,7 +140,16 @@ private:
 private:
     Display * _x11Display;
     Window _rootWindow;
-    std::map<WebXEventType, std::function<void(const WebXEvent &)>> _eventHandlers;
+
+    std::function<void(const WebXMapEvent &)> _mapEventHandler;
+    std::function<void(const WebXUnmapEvent &)> _unmapEventHandler;
+    std::function<void(const WebXReparentEvent &)> _reparentEventHandler;
+    std::function<void(const WebXConfigureEvent &)> _configureEventHandler;
+    std::function<void(const WebXSelectionEvent &)> _selectionEventHandler;
+    std::function<void(const WebXSelectionRequestEvent &)> _selectionRequestEventHandler;
+    std::function<void(const WebXDamageEvent &)> _damageEventHandler;
+    std::function<void(const WebXCursorEvent &)> _cursorEventHandler;
+
     WebXDamageOverride * _damageOverride;
 
     int _damageEventBase;
