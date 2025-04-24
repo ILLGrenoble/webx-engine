@@ -53,7 +53,9 @@ public:
      * @param message The message to be published.
      */
     void onMessage(std::shared_ptr<WebXMessage> message) {
-        this->_messageQueue.put(message);
+        if (this->_running) {
+            this->_messageQueue.put(message);
+        }
     }
 
 private:

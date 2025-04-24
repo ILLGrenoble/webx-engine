@@ -75,7 +75,13 @@ void WebXController::stop() {
     this->_manager.setDamageEventHandler(nullptr);
 }
 
-void WebXController::run() {
+void WebXController::run(bool testing) {
+
+    if (testing) {
+        // Add a dummy client to generate messages
+        this->_clientRegistry.addClient();
+    }
+
     long calculateThreadSleepUs = this->_threadSleepUs;
     std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point lastMouseRefreshTime = lastTime;
@@ -113,7 +119,9 @@ void WebXController::run() {
             }
 
             // Handle client pings
-            this->handleClientPings();
+            if (!testing) {
+                this->handleClientPings();
+            }
 
             // Update necessary images of the client windows
             float imageSizeKB = this->updateClientWindows(display);

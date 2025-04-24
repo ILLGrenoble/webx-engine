@@ -48,8 +48,6 @@ calculate_alphamap_creation_stats() {
   fi
 }
 
-#!/bin/bash
-
 calculate_grab_metrics() {
   local log_file="$1"
   local count=0
@@ -157,14 +155,12 @@ calculate_network_metrics() {
   fi
 }
 
-echo "Starting webx-engine and sleep 2 seconds"
+echo "Starting webx-engine"
 
 OUTPUT_LOG="test/output/web-engine.log"
-WEBX_ENGINE_LOG=trace ./bin/webx-engine -s > "$OUTPUT_LOG" &
+WEBX_ENGINE_LOG=trace ./bin/webx-engine -t > "$OUTPUT_LOG" &
 ENGINE_PID=$!
 disown $ENGINE_PID
-
-sleep 2
 
 # setup terminator to be transparent
 mkdir -p $HOME/.config/terminator

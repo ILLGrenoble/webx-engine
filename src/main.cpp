@@ -54,19 +54,23 @@ int main(int argc, char *argv[]) {
     int opt;
     std::string keyboardLayout = "";
     bool standAlone = false;
+    bool testing = false;
 
-    while((opt = getopt(argc, argv, "ik:s")) != -1) {  
+    while((opt = getopt(argc, argv, "k:st")) != -1) {  
         switch(opt)  
         {  
             case 's':
-                {
-                    standAlone = true;
-                    spdlog::info("Starting WebX in stand-alone mode");
-                }
+                standAlone = true;
+                spdlog::info("Starting WebX in stand-alone mode");
                 break;
 
             case 'k':
                 keyboardLayout = optarg;
+                break;
+
+            case 't':
+                testing = true;
+                spdlog::info("Starting WebX in test mode");
                 break;
 
         }  
@@ -82,10 +86,12 @@ int main(int argc, char *argv[]) {
 
     // Start transport
     WebXTransport transport(gateway, settings.transport, standAlone);
-    transport.start();
+    if (!testing) {
+        transport.start();
+    }
 
     // Start the controller (blocking)
-    controller->run();
+    controller->run(testing);
 
     // stop transport
     transport.stop();

@@ -43,8 +43,9 @@ public:
 
     /**
      * @brief Starts the main execution loop of the controller.
+     * @param testing Indicates whether the controller is being run during a test
      */
-    void run();
+    void run(bool testing = false);
 
     /**
      * @brief Stops the main execution loop of the controller.
@@ -170,7 +171,6 @@ private:
     WebXStats _stats;
 
     std::vector<std::shared_ptr<WebXInstruction>> _instructions;
-
 
     bool _displayDirty;
     bool _cursorDirty;
