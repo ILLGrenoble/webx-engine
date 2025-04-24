@@ -51,7 +51,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(defaultQuality);
     group->addClient(client);
 
-    spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group. Now have {:d} clients connected", clientId, clientIndex, this->_clients.size());
+    spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group ({:d}). Now have {:d} clients connected", clientId, clientIndex, defaultQuality.index, this->_clients.size());
 
     // Return identifier clientid and index
     return WebXResult<std::pair<uint32_t, uint64_t>>::Ok(std::pair<uint32_t, uint64_t>(clientId, clientIndex));

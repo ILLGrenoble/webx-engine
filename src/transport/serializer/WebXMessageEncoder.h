@@ -129,6 +129,7 @@ private:
      *   commandId: 4 bytes
      *   screenWidth: 4 bytes
      *   screenHeight: 4 bytes
+     *   maxQualityIndex: 4 bytes
      */
     zmq::message_t * createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const;
 

@@ -12,7 +12,7 @@ class WebXQuality {
 public:
     /**
      * @brief Constructs a WebXQuality object with specified parameters.
-     * @param index The quality index (1-10).
+     * @param index The quality index (1-12).
      * @param imageFPS The frames per second for image updates.
      * @param rgbQuality The quality level for RGB channels.
      * @param alphaQuality The quality level for alpha channels.
@@ -80,18 +80,18 @@ public:
      * @return A reference to the maximum WebXQuality object.
      */
     static const WebXQuality & MaxQuality() {
-        return QUALITY_SETTINGS[QUALITY_SETTINGS.size() - 1];
+        return QUALITY_SETTINGS[MaxRuntimeQualityIndex - 1];
     }
 
     /**
      * @brief Gets the quality setting for a specific index.
-     * @param qualityIndex The quality index (1-10).
+     * @param qualityIndex The quality index (1-MaxRuntimeQualityIndex).
      * @return A reference to the WebXQuality object for the specified index.
      */
     static const WebXQuality & QualityForIndex(uint32_t qualityIndex) {
-        if (qualityIndex < 1 || qualityIndex > 10) {
+        if (qualityIndex < 1 || qualityIndex > MaxRuntimeQualityIndex) {
             spdlog::warn("Attempt to get the quality for an invalid index ({:d})", qualityIndex);
-            qualityIndex = qualityIndex < 1 ? 1 : 10;
+            qualityIndex = qualityIndex < 1 ? 1 : MaxRuntimeQualityIndex;
         }
             
         const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
@@ -105,8 +105,8 @@ public:
             coverage = coverage < 0.0 ? 0.0 : 1.0;
         }
     
-        // Coverage [0.0:1.0], quality [1:10]
-        int qualityIndex = std::ceil(10 - (9.99 * coverage));
+        // Coverage [0.0:1.0], quality [1:MaxRuntimeQualityIndex]
+        int qualityIndex = std::ceil(MaxRuntimeQualityIndex - ((MaxRuntimeQualityIndex - 0.01) * coverage));
     
         const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
     
@@ -119,9 +119,9 @@ public:
             coverage = coverage < 0.0 ? 0.0 : 1.0;
         }
     
-        // Coverage [0.0:1.0], quality [1:10]
+        // Coverage [0.0:1.0], quality [1:MaxRuntimeQualityIndex]
         // quadratic conversion from coverage to quality (keep higher quality for smaller coverage)
-        int qualityIndex = std::ceil(10 - (9.99 * coverage * coverage));
+        int qualityIndex = std::ceil(MaxRuntimeQualityIndex - ((MaxRuntimeQualityIndex - 0.01) * coverage * coverage));
     
         const WebXQuality & quality = QUALITY_SETTINGS[qualityIndex - 1];
     
@@ -135,12 +135,23 @@ public:
             // Keep reducing the current quality until we get the desired KB/s rate
             return QualityForIndex(currentQuality.index - 1);
         
-        } else if (imageMbps < lowerBoundImageMbps && currentQuality.index < MAX_QUALITY_INDEX) {
+        } else if (imageMbps < lowerBoundImageMbps && currentQuality.index < MaxRuntimeQualityIndex) {
             // Increase the quality if the image KB/s is lower than the minimum for the desired quality 
             return QualityForIndex(currentQuality.index + 1);
         }
     
         return currentQuality;
+    }
+
+    static void SetRuntimeMaxQualityIndex(int maxRuntimeQualityIndex) {
+        if (maxRuntimeQualityIndex < 1) {
+            maxRuntimeQualityIndex = 1;
+
+        } else if (maxRuntimeQualityIndex > MAX_QUALITY_INDEX) {
+            maxRuntimeQualityIndex = MAX_QUALITY_INDEX;
+        }
+        
+        MaxRuntimeQualityIndex = maxRuntimeQualityIndex;
     }
 
     int index;
@@ -151,8 +162,10 @@ public:
 
     int imageUpdateTimeUs;
 
+private:
     static const std::vector<WebXQuality> QUALITY_SETTINGS;
-    static const int MAX_QUALITY_INDEX = 10;
+    static const int MAX_QUALITY_INDEX = 12;
+    static int MaxRuntimeQualityIndex;
 
 };
 

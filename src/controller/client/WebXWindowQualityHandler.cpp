@@ -46,7 +46,7 @@ void WebXWindowQualityHandler::setWindowCoverage(const WebXWindowCoverage & cove
                 qualityForImageCoverage;
     
             // If a window is made fully visible (eg click to bring into focus) then force the current quality to the max desired quality
-            if (coverageQuality.index == WebXQuality::MAX_QUALITY_INDEX && (coverageQuality.index - this->_coverageQuality.index) > 2) {
+            if (coverageQuality == WebXQuality::MaxQuality() && (coverageQuality.index - this->_coverageQuality.index) > 2) {
                 // const WebXQuality & fastImprovedQuality = WebXQuality::QualityForIndex(std::min(this->_currentQuality.index + 2, this->_desiredQuality.index));
                 // this->setCurrentQuality(fastImprovedQuality);
 

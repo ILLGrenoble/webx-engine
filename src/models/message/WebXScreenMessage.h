@@ -7,7 +7,7 @@
 
 /**
  * @class WebXScreenMessage
- * @brief Represents a message containing screen size information.
+ * @brief Represents a message containing screen size and quality information.
  * 
  * This class is used to encapsulate screen size data.
  */
@@ -19,10 +19,12 @@ public:
      * @param clientIndexMask The client index mask.
      * @param commandId The command ID associated with the message.
      * @param screenSize The size of the screen.
+     * @param maxQualityIndex The maximum quality index.
      */
-    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize) :
+    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex) :
         WebXMessage(Type::Screen, clientIndexMask, commandId),
-        screenSize(screenSize) {}
+        screenSize(screenSize),
+        maxQualityIndex(maxQualityIndex) {}
     
     /**
      * @brief Destructor for WebXScreenMessage.
@@ -30,6 +32,7 @@ public:
     virtual ~WebXScreenMessage() {}
 
     const WebXSize screenSize;
+    const int maxQualityIndex;
 };
 
 #endif /* WEBX_SCREEN_MESSAGE_H */

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string>
 #include <spdlog/spdlog.h>
+#include <models/WebXQuality.h>
 
 /* 
  * Utility function to get an integer value from an environment variable 
@@ -71,11 +72,15 @@ public:
     WebXQualitySettings() : 
         increaseQualityOnMouseOver(webx_settings_env_or_default("WEBX_ENGINE_INCREASED_QUALITY_ON_MOUSE_OVER", true)),
         coverageQualityFunc(convertCoverageQualityFuncString(webx_settings_env_or_default("WEBX_ENGINE_COVERAGE_QUALITY_FUNC", "quadratic"))),
-        limitQualityByDataRate(webx_settings_env_or_default("WEBX_ENGINE_LIMIT_QUALITY_BY_DATA_RATE", true)) {}
+        limitQualityByDataRate(webx_settings_env_or_default("WEBX_ENGINE_LIMIT_QUALITY_BY_DATA_RATE", true)),
+        runtimeMaxQualityIndex(webx_settings_env_or_default("WEBX_ENGINE_RUNTIME_MAX_QUALITY_INDEX", 12)) {
+            WebXQuality::SetRuntimeMaxQualityIndex(runtimeMaxQualityIndex);
+        }
 
     const bool increaseQualityOnMouseOver;
     const CoverageQualityFunc coverageQualityFunc;
     const bool limitQualityByDataRate;
+    const int runtimeMaxQualityIndex;
 
 private:
     /* 

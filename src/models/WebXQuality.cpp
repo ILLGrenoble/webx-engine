@@ -1,5 +1,7 @@
 #include "WebXQuality.h"
 
+int WebXQuality::MaxRuntimeQualityIndex = WebXQuality::MAX_QUALITY_INDEX;
+
 const std::vector<WebXQuality> WebXQuality::QUALITY_SETTINGS = {
     WebXQuality(1, 0.5, 0.4, 0.5, 0.5), // 64 KB/s
     WebXQuality(2, 0.5, 0.4, 0.5, 0.75), // 96 KB/S
@@ -11,4 +13,6 @@ const std::vector<WebXQuality> WebXQuality::QUALITY_SETTINGS = {
     WebXQuality(8, 10, 0.8, 0.8, 6.0), // 768 KB/s
     WebXQuality(9, 12, 0.9, 0.9, 8.0), // 1024 KB/s
     WebXQuality(10, 15, 0.9, 0.9, 12.0), // 1536 KB/s
+    WebXQuality(11, 24, 0.9, 0.9, 16.0), // 24fps @ 2048 KB/s
+    WebXQuality(12, 30, 0.9, 0.9, 24.0), // 30fps @ 3072 KB/s
 };
