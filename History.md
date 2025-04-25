@@ -1,3 +1,13 @@
+1.2.0 25/04/2025
+================
+ * Fix naming of settings values and environment variables
+ * Add 2 extra higher webx quality values (up to 30fps & 24Mbps). Add settings for max quality level of the engine (configurable by environment variable). 
+ * Send the max quality index in the screen message to inform clients
+ * Add a "testing" mode for the webx-engine (without zmq bindings and added a dummy client): used for metrics testing.
+ * Recoding/cleaning of the XEvent handling.
+ * Add ping timeout to settings/environment variables.
+ * Fix bug on mouse cursor event not being propagated to clients. Disconnect all clients when shutting down the engine
+
 1.1.1 10/04/2025
 ================
  * Send cursor notification message to client that sends mouse instruction: updates the cursor but not the position of the client mouse. Fixes bug that client mouse cursor never updated.
