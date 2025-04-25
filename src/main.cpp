@@ -44,10 +44,10 @@ int main(int argc, char *argv[]) {
     std::signal(SIGINT, signalHandler);
 
     WebXSettings settings;
-    if (settings.logging == "debug") {
+    if (settings.logLevel == "debug") {
         spdlog::set_level(spdlog::level::debug);
     
-    } else if (settings.logging == "trace") {
+    } else if (settings.logLevel == "trace") {
         spdlog::set_level(spdlog::level::trace);
     }
 

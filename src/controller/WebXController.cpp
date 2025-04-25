@@ -338,7 +338,7 @@ WebXController::WebXImageUpdateVerification WebXController::verifyImageUpdate(st
         return WebXImageUpdateVerification{0, 0, false};
     }
 
-    if (this->_settings.controller.imageCheckumEnabled) {
+    if (this->_settings.controller.imageChecksumEnabled) {
         // Calculate the image checksums
         uint32_t rgbChecksum = image->calculateImageChecksum();
         uint32_t alphaChecksum = image->calculateAlphaChecksum();

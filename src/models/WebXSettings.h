@@ -70,7 +70,7 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXQualitySettings() : 
-        increaseQualityOnMouseOver(webx_settings_env_or_default("WEBX_ENGINE_INCREASED_QUALITY_ON_MOUSE_OVER", true)),
+        increaseQualityOnMouseOver(webx_settings_env_or_default("WEBX_ENGINE_INCREASE_QUALITY_ON_MOUSE_OVER", true)),
         coverageQualityFunc(convertCoverageQualityFuncString(webx_settings_env_or_default("WEBX_ENGINE_COVERAGE_QUALITY_FUNC", "quadratic"))),
         limitQualityByDataRate(webx_settings_env_or_default("WEBX_ENGINE_LIMIT_QUALITY_BY_DATA_RATE", true)),
         runtimeMaxQualityIndex(webx_settings_env_or_default("WEBX_ENGINE_RUNTIME_MAX_QUALITY_INDEX", 12)) {
@@ -162,10 +162,10 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXControllerSettings(bool defaultImageCheckumEnabled) : 
-        imageCheckumEnabled(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_IMAGE_CHECKSUM_ENABLED", defaultImageCheckumEnabled)),
-        clientPingResponseTimeoutMs(webx_settings_env_or_default("WEBX_ENGINE_CONTROLLER_CLIENT_PING_RESPONSE_TIMEOUT_MS", 15000)) {}
+        imageChecksumEnabled(webx_settings_env_or_default("WEBX_ENGINE_IMAGE_CHECKSUM_ENABLED", defaultImageCheckumEnabled)),
+        clientPingResponseTimeoutMs(webx_settings_env_or_default("WEBX_ENGINE_CLIENT_PING_RESPONSE_TIMEOUT_MS", 15000)) {}
 
-    const bool imageCheckumEnabled;
+    const bool imageChecksumEnabled;
     const int clientPingResponseTimeoutMs;
 };
 
@@ -194,12 +194,12 @@ public:
      * Constructor initializes settings from environment variables or defaults.
      */
     WebXSettings() :
-        logging(webx_settings_env_or_default("WEBX_ENGINE_LOG", "debug")),
+        logLevel(webx_settings_env_or_default("WEBX_ENGINE_LOG_LEVEL", "debug")),
         event(WebXEventSettings()),
         controller(WebXControllerSettings(!this->event.filterDamageAfterConfigureNotify))  // default checksum enabled: true if filtering not enabled, false if filtering enabled
         { }
 
-    const std::string logging;
+    const std::string logLevel;
     const WebXEventSettings event;
     const WebXControllerSettings controller;
     const WebXTransportSettings transport;
