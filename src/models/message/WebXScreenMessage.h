@@ -3,6 +3,7 @@
 
 #include "WebXMessage.h"
 #include <models/WebXSize.h>
+#include <models/WebXVersion.h>
 #include <string>
 
 /**
@@ -19,12 +20,14 @@ public:
      * @param clientIndexMask The client index mask.
      * @param commandId The command ID associated with the message.
      * @param screenSize The size of the screen.
+     * @param engineVersion The version of the WebX Engine.
      * @param maxQualityIndex The maximum quality index.
      */
-    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex) :
+    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex, const WebXVersion & engineVersion) :
         WebXMessage(Type::Screen, clientIndexMask, commandId),
         screenSize(screenSize),
-        maxQualityIndex(maxQualityIndex) {}
+        maxQualityIndex(maxQualityIndex),
+        engineVersion(engineVersion) {}
     
     /**
      * @brief Destructor for WebXScreenMessage.
@@ -33,6 +36,7 @@ public:
 
     const WebXSize screenSize;
     const int maxQualityIndex;
+    const WebXVersion engineVersion;
 };
 
 #endif /* WEBX_SCREEN_MESSAGE_H */

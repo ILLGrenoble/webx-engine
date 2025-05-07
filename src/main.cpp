@@ -4,9 +4,13 @@
 #include <transport/WebXTransport.h>
 #include <display/WebXDisplay.h>
 #include <models/WebXSettings.h>
+#include <version.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <csignal>
+#include <iostream>
+#include <getopt.h>
+
 
 static WebXController * controller = nullptr;
 
@@ -26,6 +30,17 @@ static void signalHandler(int signal) {
             controller->stop();
         }
     }
+}
+
+
+void printUsage() {
+    std::cout << "Usage: webx-engine [options]\n"
+              << "Options:\n"
+              << "  -s, --standalone         Run in stand-alone mode\n"
+              << "  -t, --test               Run in test mode\n"
+              << "  -k, --keyboard LAYOUT    Set keyboard layout (e.g., 'gb')\n"
+              << "      --version            Print version and exit\n"
+              << "      --help               Show this help message\n";
 }
 
 /**
@@ -56,9 +71,17 @@ int main(int argc, char *argv[]) {
     bool standAlone = false;
     bool testing = false;
 
-    while((opt = getopt(argc, argv, "k:st")) != -1) {  
-        switch(opt)  
-        {  
+    const struct option long_options[] = {
+        {"keyboard", required_argument, nullptr, 'k'},
+        {"standalone", no_argument, nullptr, 's'},
+        {"test", no_argument, nullptr, 't'},
+        {"version", no_argument, nullptr, 1},
+        {"help", no_argument, nullptr, 2},
+        {nullptr, 0, nullptr, 0}
+    };
+
+    while ((opt = getopt_long(argc, argv, "k:st", long_options, nullptr)) != -1) {
+        switch (opt) {
             case 's':
                 standAlone = true;
                 spdlog::info("Starting WebX in stand-alone mode");
@@ -73,8 +96,20 @@ int main(int argc, char *argv[]) {
                 spdlog::info("Starting WebX in test mode");
                 break;
 
-        }  
-    }  
+            case 1: // --version
+                std::cout << "webx-engine " << WEBX_ENGINE_VERSION << std::endl;
+                return 0;
+
+            case 2: // --help
+                printUsage();
+                return 0;
+    
+            default:
+                std::cerr << "Unknown option.\n";
+                printUsage();
+                return 1;
+        }
+    }
       
     spdlog::info("Starting WebX server");
 

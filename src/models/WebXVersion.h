@@ -18,6 +18,10 @@ public:
         major(0),
         minor(0),
         patch(0) {}
+    WebXVersion(const WebXVersion & other) :
+        major(other.major),
+        minor(other.minor),
+        patch(other.patch) {}
     ~WebXVersion() {}
 
     std::string versionString() const {

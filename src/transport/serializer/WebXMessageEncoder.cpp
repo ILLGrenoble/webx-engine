@@ -132,13 +132,16 @@ zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMous
 }
 
 zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const {
-    size_t dataSize = MESSAGE_HEADER_LENGTH + 16;
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 28;
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t) message->type);
     buffer.write<uint32_t>(message->commandId);
     buffer.write<int32_t>(message->screenSize.width());
     buffer.write<int32_t>(message->screenSize.height());
     buffer.write<int32_t>(message->maxQualityIndex);
+    buffer.write<int32_t>(message->engineVersion.major);
+    buffer.write<int32_t>(message->engineVersion.minor);
+    buffer.write<int32_t>(message->engineVersion.patch);
     return output;
 }
 

@@ -14,6 +14,7 @@
 #include <models/message/WebXCursorImageMessage.h>
 #include <models/message/WebXSubImagesMessage.h>
 #include <models/message/WebXMouseMessage.h>
+#include <version.h>
 #include <image/WebXSubImage.h>
 #include <display/input/WebXMouse.h>
 #include <utils/WebXResult.h>
@@ -171,7 +172,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
     
         } else if (instruction->type == WebXInstruction::Type::Screen) {
             // Send message to specific client
-            this->sendMessage(std::make_shared<WebXScreenMessage>(client->getIndex(), instruction->id, display->getScreenSize(), WebXQuality::MaxQuality().index));
+            this->sendMessage(std::make_shared<WebXScreenMessage>(client->getIndex(), instruction->id, display->getScreenSize(), WebXQuality::MaxQuality().index, WebXVersion(WEBX_ENGINE_VERSION)));
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
             // Send message to specific client
