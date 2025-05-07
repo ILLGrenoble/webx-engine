@@ -127,7 +127,7 @@ void WebXClientConnector::mainLoop() {
 
                     } else if (instruction.rfind("connect", 0) == 0) {
                         std::vector<std::string> elements = StringUtils::split(instruction, ',');
-                        if (elements.size() != 2) {
+                        if (elements.size() < 2) {
                             spdlog::warn("Invalid connect command received: {}", instruction);
                             this->sendMessage(clientResponder, "invalid connect command");
 
@@ -139,7 +139,7 @@ void WebXClientConnector::mainLoop() {
 
                     } else if (instruction.rfind("disconnect", 0) == 0) {
                         std::vector<std::string> elements = StringUtils::split(instruction, ',');
-                        if (elements.size() != 3) {
+                        if (elements.size() < 3) {
                             spdlog::warn("Invalid disconnect command received: {}", instruction);
                             this->sendMessage(clientResponder, "invalid disconnect command");
 
