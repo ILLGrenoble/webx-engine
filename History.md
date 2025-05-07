@@ -1,3 +1,10 @@
+1.3.0 07/05/2025
+================
+ * Automatically update the version file when building with github action (ensure identical to tag).
+ * Add a version file to the webx-engine. Send the version details with the Screen message (first instruction made by a client). 
+ * Retreive the webx-client version from the connection request if it is passed and store this in the WebXClient object.
+ * Remove specific limit on number of parameters expected for client rep-req commands (allow for future additional parameters)
+ 
 1.2.0 25/04/2025
 ================
  * Fix naming of settings values and environment variables
