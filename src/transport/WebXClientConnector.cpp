@@ -133,7 +133,11 @@ void WebXClientConnector::mainLoop() {
 
                         } else {
                             const std::string & sessionId = elements[1];
-                            const std::string & response = this->connectClient(sessionId);
+
+                            // Get the client version if provided (older versions may not send this)
+                            const WebXVersion clientVersion = (elements.size() > 2) ? WebXVersion(elements[2]) : WebXVersion();
+
+                            const std::string & response = this->connectClient(sessionId, clientVersion);
                             this->sendMessage(clientResponder, response);
                         }
 
@@ -174,9 +178,9 @@ void WebXClientConnector::mainLoop() {
     }
 }
 
-std::string WebXClientConnector::connectClient(const std::string & sessionId) {
+std::string WebXClientConnector::connectClient(const std::string & sessionId, const WebXVersion & clientVersion) {
     if (sessionId == this->_sessionId) {
-        const WebXResult<std::pair<uint32_t, uint64_t>> result = this->_gateway.onClientConnect();
+        const WebXResult<std::pair<uint32_t, uint64_t>> result = this->_gateway.onClientConnect(clientVersion);
         if (result.ok()) {
             const std::string response = fmt::format("{:08x},{:016x}", result.data().first, result.data().second);
             return response;

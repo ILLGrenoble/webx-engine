@@ -3,6 +3,7 @@
 
 #include <models/WebXSettings.h>
 #include <gateway/WebXGateway.h>
+#include <models/WebXVersion.h>
 #include "WebXZMQ.h"
 #include <thread>
 #include <mutex>
@@ -65,9 +66,10 @@ private:
     /**
      * @brief Connects a client using the given session ID.
      * @param sessionId The session ID of the client.
+     * @param clientVersion The version of the client.
      * @return The client ID string.
      */
-    std::string connectClient(const std::string & sessionId);
+    std::string connectClient(const std::string & sessionId, const WebXVersion & clientVersion);
 
     /**
      * @brief Disconnects a client using the given session ID and client ID.

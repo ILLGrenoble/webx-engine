@@ -8,6 +8,7 @@
 #include "WebXClientBitrateCalculator.h"
 #include <models/WebXQuality.h>
 #include <utils/WebXOptional.h>
+#include <models/WebXVersion.h>
 
 /**
  * @class WebXClient
@@ -80,12 +81,14 @@ public:
      * 
      * @param id The unique identifier of the client.
      * @param index The index mask associated with the client.
+     * @param clientVersion The version of the client.
      * @param maxQuality The maximum quality level allowed for the client.
      * @param pingResponseTimeoutMs The timeout in milliseconds for receiving a ping response from a client
      */
-    WebXClient(uint32_t id, uint64_t index, const WebXQuality & maxQuality, const int pingResponseTimeoutMs) :
+    WebXClient(uint32_t id, uint64_t index, const WebXVersion & clientVersion, const WebXQuality & maxQuality, const int pingResponseTimeoutMs) :
         _id(id),
         _index(index),
+        _clientVersion(clientVersion),
         _maxQuality(maxQuality),
         _pingResponseTimeoutMs(pingResponseTimeoutMs),
         _pingStatus(PingStatus::WaitingToPing),
@@ -121,6 +124,17 @@ public:
      */
     uint64_t getIndex() const {
         return this->_index;
+    }
+
+    /**
+     * @brief Gets the version of the client.
+     * 
+     * This method returns the version string of the client.
+     * 
+     * @return The client version string.
+     */
+    const WebXVersion & getClientVersion() const {
+        return this->_clientVersion;
     }
 
     /**
@@ -261,6 +275,7 @@ private:
 
     const uint32_t _id;
     const uint64_t _index;
+    const WebXVersion _clientVersion;
     WebXQuality _maxQuality;
     const int _pingResponseTimeoutMs;
 

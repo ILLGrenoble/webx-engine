@@ -18,7 +18,7 @@ WebXClientRegistry::~WebXClientRegistry() {
 
 }
 
-const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() {
+const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient(const WebXVersion & clientVersion) {
     const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
 
     // Check we have available indices
@@ -43,7 +43,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const WebXQuality & defaultQuality = WebXQuality::MaxQuality();
 
     // Create client and add index to mask
-    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex, defaultQuality, this->_settings.controller.clientPingResponseTimeoutMs);
+    const std::shared_ptr<WebXClient> & client = std::make_shared<WebXClient>(clientId, clientIndex, clientVersion, defaultQuality, this->_settings.controller.clientPingResponseTimeoutMs);
     this->_clients.push_back(client);
     this->_clientIndexMask |= clientIndex;
 
@@ -51,7 +51,7 @@ const WebXResult<std::pair<uint32_t, uint64_t>> WebXClientRegistry::addClient() 
     const std::shared_ptr<WebXClientGroup> & group = this->getOrCreateGroupByQuality(defaultQuality);
     group->addClient(client);
 
-    spdlog::debug("Added client with Id {:08x} and index {:016x} and added to default group ({:d}). Now have {:d} clients connected", clientId, clientIndex, defaultQuality.index, this->_clients.size());
+    spdlog::debug("Added client with Id {:08x} and index {:016x} (webx-client {:s}) and added to default group ({:d}). Now have {:d} clients connected", clientId, clientIndex, clientVersion.versionString(), defaultQuality.index, this->_clients.size());
 
     // Return identifier clientid and index
     return WebXResult<std::pair<uint32_t, uint64_t>>::Ok(std::pair<uint32_t, uint64_t>(clientId, clientIndex));

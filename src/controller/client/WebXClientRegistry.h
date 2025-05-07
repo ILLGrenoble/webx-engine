@@ -36,9 +36,10 @@ public:
 
     /**
      * @brief Adds a new client to the registry.
+     * @param clientVersion The version of the client.
      * @return A result containing the client ID and index if successful.
      */
-    const WebXResult<std::pair<uint32_t, uint64_t>> addClient();
+    const WebXResult<std::pair<uint32_t, uint64_t>> addClient(const WebXVersion & clientVersion);
 
     /**
      * @brief Removes a client from the registry.

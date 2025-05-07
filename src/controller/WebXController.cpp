@@ -44,7 +44,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     });
 
     // Set the client registry functions in the gateway
-    this->_gateway.setClientConnectFunc([this]() { return this->_clientRegistry.addClient(); });
+    this->_gateway.setClientConnectFunc([this](const WebXVersion & clientVersion) { return this->_clientRegistry.addClient(clientVersion); });
     this->_gateway.setClientDisconnectFunc([this](uint32_t clientId) { return this->_clientRegistry.removeClient(clientId); });
 
     // Listen to events from the display
@@ -79,7 +79,7 @@ void WebXController::run(bool testing) {
 
     if (testing) {
         // Add a dummy client to generate messages
-        this->_clientRegistry.addClient();
+        this->_clientRegistry.addClient(WebXVersion());
     }
 
     long calculateThreadSleepUs = this->_threadSleepUs;

@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <utils/WebXResult.h>
+#include <models/WebXVersion.h>
 
 class WebXMessage;
 class WebXInstruction;
@@ -52,11 +53,12 @@ public:
 
     /**
      * @brief Handles client connection events.
+     * @param clientVersion The version of the client connecting.
      * @return A WebXResult containing a pair of client ID and timestamp, or an error message.
      */
-    const WebXResult<std::pair<uint32_t, uint64_t>> onClientConnect() {
+    const WebXResult<std::pair<uint32_t, uint64_t>> onClientConnect(const WebXVersion & clientVersion) {
         if (this->_clientConnectFunc) {
-            return this->_clientConnectFunc();
+            return this->_clientConnectFunc(clientVersion);
         }
 
         return WebXResult<std::pair<uint32_t, uint64_t>>::Err("engine configuration error");
@@ -94,7 +96,7 @@ public:
      * @brief Sets the function to handle client connections.
      * @param func A function that returns a WebXResult containing a pair of client ID and timestamp.
      */
-    void setClientConnectFunc(std::function<const WebXResult<std::pair<uint32_t, uint64_t>>()> func) {
+    void setClientConnectFunc(std::function<const WebXResult<std::pair<uint32_t, uint64_t>>(const WebXVersion & clientVersion)> func) {
         this->_clientConnectFunc = func;
     }
 
@@ -120,7 +122,7 @@ private:
     /**
      * @brief Function to handle client connections.
      */
-    std::function<const WebXResult<std::pair<uint32_t, uint64_t>>()> _clientConnectFunc;
+    std::function<const WebXResult<std::pair<uint32_t, uint64_t>>(const WebXVersion & clientVersion)> _clientConnectFunc;
 
     /**
      * @brief Function to handle client disconnections.
