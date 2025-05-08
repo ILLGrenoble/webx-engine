@@ -27,7 +27,7 @@ jobs:
       - name: Build Docker image
         run: |
           sed -i "s/0\.0\.0-dev/${{ github.ref_name }}/g" CMakeLists.txt 
-          sed -i 's/\(#define WEBX_ENGINE_VERSION\s\+\)".*"/\1"'"{{ github.ref_name }}"'"/' src/version.h
+          sed -i 's/\(#define WEBX_ENGINE_VERSION\s\+\)".*"/\1"'"${{ github.ref_name }}"'"/' src/version.h
           docker build -t webx-engine-builder -f docker/Dockerfile .
 
       - name: Extract Debian package
