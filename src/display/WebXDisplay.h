@@ -143,6 +143,13 @@ public:
     std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle = nullptr);
 
     /**
+     * @brief Retrieves the shape mask image of a window.
+     * @param x11Window X11 window ID.
+     * @return Shared pointer to the captured image.
+     */
+    std::shared_ptr<WebXImage> getWindowShapeMask(Window x11Window);
+
+    /**
      * @brief Retrieves the mouse instance associated with the display.
      * @return Pointer to the WebXMouse instance.
      */

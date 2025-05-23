@@ -11,6 +11,7 @@
 #include <models/message/WebXDisconnectMessage.h>
 #include <models/message/WebXQualityMessage.h>
 #include <models/message/WebXClipboardMessage.h>
+#include <models/message/WebXShapeMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -56,6 +57,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::Clipboard: {
             auto clipboardMessage = std::static_pointer_cast<WebXClipboardMessage>(message);
             return this->createClipboardMessage(clipboardMessage);
+        }
+        case WebXMessage::Shape: {
+            auto shapeMessage = std::static_pointer_cast<WebXShapeMessage>(message);
+            return this->createShapeMessage(shapeMessage);
         }
 
         default:
@@ -191,10 +196,17 @@ zmq::message_t * WebXMessageEncoder::createSubImagesMessage(std::shared_ptr<WebX
 }
 
 zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) const {
-    size_t dataSize = MESSAGE_HEADER_LENGTH + 8 + message->windows.size() * 20;
+
+    std::vector<WebXWindowProperties> shapedWindows;
+    std::copy_if(message->windows.begin(), message->windows.end(), std::back_inserter(shapedWindows),
+                 [](const WebXWindowProperties & window) { return window.hasShape; });
+
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 4 + (4 + message->windows.size() * 20) + (4 + shapedWindows.size() * 4);
     zmq::message_t * output = new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
     buffer.write<uint32_t>(message->commandId);
+
+    // Standard window properties
     buffer.write<uint32_t>(message->windows.size());
     for (std::vector<WebXWindowProperties>::const_iterator it = message->windows.begin(); it != message->windows.end(); it++) {
         const WebXWindowProperties & window = *it;
@@ -203,6 +215,13 @@ zmq::message_t * WebXMessageEncoder::createWindowsMessage(std::shared_ptr<WebXWi
         buffer.write<int32_t>(window.y);
         buffer.write<int32_t>(window.width);
         buffer.write<int32_t>(window.height);
+    }
+
+    // Shaped window Ids
+    buffer.write<uint32_t>(shapedWindows.size());
+    for (std::vector<WebXWindowProperties>::const_iterator it = shapedWindows.begin(); it != shapedWindows.end(); it++) {
+        const WebXWindowProperties & window = *it;
+        buffer.write<uint32_t>(window.id);
     }
 
     return output;
@@ -245,6 +264,32 @@ zmq::message_t * WebXMessageEncoder::createClipboardMessage(std::shared_ptr<WebX
     WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
     buffer.write<uint32_t>(clipboardContent.size());
     buffer.append((unsigned char *)clipboardContent.c_str(), clipboardContent.size());
+
+    return output;
+}
+
+zmq::message_t * WebXMessageEncoder::createShapeMessage(std::shared_ptr<WebXShapeMessage> message) const {
+    std::shared_ptr<WebXImage> shape = message->shape;
+    size_t stencilDataSize = 0;
+    char imageType[4] = "";
+    if (shape) {
+        stencilDataSize = shape->getRawDataSize();
+        strncpy(imageType, shape->getFileExtension().c_str(), 4);
+    }
+
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 16 + stencilDataSize;
+    zmq::message_t * output= new zmq::message_t(dataSize);
+
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+    buffer.write<uint32_t>(message->commandId);
+    buffer.write<uint32_t>(message->windowId);
+
+    buffer.append((unsigned char *)imageType, 4);
+
+    buffer.write<uint32_t>(stencilDataSize);
+    if (shape) {
+        buffer.append(shape->getRawData(), shape->getRawDataSize());
+    }
 
     return output;
 }

@@ -11,6 +11,7 @@
 #include <models/instruction/WebXPongInstruction.h>
 #include <models/instruction/WebXDataAckInstruction.h>
 #include <models/instruction/WebXClipboardInstruction.h>
+#include <models/instruction/WebXShapeInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {
@@ -61,6 +62,9 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     } else if (type == WebXInstruction::Clipboard) {
         return this->createClipboardInstruction(clientId, instructionId, buffer);
+
+    } else if (type == WebXInstruction::Shape) {
+        return this->createShapeInstruction(clientId, instructionId, buffer);
     }
 
     return nullptr;
@@ -117,4 +121,9 @@ inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createClipboardI
     uint32_t clipboardContentLength = buffer.read<uint32_t>();
     std::string clipboardContent = buffer.readSring(clipboardContentLength);
     return std::make_shared<WebXClipboardInstruction>(clientId, instructionId, clipboardContent);
+}
+
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createShapeInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    uint32_t windowId = buffer.read<uint32_t>();
+    return std::make_shared<WebXShapeInstruction>(clientId, instructionId, windowId);
 }

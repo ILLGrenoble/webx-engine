@@ -27,6 +27,7 @@ public:
         Pong,
         DataAck,
         Clipboard,
+        Shape,
     };
 
     /**

@@ -22,7 +22,8 @@ public:
         x(window->getRectangle().x()),
         y(window->getRectangle().y()),
         width(window->getRectangle().size().width()),
-        height(window->getRectangle().size().height()) {
+        height(window->getRectangle().size().height()),
+        hasShape(window->hasShape()) {
     }
 
     /**
@@ -34,7 +35,8 @@ public:
         x(window.x),
         y(window.y),
         width(window.width),
-        height(window.height) {
+        height(window.height),
+        hasShape(window.hasShape) {
     }
 
     /**
@@ -43,45 +45,34 @@ public:
     virtual ~WebXWindowProperties() {}
 
     /**
-     * @brief Assignment operator to copy properties from another instance.
-     * @param window Reference to another WebXWindowProperties instance.
-     * @return Reference to the current instance.
-     */
-    WebXWindowProperties & operator=(const WebXWindowProperties & window) {
-        if (this != &window) {
-            this->id = window.id;
-            this->x = window.x;
-            this->y = window.y;
-            this->width = window.width;
-            this->height = window.height;
-        }
-        return *this;
-    }
-
-    /**
      * @brief X11 window ID.
      */
-    unsigned long id;
+    const unsigned long id;
 
     /**
      * @brief X-coordinate of the window's position.
      */
-    int x;
+    const int x;
 
     /**
      * @brief Y-coordinate of the window's position.
      */
-    int y;
+    const int y;
 
     /**
      * @brief Width of the window.
      */
-    int width;
+    const int width;
 
     /**
      * @brief Height of the window.
      */
-    int height;
+    const int height;
+
+    /**
+     * @brief Indicates if the window has a shape (non-rectangular).
+     */
+    const bool hasShape;
 };
 
 #endif /* WEBX_WINDOW_PROPERTIES */

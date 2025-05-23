@@ -268,7 +268,7 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQua
             return window->getX11Window() == x11Window;
         });
 
-    // Ignore damage if window is not visible
+    // Ignore if window is not visible
     if (itWin != this->_visibleWindows.end()) {
         WebXWindow * window = *itWin;
         return window->getImage(imageRectangle, this->_imageConverter, quality);
@@ -277,6 +277,26 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQua
         return nullptr;
     }
 }
+
+std::shared_ptr<WebXImage> WebXDisplay::getWindowShapeMask(Window x11Window) {
+    std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
+
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+        if (window->hasShape()) {
+            return window->getShapeMask();
+        }
+    }
+
+    return nullptr;
+}
+
 
 void WebXDisplay::updateMouseCursor() {
     this->_mouse->updateCursor();

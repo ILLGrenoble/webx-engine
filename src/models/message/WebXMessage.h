@@ -25,6 +25,7 @@ public:
         Disconnect,
         Quality,
         Clipboard,
+        Shape,
     };
 
     WebXMessage(Type type, uint64_t clientIndexMask) :

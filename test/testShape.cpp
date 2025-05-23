@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     XMapWindow(disp, w);
     XFlush(disp);
 
-    usleep(4000000);
+    usleep(10000000);
     XUnmapWindow(disp, w);
     XFlush(disp);
 

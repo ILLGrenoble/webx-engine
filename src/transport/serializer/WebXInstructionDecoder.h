@@ -165,6 +165,20 @@ private:
      */
     std::shared_ptr<WebXInstruction> createClipboardInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
+
+    /*
+     * Create a new shape instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    windowId: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createShapeInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+
 private:
 
 };

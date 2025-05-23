@@ -100,6 +100,21 @@ public:
     }
 
     /**
+     * @brief Returns true if the window has a shape (non-rectangular).
+     */
+    bool hasShape() const {
+        return this->_shape.isActive();
+    }
+
+    /**
+     * @brief Retrieves the shape mask of the window.
+     * @return Shared pointer to the shape mask image.
+     */
+    std::shared_ptr<WebXImage> getShapeMask() const {
+        return this->_shape.getShapeMask();
+    }
+
+    /**
      * @brief Retrieves the parent window.
      * @return Pointer to the parent window.
      */

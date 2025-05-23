@@ -26,6 +26,7 @@ class WebXPingMessage;
 class WebXDisconnectMessage;
 class WebXQualityMessage;
 class WebXClipboardMessage;
+class WebXShapeMessage;
 
 class WebXMessageEncoder {
     public:
@@ -184,6 +185,8 @@ private:
      *      y: 4 bytes
      *      width: 4 bytes
      *      height: 4 bytes
+     *   # shaped windows: 4 bytes
+     *      id: 4 bytes
      */
     zmq::message_t * createWindowsMessage(std::shared_ptr<WebXWindowsMessage> message) const;
 
@@ -249,6 +252,26 @@ private:
      *   clipboardContent: n bytes
      */
     zmq::message_t * createClipboardMessage(std::shared_ptr<WebXClipboardMessage> message) const;
+
+
+    /*
+     * Structure:
+     * Header: 48 bytes
+     *   sessionId: 16 bytes
+     *   clientIndexMask: 8 bytes
+     *   timestampMs: 8 bytes
+     *   type: 4 bytes
+     *   id: 4 bytes
+     *   length: 4 bytes
+     *   padding: 4 bytes
+     * Content:
+     *   commandId: 4 bytes
+     *   windowId: 4 bytes
+     *   imageType: 4 bytes (chars)
+     *   stencilDataLength: 4 bytes
+     *   stencilData: n bytes
+     */
+    zmq::message_t * createShapeMessage(std::shared_ptr<WebXShapeMessage> message) const;
 
 private:
     const static int MESSAGE_HEADER_LENGTH = 48;

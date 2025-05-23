@@ -8,12 +8,14 @@
 #include <models/instruction/WebXPongInstruction.h>
 #include <models/instruction/WebXDataAckInstruction.h>
 #include <models/instruction/WebXClipboardInstruction.h>
+#include <models/instruction/WebXShapeInstruction.h>
 #include <models/message/WebXScreenMessage.h>
 #include <models/message/WebXWindowsMessage.h>
 #include <models/message/WebXImageMessage.h>
 #include <models/message/WebXCursorImageMessage.h>
 #include <models/message/WebXSubImagesMessage.h>
 #include <models/message/WebXMouseMessage.h>
+#include <models/message/WebXShapeMessage.h>
 #include <version.h>
 #include <image/WebXSubImage.h>
 #include <display/input/WebXMouse.h>
@@ -186,6 +188,13 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 
             // Send message to specific client
             this->sendMessage(std::make_shared<WebXImageMessage>(client->getIndex(), instruction->id, imageInstruction->windowId, image));
+        
+        } else if (instruction->type == WebXInstruction::Type::Shape) {
+            auto shapeInstruction = std::static_pointer_cast<WebXShapeInstruction>(instruction);
+            std::shared_ptr<WebXImage> shape = display->getWindowShapeMask(shapeInstruction->windowId);
+
+            // Send message to specific client
+            this->sendMessage(std::make_shared<WebXShapeMessage>(client->getIndex(), instruction->id, shapeInstruction->windowId, shape));
 
         } else if (instruction->type == WebXInstruction::Type::Cursor) {
             auto cursorImageInstruction = std::static_pointer_cast<WebXCursorImageInstruction>(instruction);
