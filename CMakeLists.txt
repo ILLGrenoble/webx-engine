@@ -27,6 +27,7 @@ find_package(Threads REQUIRED)
 pkg_check_modules(LIBPNG libpng)
 pkg_check_modules(WEBP REQUIRED libwebp)
 pkg_check_modules(X11 REQUIRED x11)
+pkg_check_modules(XEXT REQUIRED xext)
 
 include_directories(src lib)
 
@@ -39,6 +40,7 @@ target_link_libraries(
     -ljpeg
     -lwebp
     ${X11_LIBRARIES}
+    ${XEXT_LIBRARIES}
     -lXdamage
     ${CMAKE_THREAD_LIBS_INIT}
     -lzmq
@@ -106,6 +108,14 @@ file(GLOB_RECURSE TEST_ALPHA_CREATE_SOURCES test/testAlphaCreate.cpp)
 add_executable(testAlphaCreate ${TEST_ALPHA_CREATE_SOURCES})
 target_link_libraries(
     testAlphaCreate
+)
+
+file(GLOB_RECURSE TEST_SHAPE_SOURCES test/testShape.cpp)
+add_executable(testShape ${TEST_SHAPE_SOURCES})
+target_link_libraries(
+    testShape
+    ${X11_LIBRARIES}
+    ${XEXT_LIBRARIES}
 )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "/usr/bin")

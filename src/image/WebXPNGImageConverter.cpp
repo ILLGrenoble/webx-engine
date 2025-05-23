@@ -98,3 +98,7 @@ WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int 
     WebXImage * webXImage = new WebXImage(WebXImageTypePNG, width, height, rawData, imageDepth, duration.count());
     return webXImage;
 }
+
+WebXImage * WebXPNGImageConverter::convertMono(XImage * image, const WebXQuality & quality) const {
+    return nullptr;
+}

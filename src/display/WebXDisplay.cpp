@@ -182,6 +182,7 @@ void WebXDisplay::updateVisibleWindows() {
                 if (status && child->isVisible(this->_rootWindow->getRectangle().size())) {
 
                     child->enableDamage();
+                    child->updateShape(this->_imageConverter, WebXQuality::QualityForIndex(6));
                     this->_visibleWindows.push_back(child);
                 } 
             }

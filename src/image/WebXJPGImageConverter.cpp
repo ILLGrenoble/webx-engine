@@ -14,7 +14,7 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 }
 
 WebXImage * WebXJPGImageConverter::convert(XImage * image, const WebXQuality & quality) const {
-    return convert((unsigned char *)image->data, image->width, image->height, image->width * 4, image->depth, quality);
+    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth, quality);
 }
 
 WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const {
@@ -47,6 +47,22 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     std::chrono::duration<double, std::micro> duration = end - start;
 
     webXImage = new WebXImage(WebXImageTypeJPG, width, height, rawData, alphaData, imageDepth, duration.count());
+
+    return webXImage;
+}
+
+WebXImage * WebXJPGImageConverter::convertMono(XImage * image, const WebXQuality & quality) const {
+
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    WebXImage * webXImage = nullptr;
+
+    WebXDataBuffer * rawData = this->_convertMono((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, quality.rgbQuality);
+
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::micro> duration = end - start;
+
+    webXImage = new WebXImage(WebXImageTypeJPG, image->width, image->height, rawData, nullptr, 8, duration.count());
 
     return webXImage;
 }
@@ -95,7 +111,7 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
     return rawData;
 }
 
-WebXDataBuffer * WebXJPGImageConverter::_convertMono(unsigned char * data, int width, int height, float quality) const {
+WebXDataBuffer * WebXJPGImageConverter::_convertMono(unsigned char * data, int width, int height, int bytesPerLine, float quality) const {
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -122,7 +138,7 @@ WebXDataBuffer * WebXJPGImageConverter::_convertMono(unsigned char * data, int w
 
     JSAMPROW * row_pointer = (JSAMPROW *)malloc(sizeof(JSAMPROW) * height);
     for (int i = 0; i < height; i++) {
-        row_pointer[i] = (JSAMPROW)&data[i * width];
+        row_pointer[i] = (JSAMPROW)&data[i * bytesPerLine];
     }
 
     jpeg_start_compress(&cinfo, TRUE);

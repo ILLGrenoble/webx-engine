@@ -14,7 +14,8 @@ WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, 
     _damage(0),
     _isRoot(isRoot),
     _parent(NULL),
-    _visibility(x11Window, WebXRectangle(x, y, width, height), isViewable) {
+    _visibility(x11Window, WebXRectangle(x, y, width, height), isViewable),
+    _shape(display, x11Window, width, height) {
 }
 
 WebXWindow::~WebXWindow() {

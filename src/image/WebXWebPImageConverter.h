@@ -45,6 +45,15 @@ public:
      * @return Pointer to the converted WebXImage object.
      */
     virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const;
+
+    /*
+     * Converts raw image data (from a monochromatic image) into a WebXImage in WebP format.
+     * 
+     * @param image: Pointer to the XImage object to be converted.
+     * @param quality: Quality settings for the conversion.
+     * @return Pointer to the converted WebXImage object.
+     */
+    virtual WebXImage * convertMono(XImage * image, const WebXQuality & quality) const;
 };
 
 #endif /* WEBX_WEBP_IMAGE_CONVERTER_H */

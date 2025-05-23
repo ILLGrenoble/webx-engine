@@ -14,6 +14,9 @@
 #include <models/WebXRectangle.h>
 #include <models/WebXWindowCoverage.h>
 #include <models/WebXWindowVisibility.h>
+#include "WebXWindowShape.h"
+
+class WebXWindowShape;
 
 /**
  * @class WebXWindow
@@ -68,14 +71,6 @@ public:
     }
 
     /**
-     * @brief Sets the rectangle representing the window's position and size.
-     * @param rectangle Rectangle representing the window's position and size.
-     */
-    void setRectangle(const WebXRectangle & rectangle) {
-        this->_visibility.setRectangle(rectangle);
-    }
-
-    /**
      * @brief Updates the window's attributes.
      * @return Status of the update operation.
      */
@@ -94,6 +89,15 @@ public:
      * @return Shared pointer to the captured image.
      */
     std::shared_ptr<WebXImage> getImage(const WebXRectangle * imageRectangle, WebXImageConverter * imageConverter, const WebXQuality & requestedQuality);
+
+    /**
+     * Updates the WindowShape: takes into account that the window may not be rectangular
+     * @param imageConverter Pointer to the image converter.
+     * @param quality Quality settings for the shape.
+     */
+    void updateShape(WebXImageConverter * imageConverter, const WebXQuality & quality) {
+        this->_shape.update(this->getRectangle().size().width(), this->getRectangle().size().height(), imageConverter, quality);
+    }
 
     /**
      * @brief Retrieves the parent window.
@@ -192,6 +196,7 @@ private:
     std::vector<WebXWindow *> _children;
 
     WebXWindowVisibility _visibility;
+    WebXWindowShape _shape;
 
     std::mutex _damageMutex;
 };

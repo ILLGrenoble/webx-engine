@@ -48,6 +48,15 @@ public:
      */
     virtual WebXImage * convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const;
 
+    /*
+     * Converts raw image data (from a monochromatic image) into a WebXImage object in PNG format.
+     * 
+     * @param image: Pointer to the XImage object to be converted.
+     * @param quality: Quality settings for the conversion.
+     * @return Pointer to the converted WebXImage object.
+     */
+    virtual WebXImage * convertMono(XImage * image, const WebXQuality & quality) const;
+
 private:
     /**
      * @brief A helper function to write raw PNG data.
