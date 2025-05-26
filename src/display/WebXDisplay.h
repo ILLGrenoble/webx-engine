@@ -57,13 +57,6 @@ public:
     WebXWindow * getWindow(Window window) const;
 
     /**
-     * @brief Retrieves the visible window by its X11 window ID.
-     * @param window X11 window ID.
-     * @return Pointer to the visible WebXWindow instance, or nullptr if not found.
-     */
-    WebXWindow * getVisibleWindow(Window window);
-
-    /**
      * @brief Creates a window in the window tree.
      * @param x11Window X11 window ID.
      * @return Pointer to the created WebXWindow instance.
@@ -148,6 +141,12 @@ public:
      * @return Shared pointer to the captured image.
      */
     std::shared_ptr<WebXImage> getWindowShapeMask(Window x11Window);
+
+    /**
+     * @brief Specifies that the shape for the specified window needs to be recalculated (typically after a shape-related event)
+     * @param x11Window X11 window ID.
+     */
+    void updateWindowShape(Window x11Window);
 
     /**
      * @brief Retrieves the mouse instance associated with the display.
@@ -266,6 +265,14 @@ private:
      * @brief Updates the coverage information of all visible windows.
      */
     void updateWindowCoverage();
+
+    /**
+     * Generic method to allow retrieval of visible WebXWindow and function to be called on it (if the window is found/visible).
+     * Assures that the function is called within the scope of the _visibleWindowsMutex
+     * @param window X11 window ID.
+     * @param visibleWindowCallable The function to be called on the visible window
+     */
+    void callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable);
 
 private:
     Display * _x11Display;

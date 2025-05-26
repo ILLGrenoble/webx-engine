@@ -14,6 +14,7 @@
 #include "WebXSelectionRequestEvent.h"
 #include "WebXDamageEvent.h"
 #include "WebXCursorEvent.h"
+#include "WebXShapeEvent.h"
 
 class WebXDamageOverride;
 
@@ -105,6 +106,14 @@ public:
         this->_cursorEventHandler = handler;
     }
 
+    /**
+     * Sets the event handler for the shape event
+     * @param handler The handler for the shape event
+     */
+    void setShapeEventHandler(std::function<void(const WebXShapeEvent &)> handler) {
+        this->_shapeEventHandler = handler;
+    }
+
 private:
     /**
      * Handles all the XEvents and converts the to WebX events
@@ -149,6 +158,7 @@ private:
     std::function<void(const WebXSelectionRequestEvent &)> _selectionRequestEventHandler;
     std::function<void(const WebXDamageEvent &)> _damageEventHandler;
     std::function<void(const WebXCursorEvent &)> _cursorEventHandler;
+    std::function<void(const WebXShapeEvent &)> _shapeEventHandler;
 
     WebXDamageOverride * _damageOverride;
 
@@ -156,6 +166,8 @@ private:
     int _damageErrorBase;
     int _xfixesEventBase;
     int _xfixesErrorBase;
+    int _xshapeEventBase;
+    int _xshapeErrorBase;
 
     std::vector<std::unique_ptr<WebXDamageFilter>> _damageFilters;
     std::function<bool(const XEvent * event)> _filterFunction;

@@ -93,10 +93,11 @@ public:
     /**
      * Updates the WindowShape: takes into account that the window may not be rectangular
      * @param imageConverter Pointer to the image converter.
-     * @param quality Quality settings for the shape.
+     * @param force Forces the shape to be rebuilt (called after receiving an update event from X11)
      */
-    void updateShape(WebXImageConverter * imageConverter, const WebXQuality & quality) {
-        this->_shape.update(this->getRectangle().size().width(), this->getRectangle().size().height(), imageConverter, quality);
+    void updateShape(WebXImageConverter * imageConverter, bool force = false) {
+        this->_shape.update(this->getRectangle().size().width(), this->getRectangle().size().height(), imageConverter, WebXQuality::QualityForIndex(6), force);
+        this->_visibility.setShapeMaskChecksum(this->_shape.getShapeMaskChecksum());
     }
 
     /**

@@ -5,6 +5,7 @@
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
 
@@ -20,10 +21,13 @@ WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * di
     _selectionRequestEventHandler([](const WebXSelectionRequestEvent &) {}),
     _damageEventHandler([](const WebXDamageEvent &) {}),
     _cursorEventHandler([](const WebXCursorEvent &) {}),
+    _shapeEventHandler([](const WebXShapeEvent &) {}),
     _damageEventBase(0),
     _damageErrorBase(0),
     _xfixesEventBase(0),
-    _xfixesErrorBase(0) {
+    _xfixesErrorBase(0),
+    _xshapeEventBase(0),
+    _xshapeErrorBase(0) {
 
     XSelectInput(this->_x11Display, this->_rootWindow, SubstructureNotifyMask);
 
@@ -36,6 +40,10 @@ WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * di
     } else {
         spdlog::error("No xfixes extension");
         exit(1);
+    }
+
+    if (!XShapeQueryExtension(this->_x11Display, &this->_xshapeEventBase, &this->_xshapeErrorBase)) {
+        spdlog::info("No X11 xshape extension detected");
     }
 
     if (settings.event.filterDamageAfterConfigureNotify) {
@@ -107,7 +115,11 @@ void WebXEventListener::handleXEvent(const XEvent * event) {
 
     } else if (event->type == this->_xfixesEventBase + XFixesCursorNotify) {
         this->_cursorEventHandler(WebXCursorEvent());
-    
+
+    } else if (event->type == this->_xshapeEventBase + ShapeNotify) {
+        XShapeEvent * shapeEvent = (XShapeEvent *)event;
+        this->_shapeEventHandler(WebXShapeEvent(*shapeEvent));
+
     // } else {
     //     spdlog::info("type = {:d} serial = {:d}", event->type, event->xany.serial);
     }

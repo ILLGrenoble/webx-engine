@@ -12,18 +12,10 @@ class WebXImage;
 class WebXWindowShape {
 
 public:
-    WebXWindowShape(Display * display, Window x11Window, int width, int height) :
-        _display(display),
-        _x11Window(x11Window),
-        _width(width),
-        _height(height),
-        _isBuilt(false),
-        _shapeMask(nullptr) {
-    }
-    virtual ~WebXWindowShape() {
-    }
+    WebXWindowShape(Display * display, Window x11Window, int width, int height);
+    virtual ~WebXWindowShape();
 
-    void update(int width, int height, WebXImageConverter * imageConverter, const WebXQuality & quality);
+    void update(int width, int height, WebXImageConverter * imageConverter, const WebXQuality & quality, bool force = false);
 
     bool isActive() const {
         return this->_shapeMask != nullptr;
@@ -31,6 +23,10 @@ public:
 
     std::shared_ptr<WebXImage> getShapeMask() const {
         return this->_shapeMask;
+    }
+
+    uint32_t getShapeMaskChecksum() const {
+        return this->_shapeMaskChecksum;
     }
 
 private:
@@ -43,6 +39,7 @@ private:
     int _height;
 
     std::shared_ptr<WebXImage> _shapeMask;
+    uint32_t _shapeMaskChecksum;
 
     bool _isBuilt;
 };

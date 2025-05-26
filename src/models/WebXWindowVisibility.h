@@ -19,7 +19,8 @@ public:
     WebXWindowVisibility(Window x11Window, const WebXRectangle & rectangle, bool isViewable) :
         _x11Window(x11Window),
         _rectangle(rectangle),
-        _isViewable(isViewable) {}
+        _isViewable(isViewable),
+        _shapeMaskChecksum(0) {}
     
     /**
      * @brief Destructor for WebXWindowVisibility.
@@ -91,11 +92,28 @@ public:
         this->_rectangle = rectangle;
     }
 
+    /**
+     * @brief Gets the window's shape mask checksum
+     * @return the window's shape mask checksum.
+     */
+    const uint32_t & getShapeMaskChecksum() const {
+        return this->_shapeMaskChecksum;
+    }
+
+    /**
+     * @brief Sets the window's shapemask checksum
+     * @param shapeMaskCheckum The window's shapemask checksum
+     */
+    void setShapeMaskChecksum(uint32_t shapeMaskChecksum) {
+        this->_shapeMaskChecksum = shapeMaskChecksum;
+    }
+
 private:
     Window _x11Window;
     WebXWindowCoverage _coverage;
     WebXRectangle _rectangle;
     bool _isViewable;
+    uint32_t _shapeMaskChecksum;
 
 };
 

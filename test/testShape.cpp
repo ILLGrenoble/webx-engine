@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 	/*Make the window red */	
 	XAllocNamedColor(disp, cm, "red", &red, &exact_red);
 
-	w=XCreateSimpleWindow(disp, XRootWindow(disp, screen), x, y, noname_width, noname_height, 0, red.pixel, red.pixel);
+	w=XCreateSimpleWindow(disp, XRootWindow(disp, screen), x, y, noname_width, noname_height * 2, 0, red.pixel, red.pixel);
 
 	/* Tell the window manager to obey the position information */
 	s_hints = XAllocSizeHints();
@@ -52,10 +52,18 @@ int main(int argc, char** argv)
     XMapWindow(disp, w);
     XFlush(disp);
 
-    usleep(10000000);
-    XUnmapWindow(disp, w);
+    usleep(2000000);
+
+	XShapeCombineMask(disp, w, ShapeBounding, 0, noname_height, pm, ShapeUnion);
     XFlush(disp);
 
+	usleep(5000000);
+
+	XUnmapWindow(disp, w);
+    XFlush(disp);
+
+	XFree(s_hints);
+	XFreePixmap(disp, pm);
 	XDestroyWindow(disp, w);	
 	XCloseDisplay(disp);
 

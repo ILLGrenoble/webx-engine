@@ -66,24 +66,6 @@ WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
     return NULL;
 }
 
-WebXWindow * WebXDisplay::getVisibleWindow(Window x11Window) {
-    std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
-    
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    // Return 0 if window is not visible
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
-        return window;
-    }
-
-    return NULL;
-}
-
 WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
     WebXWindow * window = this->createWindow(x11Window);
     if (window != NULL) {
@@ -182,7 +164,7 @@ void WebXDisplay::updateVisibleWindows() {
                 if (status && child->isVisible(this->_rootWindow->getRectangle().size())) {
 
                     child->enableDamage();
-                    child->updateShape(this->_imageConverter, WebXQuality::QualityForIndex(6));
+                    child->updateShape(this->_imageConverter);
                     this->_visibleWindows.push_back(child);
                 } 
             }
@@ -260,43 +242,34 @@ void WebXDisplay::debugTree(Window window, int indent) {
 }
 
 std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle) {
-    std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
+    std::shared_ptr<WebXImage> image = nullptr;
+    auto imageConverter = this->_imageConverter;
+    this->callIfWindowVisible(x11Window, [&image, imageRectangle, imageConverter, quality](WebXWindow * window) {
+        image = window->getImage(imageRectangle, imageConverter, quality);
+    });
 
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    // Ignore if window is not visible
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
-        return window->getImage(imageRectangle, this->_imageConverter, quality);
-
-    } else {
-        return nullptr;
-    }
+    return image;
 }
 
 std::shared_ptr<WebXImage> WebXDisplay::getWindowShapeMask(Window x11Window) {
-    std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
+    std::shared_ptr<WebXImage> image = nullptr;
+    auto imageConverter = this->_imageConverter;
+    this->callIfWindowVisible(x11Window, [&image, imageConverter](WebXWindow * window) {
+        window->updateShape(imageConverter);
 
-    // Find visible window
-    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
-        [&x11Window](const WebXWindow * window) {
-            return window->getX11Window() == x11Window;
-        });
-
-    if (itWin != this->_visibleWindows.end()) {
-        WebXWindow * window = *itWin;
         if (window->hasShape()) {
-            return window->getShapeMask();
+            image = window->getShapeMask();
         }
-    }
-
-    return nullptr;
+    });
+    return image;
 }
 
+void WebXDisplay::updateWindowShape(Window x11Window) {
+    auto imageConverter = this->_imageConverter;
+    this->callIfWindowVisible(x11Window, [imageConverter](WebXWindow * window) {
+        window->updateShape(imageConverter, true);
+    });
+}
 
 void WebXDisplay::updateMouseCursor() {
     this->_mouse->updateCursor();
@@ -410,6 +383,22 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
 
     return parent;
 }
+
+void WebXDisplay::callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable) {
+    std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
+    
+    // Find visible window
+    auto itWin = std::find_if(this->_visibleWindows.begin(), this->_visibleWindows.end(), 
+        [&x11Window](const WebXWindow * window) {
+            return window->getX11Window() == x11Window;
+        });
+
+    if (itWin != this->_visibleWindows.end()) {
+        WebXWindow * window = *itWin;
+        visibleWindowCallable(window);
+    }
+}
+
 
 
 

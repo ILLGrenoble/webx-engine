@@ -125,10 +125,10 @@ public:
     }
 
     /**
-     * @brief Handles window damage by invoking a provided handler function.
-     * @param damageHandlerFunc A function to process window damage and return transfer data.
+     * @brief Handles window graphical updates by invoking a provided handler function.
+     * @param updateHandlerFunc A function to process window update and return transfer data.
      */
-    void handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc);
+    void handleWindowGraphicalUpdates(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> updateHandlerFunc);
  
     /**
      * @brief Performs quality verification for all clients in the group.

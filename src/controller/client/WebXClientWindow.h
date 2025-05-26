@@ -23,16 +23,20 @@ public:
      * @param desiredQuality The desired quality level for the window.
      * @param rectangle The rectangle defining the window's size and position.
      * @param coverage The coverage area of the window.
+     * @param shapeMaskChecksum The window's shape mask checksum
      * @param settings The quality settings to be used.
      */
-    WebXClientWindow(Window id, const WebXQuality & desiredQuality, const WebXRectangle & rectangle, const WebXWindowCoverage & coverage, const WebXQualitySettings & settings) :
+    WebXClientWindow(Window id, const WebXQuality & desiredQuality, const WebXRectangle & rectangle, const WebXWindowCoverage & coverage, uint32_t shapeMaskChecksum, const WebXQualitySettings & settings) :
         _id(id),
         _damage(id),
         _qualityHandler(id, desiredQuality, coverage, settings),
         _windowSize(rectangle.size()),
         _imageRefreshTime(std::chrono::high_resolution_clock::now()),
+        _shapeUpdateTime(std::chrono::high_resolution_clock::now()),
         _rgbChecksum(0),
-        _alphaChecksum(0) {
+        _alphaChecksum(0),
+        _shapeMaskChecksum(shapeMaskChecksum),
+        _lastSentShapeMaskChecksum(shapeMaskChecksum) {
     }
 
     /**
@@ -47,8 +51,11 @@ public:
         _damage(damage),
         _qualityHandler(id, desiredQuality, settings),
         _imageRefreshTime(std::chrono::high_resolution_clock::now()),
+        _shapeUpdateTime(std::chrono::high_resolution_clock::now()),
         _rgbChecksum(0),
-        _alphaChecksum(0) {
+        _alphaChecksum(0),
+        _shapeMaskChecksum(0),
+        _lastSentShapeMaskChecksum(0) {
     }
 
     /**
@@ -190,6 +197,22 @@ public:
     }
 
     /**
+     * @brief Gets the shapemask checksum of the window.
+     * @return The shapemask checksum.
+     */
+    uint32_t getShapeMaskChecksum() const {
+        return this->_shapeMaskChecksum;
+    }
+
+    /**
+     * @brief Sets the shapemask checksum of the window.
+     * @param shapeMaskChecksum The new shapemask checksum.
+     */
+    void setShapeMaskChecksum(uint32_t shapeMaskChecksum) {
+        this->_shapeMaskChecksum = shapeMaskChecksum;
+    }
+
+    /**
      * @brief Handles the image transfer data for the window.
      * @param transferData The image transfer data.
      */
@@ -206,6 +229,14 @@ public:
         this->_qualityHandler.onImageTransfer(transferData);
     }
 
+    bool shapeRequiresUpdate() const {
+        return this->_lastSentShapeMaskChecksum != this->_shapeMaskChecksum;
+    }
+
+    void resetShapeMaskChecksum() {
+        this->_lastSentShapeMaskChecksum = this->_shapeMaskChecksum;
+    }
+
 private:
     const static int QUALITY_REFRESH_TIME_MS = 500;
 
@@ -215,9 +246,12 @@ private:
     WebXSize _windowSize;
 
     std::chrono::high_resolution_clock::time_point _imageRefreshTime;
+    std::chrono::high_resolution_clock::time_point _shapeUpdateTime;
 
     uint32_t _rgbChecksum;
     uint32_t _alphaChecksum;
+    uint32_t _shapeMaskChecksum;
+    uint32_t _lastSentShapeMaskChecksum;
 };
 
 

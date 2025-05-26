@@ -30,12 +30,13 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
         });
 
         if (it == this->_windows.end()) {
-            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(windowVisibility->getX11Window(), this->_quality, windowVisibility->getRectangle(), windowVisibility->getCoverage(), this->_settings.quality)));
+            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(windowVisibility->getX11Window(), this->_quality, windowVisibility->getRectangle(), windowVisibility->getCoverage(), windowVisibility->getShapeMaskChecksum(), this->_settings.quality)));
         
         } else {
             std::unique_ptr<WebXClientWindow> & window = *it;
             window->setSize(windowVisibility->getRectangle().size());
             window->setCoverage(windowVisibility->getCoverage());
+            window->setShapeMaskChecksum(windowVisibility->getShapeMaskChecksum());
         }
     }
 
@@ -45,7 +46,7 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
     }
 }
 
-void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc) {
+void WebXClientGroup::handleWindowGraphicalUpdates(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> updateHandlerFunc) {
 
     float totalImageSizeKB = 0.0;
 
@@ -58,9 +59,9 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
         // Get a reference time: any windows with refresh times smaller than this need to be updated
         std::chrono::high_resolution_clock::time_point reference = std::chrono::high_resolution_clock::now() - std::chrono::microseconds(calculatedQuality.imageUpdateTimeUs);
 
-        if (window->hasDamage() && window->requiresRefresh(reference)) {
+        if ((window->hasDamage() || window->shapeRequiresUpdate()) && window->requiresRefresh(reference)) {
             // Handle the image grab and transfer with quality information
-            WebXResult<WebXWindowImageTransferData> result = damageHandlerFunc(window, this->_clientIndexMask);
+            WebXResult<WebXWindowImageTransferData> result = updateHandlerFunc(window, this->_clientIndexMask);
             if (result.ok()) {
                 // If image grab and transfer ok then update the client window data
                 const WebXWindowImageTransferData & transferData = result.data();
@@ -73,8 +74,9 @@ void WebXClientGroup::handleWindowDamage(std::function<WebXResult<WebXWindowImag
                 spdlog::error("Error handling damage for window 0x{:0x} with desired quality level {:d}: {:s}", window->getId(), this->_quality.index, result.error());
             }
 
-            // Remove the damage from the window
+            // Reset the damage and shape checksum in the window
             window->resetDamage();
+            window->resetShapeMaskChecksum();
         }
     }
 

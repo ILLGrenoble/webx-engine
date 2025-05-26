@@ -245,7 +245,18 @@ float WebXController::updateClientWindows(WebXDisplay * display) {
 
     // Handle all necessary damage in the client windows
     float totalImageSizeKB = 0.0;
-    this->_clientRegistry.handleWindowDamage([&](const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask) { 
+    this->_clientRegistry.handleWindowGraphicalUpdates([&](const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask) { 
+
+        // Handle window shape updates
+        if (window->shapeRequiresUpdate()) {
+            std::shared_ptr<WebXImage> shape = display->getWindowShapeMask(window->getId());
+            if (shape) {
+                // Send message to group of clients
+                this->sendMessage(std::make_shared<WebXShapeMessage>(clientIndexMask, window->getId(), shape));
+            }
+        }
+
+        // Handle window damage
         const WebXWindowDamage & windowDamage = window->getDamage();
         if (window->isFullWindowDamage() || window->getDamageAreaRatio() > 0.9) {
             std::shared_ptr<WebXImage> image = display->getImage(window->getId(), window->getCurrentQuality());

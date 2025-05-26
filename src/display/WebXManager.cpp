@@ -106,6 +106,11 @@ void WebXManager::init(const std::string & keyboardLayout) {
         this->_display->updateMouseCursor();
         this->sendDisplayEvent(CursorEvent);
     });
+
+    this->_eventListener->setShapeEventHandler([this](const WebXShapeEvent & event) {
+        spdlog::trace("Got new shape event");
+        this->_display->updateWindowShape(event.getWindow());
+    });
     
     this->_eventListener->setSelectionEventHandler([this](const WebXSelectionEvent & event) {
         this->_clipboard->onClipboardDataNotify(event.getXSelectionEvent());

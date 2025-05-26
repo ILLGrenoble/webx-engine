@@ -138,13 +138,13 @@ public:
     }
 
     /**
-     * @brief Handles window damage for all client groups.
-     * @param damageHandlerFunc The function to handle window damage.
+     * @brief Handles window graphical updates (damage or shape mask) for all client groups.
+     * @param updateHandlerFunc The function to handle window damage.
      */
-    void handleWindowDamage(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> damageHandlerFunc) {
+    void handleWindowGraphicalUpdates(std::function<WebXResult<WebXWindowImageTransferData>(const std::unique_ptr<WebXClientWindow> & window, uint64_t clientIndexMask)> updateHandlerFunc) {
         const std::lock_guard<std::recursive_mutex> lock(this->_mutex);
         for (auto & group : this->_groups) {
-            group->handleWindowDamage(damageHandlerFunc);
+            group->handleWindowGraphicalUpdates(updateHandlerFunc);
         }
     }
 
