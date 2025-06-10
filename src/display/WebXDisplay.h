@@ -178,9 +178,9 @@ public:
 
     /**
      * @brief Loads a keyboard layout.
-     * @param layout Keyboard layout string.
+     * @param layout Keyboard layout or name string.
      */
-    void loadKeyboardLayout(const std::string & layout);
+    void loadKeyboardLayout(const std::string & layoutOrName);
     
 private:
     /**

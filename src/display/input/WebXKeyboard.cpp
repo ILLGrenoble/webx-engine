@@ -23,8 +23,7 @@ void WebXKeyboard::init() {
     spdlog::info("Got keyboard layout '{:s}' from X11. Searching for mapping...", layout);
     WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layout);
     if (keyboardMapping != NULL) {
-        spdlog::info("... loaded keyboard mapping '{:s}'", keyboardMapping->name);
-        this->_keyboardMapping = keyboardMapping;
+        spdlog::info("... found keyboard mapping '{:s}'", keyboardMapping->name);
 
         // Make sure the keyboard layout really is loaded (reload the current one. Fixes a bug where XKB behaved as if US was loaded)
         this->loadKeyboardLayout(layout);
@@ -57,9 +56,13 @@ bool WebXKeyboard::loadKeyboardLayout(const std::string & layoutOrName) {
     WebXKB webXKB;
     WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layoutOrName);
     if (keyboardMapping != NULL) {
+        spdlog::info("Loaded keyboard mapping '{:s}'", keyboardMapping->name);
         this->_keyboardMapping = keyboardMapping;
 
         return webXKB.setKeyboardLayout(this->_x11Display, keyboardMapping->layout);
+    
+    } else {
+        spdlog::error("Failed to load '{:s}' keyboard layout", layoutOrName);
     }
     return false;
 }
