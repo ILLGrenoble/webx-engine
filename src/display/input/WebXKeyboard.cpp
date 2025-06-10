@@ -41,7 +41,7 @@ void WebXKeyboard::init() {
 
 WebXKeyboardMapping * WebXKeyboard::getKeyboardMapping(const std::string & layout) const {
     auto it = std::find_if(begin(WEBX_KEY_MAPS), end(WEBX_KEY_MAPS), [=](const WebXKeyboardMapping & mapping) {
-        return mapping.layout == layout;
+        return mapping.layout == layout || mapping.name == layout;
     });
 
     if (it != WEBX_KEY_MAPS.end()) {
@@ -53,13 +53,13 @@ WebXKeyboardMapping * WebXKeyboard::getKeyboardMapping(const std::string & layou
     }
 }
 
-bool WebXKeyboard::loadKeyboardLayout(const std::string & layout) {
+bool WebXKeyboard::loadKeyboardLayout(const std::string & layoutOrName) {
     WebXKB webXKB;
-    WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layout);
+    WebXKeyboardMapping * keyboardMapping = this->getKeyboardMapping(layoutOrName);
     if (keyboardMapping != NULL) {
         this->_keyboardMapping = keyboardMapping;
 
-        return webXKB.setKeyboardLayout(this->_x11Display, layout);
+        return webXKB.setKeyboardLayout(this->_x11Display, keyboardMapping->layout);
     }
     return false;
 }

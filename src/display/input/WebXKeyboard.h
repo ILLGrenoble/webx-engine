@@ -38,10 +38,10 @@ public:
 
     /**
      * Load a keyboard layout.
-     * @param layout The name of the layout to load (e.g., "us", "de").
+     * @param layout The name or the layout to load (e.g., "us", "de" or "fr_fr_azerty", etc).
      * @return True if the layout was successfully loaded, false otherwise.
      */
-    bool loadKeyboardLayout(const std::string & layout);
+    bool loadKeyboardLayout(const std::string & layoutOrName);
 
 private:
     /**
