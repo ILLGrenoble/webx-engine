@@ -1,3 +1,12 @@
+1.4.0 12/06/2025
+================
+ * Modify logging when loading a new keyboard layout.
+ * Load keyboard from long layout name or short name.
+ * Handle updates to the window shape mask. Listen to events from X11 and update the mask. Store a checksum of the mask in the ClientWindow and determine if it has changed when updating the clients.
+ * Add instruction to request window shape and message to return shape mask (stencil mask). Modify windows message to include a list of those with shapes.
+ * Add WebXWindowShape class that will read shape rectangles from X11 if a window has them: Generates a pixmap based on the rectangles (drawing to an X11 GC) and generates a monochrome WebXImage from the shape.
+ * Add Xext library to build
+ 
 1.3.0 07/05/2025
 ================
  * Automatically update the version file when building with github action (ensure identical to tag).
