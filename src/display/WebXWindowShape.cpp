@@ -3,6 +3,7 @@
 #include <image/WebXImage.h>
 #include <X11/extensions/shape.h>
 #include <spdlog/spdlog.h>
+#include <crc32/Crc32.h>
 
 
 
@@ -12,11 +13,15 @@ WebXWindowShape::WebXWindowShape(Display * display, Window x11Window, int width,
     _width(width),
     _height(height),
     _isBuilt(false),
-    _shapeMask(nullptr) {
+    _eventListenerEnabled(false),
+    _shapeMask(nullptr),
+    _rectanglesChecksum(0) {
 }
 
 WebXWindowShape::~WebXWindowShape() {
-    XShapeSelectInput(this->_display,  this->_x11Window, 0);
+    if (this->_eventListenerEnabled) {
+        XShapeSelectInput(this->_display,  this->_x11Window, 0);
+    }
 }
 
 void WebXWindowShape::update(int width, int height, WebXImageConverter * imageConverter, const WebXQuality & quality, bool force) {
@@ -37,6 +42,12 @@ void WebXWindowShape::update(int width, int height, WebXImageConverter * imageCo
     this->_isBuilt = false;
     this->_shapeMaskChecksum = 0;
     this->create(imageConverter, quality);
+
+    if (!this->_eventListenerEnabled) {
+        // Request events for shape updates
+        XShapeSelectInput(this->_display,  this->_x11Window, ShapeNotifyMask);
+        this->_eventListenerEnabled = true;
+    }
 }
 
 void WebXWindowShape::create(WebXImageConverter * imageConverter, const WebXQuality & quality) {
@@ -51,11 +62,18 @@ void WebXWindowShape::create(WebXImageConverter * imageConverter, const WebXQual
         this->_isBuilt = true;
         return;
     }
-   
-    // Request events for shape updates
-    XShapeSelectInput(this->_display,  this->_x11Window, ShapeNotifyMask);
 
-    // spdlog::info("Window 0x{:x} has shape with {:d} rectangles", this->_x11Window, count);
+    // Even if we get an event to update the shape, we check if the rectangles have changed before rebuilding the shape image.
+    uint32_t rectanglesChecksum = crc32_16bytes((const uint8_t *)rects, count * sizeof(XRectangle));
+    if (rectanglesChecksum == this->_rectanglesChecksum) {
+        this->_isBuilt = true;
+        return;
+    }
+
+    // Rectangles changed
+    this->_rectanglesChecksum = rectanglesChecksum;
+
+    // spdlog::info("Window 0x{:x} with size {:d}x{:d} has shape with {:d} rectangles", this->_x11Window, this->_width, this->_height, count);
 
     // Create an 8-bit Pixmap with the same size as the window
     Pixmap pixmap = XCreatePixmap(this->_display, this->_x11Window, this->_width, this->_height, 8);

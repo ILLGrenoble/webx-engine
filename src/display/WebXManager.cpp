@@ -108,7 +108,7 @@ void WebXManager::init(const std::string & keyboardLayout) {
     });
 
     this->_eventListener->setShapeEventHandler([this](const WebXShapeEvent & event) {
-        spdlog::trace("Got new shape event");
+        spdlog::trace("Got new shape event for window 0x{:x}", event.getWindow());
         this->_display->updateWindowShape(event.getWindow());
     });
     

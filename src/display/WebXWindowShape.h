@@ -40,8 +40,10 @@ private:
 
     std::shared_ptr<WebXImage> _shapeMask;
     uint32_t _shapeMaskChecksum;
+    uint32_t _rectanglesChecksum;
 
     bool _isBuilt;
+    bool _eventListenerEnabled;
 };
 
 
