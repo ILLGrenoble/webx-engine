@@ -1,3 +1,7 @@
+1.4.1 13/06/2025
+================
+ * Listen to shape events on windows that are initially without shape. Verify that the shape has changed before recalculating the stencil map.
+
 1.4.0 12/06/2025
 ================
  * Modify logging when loading a new keyboard layout.
