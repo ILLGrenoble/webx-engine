@@ -22,72 +22,89 @@ const convertToModifier = (text) => {
 
 const guacdSymbols = [{
     layout: 'gb',
-    name: 'en_gb_qwerty',
-    inherits: ['base']
+    name: 'en-gb-qwerty',
+    file: 'en_gb_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'hu',
-    name: 'hu_hu_qwertz',
-    inherits: ['base']
+    name: 'hu-hu-qwertz',
+    file: 'hu_hu_qwertz.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'br',
-    name: 'pt_br_qwerty',
-    inherits: ['base']
+    name: 'pt-br-qwerty',
+    file: 'pt_br_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'dk',
-    name: 'da_dk_qwerty',
-    inherits: ['base']
+    name: 'da-dk-qwerty',
+    file: 'da_dk_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'us',
-    name: 'en_us_qwerty',
-    inherits: ['base']
+    name: 'en-us-qwerty',
+    file: 'en_us_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'be',
-    name: 'fr_be_azerty',
-    inherits: ['base']
+    name: 'fr-be-azerty',
+    file: 'fr_be_azerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'it',
-    name: 'it_it_qwerty',
-    inherits: ['base']
+    name: 'it-it-qwerty',
+    file: 'it_it_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'se',
-    name: 'sv_se_qwerty',
-    inherits: ['base']
+    name: 'sv-se-qwerty',
+    file: 'sv_se_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'ch(de)',
-    name: 'de_ch_qwertz',
-    inherits: ['base']
+    name: 'de-ch-qwertz',
+    file: 'de_ch_qwertz.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'es',
-    name: 'es_es_qwerty',
-    inherits: ['base']
+    name: 'es-es-qwerty',
+    file: 'es_es_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'ch(fr)',
-    name: 'fr_ch_qwertz',
-    inherits: ['base']
+    name: 'fr-ch-qwertz',
+    file: 'fr_ch_qwertz.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'jp',
-    name: 'ja_jp_qwerty',
-    inherits: ['base']
+    name: 'ja-jp-qwerty',
+    file: 'ja_jp_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'tr',
-    name: 'tr_tr_qwerty',
-    inherits: ['base']
+    name: 'tr-tr-qwerty',
+    file: 'tr_tr_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'de',
-    name: 'de_de_qwertz',
-    inherits: ['base']
+    name: 'de-de-qwertz',
+    file: 'de_de_qwertz.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'latam',
-    name: 'es_latam_qwerty',
-    inherits: ['base']
+    name: 'es-latam-qwerty',
+    file: 'es_latam_qwerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'fr',
-    name: 'fr_fr_azerty',
-    inherits: ['base']
+    name: 'fr-fr-azerty',
+    file: 'fr_fr_azerty.keymap',
+    inherits: ['base.keymap']
 }, {
     layout: 'no',
-    name: 'no_no_qwerty',
-    inherits: ['base']
+    name: 'no-no-qwerty',
+    file: 'no_no_qwerty.keymap',
+    inherits: ['base.keymap']
 }];
 
 const parseSymbolFile = (file) => {
@@ -178,16 +195,13 @@ const parseSymbolFile = (file) => {
 
 export const parseSymbols = () => {
     const parsed = guacdSymbols.map(guacdSymbol => {
-        const { layout, name, inherits } = guacdSymbol;
-        const file = `${name}.keymap`;
+        const { layout, name, file, inherits } = guacdSymbol;
         const symbols = parseSymbolFile(file);
     
         if (inherits && inherits.length > 0) {
             inherits.forEach(inherited => {
 
-                const inheritedFile = `${inherited}.keymap`;
-
-                parseSymbolFile(inheritedFile).forEach(key => {
+                parseSymbolFile(inherited).forEach(key => {
                     symbols.push(key);      
                 });
             });

@@ -2877,23 +2877,23 @@ static std::map<int, WebXKeySymDefinition> __webx_keysyms_no_no_qwerty = {
 };
 
 static std::vector<WebXKeyboardMapping> WEBX_KEY_MAPS = {
-    { "en_gb_qwerty", "gb", __webx_keysyms_en_gb_qwerty },
-    { "hu_hu_qwertz", "hu", __webx_keysyms_hu_hu_qwertz },
-    { "pt_br_qwerty", "br", __webx_keysyms_pt_br_qwerty },
-    { "da_dk_qwerty", "dk", __webx_keysyms_da_dk_qwerty },
-    { "en_us_qwerty", "us", __webx_keysyms_en_us_qwerty },
-    { "fr_be_azerty", "be", __webx_keysyms_fr_be_azerty },
-    { "it_it_qwerty", "it", __webx_keysyms_it_it_qwerty },
-    { "sv_se_qwerty", "se", __webx_keysyms_sv_se_qwerty },
-    { "de_ch_qwertz", "ch(de)", __webx_keysyms_de_ch_qwertz },
-    { "es_es_qwerty", "es", __webx_keysyms_es_es_qwerty },
-    { "fr_ch_qwertz", "ch(fr)", __webx_keysyms_fr_ch_qwertz },
-    { "ja_jp_qwerty", "jp", __webx_keysyms_ja_jp_qwerty },
-    { "tr_tr_qwerty", "tr", __webx_keysyms_tr_tr_qwerty },
-    { "de_de_qwertz", "de", __webx_keysyms_de_de_qwertz },
-    { "es_latam_qwerty", "latam", __webx_keysyms_es_latam_qwerty },
-    { "fr_fr_azerty", "fr", __webx_keysyms_fr_fr_azerty },
-    { "no_no_qwerty", "no", __webx_keysyms_no_no_qwerty }
+    { "en-gb-qwerty", "gb", __webx_keysyms_en_gb_qwerty },
+    { "hu-hu-qwertz", "hu", __webx_keysyms_hu_hu_qwertz },
+    { "pt-br-qwerty", "br", __webx_keysyms_pt_br_qwerty },
+    { "da-dk-qwerty", "dk", __webx_keysyms_da_dk_qwerty },
+    { "en-us-qwerty", "us", __webx_keysyms_en_us_qwerty },
+    { "fr-be-azerty", "be", __webx_keysyms_fr_be_azerty },
+    { "it-it-qwerty", "it", __webx_keysyms_it_it_qwerty },
+    { "sv-se-qwerty", "se", __webx_keysyms_sv_se_qwerty },
+    { "de-ch-qwertz", "ch(de)", __webx_keysyms_de_ch_qwertz },
+    { "es-es-qwerty", "es", __webx_keysyms_es_es_qwerty },
+    { "fr-ch-qwertz", "ch(fr)", __webx_keysyms_fr_ch_qwertz },
+    { "ja-jp-qwerty", "jp", __webx_keysyms_ja_jp_qwerty },
+    { "tr-tr-qwerty", "tr", __webx_keysyms_tr_tr_qwerty },
+    { "de-de-qwertz", "de", __webx_keysyms_de_de_qwertz },
+    { "es-latam-qwerty", "latam", __webx_keysyms_es_latam_qwerty },
+    { "fr-fr-azerty", "fr", __webx_keysyms_fr_fr_azerty },
+    { "no-no-qwerty", "no", __webx_keysyms_no_no_qwerty }
 };
 
 #endif /* WEBX_KEYBOARD_SYMBOL_MAPPING_H */

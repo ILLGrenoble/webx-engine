@@ -28,7 +28,7 @@ export const translate = (symbolMappings) => {
         const name = symbolMapping.name;
         const keysymMappings = symbolMapping.symbols;
 
-        const webXKeySymsName = `__webx_keysyms_${name}`;
+        const webXKeySymsName = `__webx_keysyms_${name.replaceAll('-', '_')}`;
         keyMaps.push({layout: layout, name: name, keySymsName: webXKeySymsName});
 
         let layoutSymbolsText = dedent`\n
