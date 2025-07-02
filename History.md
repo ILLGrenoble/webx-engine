@@ -1,3 +1,8 @@
+1.4.2 02/07/2025
+================
+ * Set window sized immediately on configure events and create shapes correctly when sizes have changed.
+ * Fix naming of keyboard layouts (matches guacamole).
+
 1.4.1 13/06/2025
 ================
  * Listen to shape events on windows that are initially without shape. Verify that the shape has changed before recalculating the stencil map.
