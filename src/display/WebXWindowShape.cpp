@@ -40,7 +40,10 @@ void WebXWindowShape::update(int width, int height, WebXImageConverter * imageCo
 
     // Create the shape mask
     this->_isBuilt = false;
+    this->_rectanglesChecksum = 0;
     this->_shapeMaskChecksum = 0;
+    this->_shapeMask = nullptr;
+
     this->create(imageConverter, quality);
 
     if (!this->_eventListenerEnabled) {

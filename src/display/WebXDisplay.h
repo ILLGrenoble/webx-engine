@@ -182,6 +182,15 @@ public:
      */
     void loadKeyboardLayout(const std::string & layoutOrName);
     
+
+    /**
+     * Generic method to allow retrieval of visible WebXWindow and function to be called on it (if the window is found/visible).
+     * Assures that the function is called within the scope of the _visibleWindowsMutex
+     * @param window X11 window ID.
+     * @param visibleWindowCallable The function to be called on the visible window
+     */
+    void callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable);
+
 private:
     /**
      * @struct WebXTreeDetails
@@ -265,14 +274,6 @@ private:
      * @brief Updates the coverage information of all visible windows.
      */
     void updateWindowCoverage();
-
-    /**
-     * Generic method to allow retrieval of visible WebXWindow and function to be called on it (if the window is found/visible).
-     * Assures that the function is called within the scope of the _visibleWindowsMutex
-     * @param window X11 window ID.
-     * @param visibleWindowCallable The function to be called on the visible window
-     */
-    void callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable);
 
 private:
     Display * _x11Display;

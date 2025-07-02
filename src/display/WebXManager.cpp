@@ -134,8 +134,9 @@ void WebXManager::setClipboardContent(const std::string & clipboardContent) {
 }
 
 void WebXManager::handleWindowConfigureEvent(const WebXConfigureEvent & event) {
-    WebXWindow * window = this->_display->getWindow(event.getWindow());
-    if (window != NULL) {
+    this->_display->callIfWindowVisible(event.getWindow(), [event, this](WebXWindow * window) {
+        window->setRectangle(WebXRectangle(event.getX(), event.getY(), event.getWidth(), event.getHeight()));
+
         const WebXSize & windowSize = window->getRectangle().size();
         bool sizeHasChanged = windowSize.width() != event.getWidth() || windowSize.height() != event.getHeight();
 
@@ -143,9 +144,8 @@ void WebXManager::handleWindowConfigureEvent(const WebXConfigureEvent & event) {
             // Send this as an event to indicate that the full window is damaged
             this->sendDamageEvent(WebXWindowDamage(event.getWindow(), window->getRectangle(), true));
         }
-    }
-
-    this->_displayRequiresUpdate = true;
+        this->_displayRequiresUpdate = true;
+    });
 }
 
 void WebXManager::updateDisplay() {

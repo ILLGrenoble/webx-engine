@@ -71,6 +71,13 @@ public:
     }
 
     /**
+     * @brief Sets the rectangle representing the window's position and size.
+     */
+    void setRectangle(const WebXRectangle & rectangle) {
+        this->_visibility.setRectangle(rectangle);
+    }
+
+    /**
      * @brief Updates the window's attributes.
      * @return Status of the update operation.
      */
