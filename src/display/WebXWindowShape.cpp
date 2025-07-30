@@ -1,4 +1,5 @@
 #include "WebXWindowShape.h"
+#include "WebXErrorHandler.h"
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
 #include <X11/extensions/shape.h>
@@ -98,13 +99,36 @@ void WebXWindowShape::create(WebXImageConverter * imageConverter, const WebXQual
 
     // Read pixel data
     XImage * shapeImage = XGetImage(this->_display, pixmap, 0, 0, this->_width, this->_height, AllPlanes, ZPixmap);
-    this->_shapeMask = std::shared_ptr<WebXImage>(imageConverter->convertMono(shapeImage, quality));
-    this->_shapeMaskChecksum = this->_shapeMask->calculateImageChecksum();
 
-    XDestroyImage(shapeImage);
+    if (shapeImage) {
+        this->_shapeMask = std::shared_ptr<WebXImage>(imageConverter->convertMono(shapeImage, quality));
+        this->_shapeMaskChecksum = this->_shapeMask->calculateImageChecksum();
+
+        XDestroyImage(shapeImage);
+
+        this->_isBuilt = true;
+
+    } else {
+        // See if ErrorHandler has this window as it's last error source and determine exact error
+        if (WebXErrorHandler::getLastErrorWindow()) {
+            unsigned char lastError = WebXErrorHandler::getLastErrorCode();
+            if (lastError == BadWindow || lastError == BadDrawable) {
+                spdlog::warn("WebXWindow 0x{:x} has been removed while getting shape mask", this->_x11Window);
+
+            } else if (lastError == BadMatch) {
+                spdlog::warn("Failed to get shape mask for window 0x{:x}: requested rectangle is outside window bounds", this->_x11Window);
+
+            } else {
+                spdlog::warn("Failed to get shape mask for window 0x{:x}: error 0x{:02x}", this->_x11Window, lastError);
+            }
+        }
+
+        this->_rectanglesChecksum = 0;
+        this->_shapeMaskChecksum = 0;
+        this->_shapeMask = nullptr;
+    }
+
     XFreePixmap(this->_display, pixmap);
     XFreeGC(this->_display, gc);
     XFree(rects);
-
-    this->_isBuilt = true;
 }

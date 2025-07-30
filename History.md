@@ -1,3 +1,7 @@
+1.4.3 30/07/2025
+================
+ * Check for null image when creating a shape mask (can occur if window has been destroyed)
+
 1.4.2 02/07/2025
 ================
  * Set window sized immediately on configure events and create shapes correctly when sizes have changed.
