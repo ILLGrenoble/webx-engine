@@ -1,3 +1,7 @@
+1.4.4 06/09/2025
+================
+ * make screensize a dynamic value (taking into account any xrandr calls)
+ 
 1.4.3 30/07/2025
 ================
  * Check for null image when creating a shape mask (can occur if window has been destroyed)
