@@ -165,10 +165,13 @@ void WebXDisplay::updateVisibleWindows() {
             if (child != NULL) {
                 Status status = child->updateAttributes();
                 if (status && child->isVisible(this->_rootWindow->getRectangle().size())) {
+                    // Bugfix with nvidia: check for id that is 1 less than the root window (seems to be a ghost window that is present when power saving)
+                    if (child->getX11Window() != (this->_rootWindow->getX11Window() - 1)) {
+                        child->enableDamage();
+                        child->updateShape(this->_imageConverter);
+                        this->_visibleWindows.push_back(child);
+                    }
 
-                    child->enableDamage();
-                    child->updateShape(this->_imageConverter);
-                    this->_visibleWindows.push_back(child);
                 } 
             }
         }
