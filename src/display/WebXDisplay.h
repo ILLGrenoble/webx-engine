@@ -45,9 +45,7 @@ public:
      * @brief Retrieves the screen size of the display.
      * @return Reference to the screen size.
      */
-    const WebXSize & getScreenSize() const {
-        return this->_screenSize;
-    }
+    const WebXSize getScreenSize() const;
 
     /**
      * @brief Retrieves a window by its X11 window ID.
@@ -277,8 +275,6 @@ private:
 
 private:
     Display * _x11Display;
-
-    WebXSize _screenSize;
 
     WebXWindow * _rootWindow;
     std::map<Window, WebXWindow *> _allWindows;

@@ -41,8 +41,6 @@ WebXDisplay::~WebXDisplay() {
 
 void WebXDisplay::init() {
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
-    Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
-    this->_screenSize = WebXSize(screen->width, screen->height);
     this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
     this->_keyboard = new WebXKeyboard(this->_x11Display);
     this->_keyboard->init();
@@ -53,6 +51,11 @@ void WebXDisplay::init() {
 
         this->updateVisibleWindows();
     }
+}
+
+const WebXSize WebXDisplay::getScreenSize() const {
+    Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
+    return WebXSize(screen->width, screen->height);
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
