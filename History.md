@@ -1,5 +1,6 @@
 1.4.4 06/09/2025
 ================
+ * add fix for non renderable window created by nvidia driver.
  * make screensize a dynamic value (taking into account any xrandr calls)
  
 1.4.3 30/07/2025
