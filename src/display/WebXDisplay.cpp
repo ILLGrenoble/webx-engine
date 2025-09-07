@@ -54,8 +54,11 @@ void WebXDisplay::init() {
 }
 
 const WebXSize WebXDisplay::getScreenSize() const {
-    Screen * screen = DefaultScreenOfDisplay(this->_x11Display);
-    return WebXSize(screen->width, screen->height);
+    XWindowAttributes attr;
+    XGetWindowAttributes(this->_x11Display, this->_rootWindow->getX11Window(), &attr);
+
+    spdlog::debug("Current screen size is {:d}x{:d}", attr.width, attr.height);
+    return WebXSize(attr.width, attr.height);
 }
 
 WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
