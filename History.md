@@ -1,5 +1,6 @@
-1.4.4 06/09/2025
+1.4.4 07/09/2025
 ================
+ * use root window attributes rather than default screen to get display size (was unreliable with xrandr).
  * add fix for non renderable window created by nvidia driver.
  * make screensize a dynamic value (taking into account any xrandr calls)
  
