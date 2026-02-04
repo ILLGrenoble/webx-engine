@@ -1,6 +1,7 @@
 #include <image/WebXImage.h>
 #include <image/WebXPNGImageConverter.h>
 #include <image/WebXJPGImageConverter.h>
+#include <image/WebXJXLImageConverter.h>
 #include <image/WebXWebPImageConverter.h>
 #include <models/WebXQuality.h>
 
@@ -145,11 +146,14 @@ int main() {
     xImage.depth = 24;
 
     WebXJPGImageConverter jpgConverter;
+    WebXJXLImageConverter jxlConverter;
     WebXPNGImageConverter pngConverter;
     WebXWebPImageConverter webPConverter;
     int nIter = 10;
     TestResult result = test_convert(xImage, jpgConverter, nIter);
     printf("JPG  test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
+    result = test_convert(xImage, jxlConverter, nIter);
+    printf("JXL test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
     result = test_convert(xImage, pngConverter, nIter);
     printf("PNG test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
     result = test_convert(xImage, webPConverter, nIter);

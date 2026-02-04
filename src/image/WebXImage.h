@@ -14,6 +14,7 @@ class WebXDataBuffer;
 typedef enum {
     WebXImageTypePNG = 0,
     WebXImageTypeJPG,
+    WebXImageTypeJXL,
     WebXImageTypeWebP
 } WebXImageType;
 
@@ -140,6 +141,8 @@ public:
             return "png";
         } else if (this->_type == WebXImageTypeJPG) {
             return "jpg";
+        } else if (this->_type == WebXImageTypeJXL) {
+            return "jxl";
         } else if (this->_type == WebXImageTypeWebP) {
             return "webp";    
         } else {

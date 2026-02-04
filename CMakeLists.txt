@@ -38,6 +38,7 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${LIBPNG_LIBRARIES}
     -ljpeg
+    -ljxl
     -lwebp
     ${X11_LIBRARIES}
     ${XEXT_LIBRARIES}
@@ -63,6 +64,7 @@ target_link_libraries(
     ${LIBPNG_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
+    -ljxl
     -lpng
     -lwebp
     -lXtst
@@ -76,6 +78,7 @@ target_link_libraries(
     ${LIBPNG_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
+    -ljxl
     -lwebp
 )
 
@@ -88,6 +91,7 @@ target_link_libraries(
     -lXfixes
     -lxkbfile
     -ljpeg
+    -ljxl
     -lwebp
     -lpng
 )
