@@ -15,6 +15,7 @@ class WebXWindow;
 class WebXImageConverter;
 class WebXMouse;
 class WebXKeyboard;
+class WebXRandR;
 
 /**
  * @class WebXDisplay
@@ -286,6 +287,7 @@ private:
 
     WebXMouse * _mouse;
     WebXKeyboard * _keyboard;
+    WebXRandR * _randr;
 };
 
 

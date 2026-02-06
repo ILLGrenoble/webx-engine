@@ -42,6 +42,7 @@ target_link_libraries(
     ${X11_LIBRARIES}
     ${XEXT_LIBRARIES}
     -lXdamage
+    -lXrandr
     ${CMAKE_THREAD_LIBS_INIT}
     -lzmq
     -lXtst

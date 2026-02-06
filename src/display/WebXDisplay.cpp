@@ -1,5 +1,6 @@
 #include "WebXDisplay.h"
 #include "WebXWindow.h"
+#include "WebXRandR.h"
 #include <image/WebXJPGImageConverter.h>
 #include <algorithm>
 #include <X11/Xatom.h>
@@ -12,7 +13,9 @@ WebXDisplay::WebXDisplay(Display * display) :
     _x11Display(display),
     _rootWindow(NULL),
     _imageConverter(new WebXJPGImageConverter()),
-    _mouse(NULL) {
+    _mouse(NULL),
+    _keyboard(NULL),
+    _randr(NULL) {
 
 }
 
@@ -37,6 +40,11 @@ WebXDisplay::~WebXDisplay() {
         this->_keyboard = NULL;
     }
 
+    if (this->_randr) {
+        delete this->_randr;
+        this->_randr = NULL;
+    }
+
 }
 
 void WebXDisplay::init() {
@@ -50,6 +58,8 @@ void WebXDisplay::init() {
         this->createTree(this->_rootWindow);
 
         this->updateVisibleWindows();
+
+        this->_randr = new WebXRandR(this->_x11Display, rootX11Window);
     }
 }
 
