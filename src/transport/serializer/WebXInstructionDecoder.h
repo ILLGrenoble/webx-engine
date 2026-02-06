@@ -179,6 +179,21 @@ private:
      */
     std::shared_ptr<WebXInstruction> createShapeInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
+    /*
+     * Create a new screen resize instruction
+     * Structure:
+     *   Header: 32 bytes
+     *    sessionId: 16 bytes
+     *    clientId: 4 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    padding: 4 bytes
+     *   Content: 4 bytes
+     *    width: 4 bytes
+     *    height: 4 bytes
+     */
+    std::shared_ptr<WebXInstruction> createScreenResizeInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+
 private:
 
 };

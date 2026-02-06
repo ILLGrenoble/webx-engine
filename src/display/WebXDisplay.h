@@ -181,6 +181,12 @@ public:
      */
     void loadKeyboardLayout(const std::string & layoutOrName);
     
+    /**
+     * @brief Resizes the screen
+     * @param width The requested screen width.
+     * @param height The requested screen height.
+     */
+    void resizeScreen(unsigned int width, unsigned int height);
 
     /**
      * Generic method to allow retrieval of visible WebXWindow and function to be called on it (if the window is found/visible).

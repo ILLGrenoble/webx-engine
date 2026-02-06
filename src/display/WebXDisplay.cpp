@@ -311,6 +311,10 @@ void WebXDisplay::loadKeyboardLayout(const std::string & layoutOrName) {
     }
 }
 
+void WebXDisplay::resizeScreen(unsigned int width, unsigned int height) {
+    this->_randr->resizeScreen(width, height);
+}
+
 WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);

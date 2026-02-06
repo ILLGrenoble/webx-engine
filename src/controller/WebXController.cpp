@@ -9,6 +9,7 @@
 #include <models/instruction/WebXDataAckInstruction.h>
 #include <models/instruction/WebXClipboardInstruction.h>
 #include <models/instruction/WebXShapeInstruction.h>
+#include <models/instruction/WebXScreenResizeInstruction.h>
 #include <models/message/WebXScreenMessage.h>
 #include <models/message/WebXWindowsMessage.h>
 #include <models/message/WebXImageMessage.h>
@@ -222,6 +223,10 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::Clipboard) {
             auto clipboardInstruction = std::static_pointer_cast<WebXClipboardInstruction>(instruction);
             this->_manager.setClipboardContent(clipboardInstruction->clipboardContent);
+
+        } else if (instruction->type == WebXInstruction::Type::ScreenResize) {
+            auto resizeInstruction = std::static_pointer_cast<WebXScreenResizeInstruction>(instruction);
+            display->resizeScreen(resizeInstruction->width, resizeInstruction->height);
         }
     }
 
