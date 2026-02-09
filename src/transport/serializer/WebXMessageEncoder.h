@@ -27,6 +27,7 @@ class WebXDisconnectMessage;
 class WebXQualityMessage;
 class WebXClipboardMessage;
 class WebXShapeMessage;
+class WebXScreenResizeMessage;
 
 class WebXMessageEncoder {
     public:
@@ -253,7 +254,6 @@ private:
      */
     zmq::message_t * createClipboardMessage(std::shared_ptr<WebXClipboardMessage> message) const;
 
-
     /*
      * Structure:
      * Header: 48 bytes
@@ -272,6 +272,22 @@ private:
      *   stencilData: n bytes
      */
     zmq::message_t * createShapeMessage(std::shared_ptr<WebXShapeMessage> message) const;
+
+    /*
+     * Structure:
+     * Header: 48 bytes
+     *   sessionId: 16 bytes
+     *   clientIndexMask: 8 bytes
+     *   timestampMs: 8 bytes
+     *   type: 4 bytes
+     *   id: 4 bytes
+     *   length: 4 bytes
+     *   padding: 4 bytes
+     * Content:
+     *   width: 4 bytes
+     *   height: 4 bytes
+     */
+    zmq::message_t * createScreenResizeMessage(std::shared_ptr<WebXScreenResizeMessage> message) const;
 
 private:
     const static int MESSAGE_HEADER_LENGTH = 48;

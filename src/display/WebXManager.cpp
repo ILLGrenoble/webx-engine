@@ -120,6 +120,10 @@ void WebXManager::init(const std::string & keyboardLayout) {
         this->_clipboard->onClipboardContentRequest(event.getXSelectionRequestEvent());
     });
 
+    this->_eventListener->setRandREventHandler([this](const WebXRandREvent & event) {
+        this->sendScreenResizeEvent(event.getWidth(), event.getHeight());
+    });
+
     this->_display->loadKeyboardLayout(keyboardLayout);
 }
 

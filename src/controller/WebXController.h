@@ -15,6 +15,7 @@
 #include <display/WebXDisplayEventType.h>
 #include <models/WebXSettings.h>
 #include <models/message/WebXClipboardMessage.h>
+#include <models/message/WebXScreenResizeMessage.h>
 
 class WebXDisplay;
 class WebXInstruction;
@@ -93,6 +94,16 @@ private:
      */
     void onClipboardEvent(const std::string & clipboardContent) const {
         auto message = std::make_shared<WebXClipboardMessage>(GLOBAL_CLIENT_INDEX_MASK, clipboardContent);
+        this->sendMessage(message);
+    }
+   
+    /**
+     * @brief Handles screen resize events and notifies clients.
+     * @param width the screen width.
+     * @param height the screen height.
+     */
+    void onScreenResizeEvent(int width, int height) const {
+        auto message = std::make_shared<WebXScreenResizeMessage>(GLOBAL_CLIENT_INDEX_MASK, WebXSize(width, height));
         this->sendMessage(message);
     }
 

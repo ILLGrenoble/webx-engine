@@ -12,6 +12,7 @@
 #include <models/message/WebXQualityMessage.h>
 #include <models/message/WebXClipboardMessage.h>
 #include <models/message/WebXShapeMessage.h>
+#include <models/message/WebXScreenResizeMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -61,6 +62,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::Shape: {
             auto shapeMessage = std::static_pointer_cast<WebXShapeMessage>(message);
             return this->createShapeMessage(shapeMessage);
+        }
+        case WebXMessage::ScreenResize: {
+            auto screenResizeMessage = std::static_pointer_cast<WebXScreenResizeMessage>(message);
+            return this->createScreenResizeMessage(screenResizeMessage);
         }
 
         default:
@@ -293,3 +298,15 @@ zmq::message_t * WebXMessageEncoder::createShapeMessage(std::shared_ptr<WebXShap
 
     return output;
 }
+
+zmq::message_t * WebXMessageEncoder::createScreenResizeMessage(std::shared_ptr<WebXScreenResizeMessage> message) const {
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 8;
+    zmq::message_t * output= new zmq::message_t(dataSize);
+
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+    buffer.write<int32_t>(message->screenSize.width());
+    buffer.write<int32_t>(message->screenSize.height());
+
+    return output; 
+}
+

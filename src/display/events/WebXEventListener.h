@@ -15,6 +15,7 @@
 #include "WebXDamageEvent.h"
 #include "WebXCursorEvent.h"
 #include "WebXShapeEvent.h"
+#include "WebXRandREvent.h"
 
 class WebXDamageOverride;
 
@@ -114,6 +115,14 @@ public:
         this->_shapeEventHandler = handler;
     }
 
+    /**
+     * Sets the event handler for the randr event
+     * @param handler The handler for the randr event
+     */
+    void setRandREventHandler(std::function<void(const WebXRandREvent &)> handler) {
+        this->_randrEventHandler = handler;
+    }
+
 private:
     /**
      * Handles all the XEvents and converts the to WebX events
@@ -159,6 +168,7 @@ private:
     std::function<void(const WebXDamageEvent &)> _damageEventHandler;
     std::function<void(const WebXCursorEvent &)> _cursorEventHandler;
     std::function<void(const WebXShapeEvent &)> _shapeEventHandler;
+    std::function<void(const WebXRandREvent &)> _randrEventHandler;
 
     WebXDamageOverride * _damageOverride;
 
@@ -168,6 +178,8 @@ private:
     int _xfixesErrorBase;
     int _xshapeEventBase;
     int _xshapeErrorBase;
+    int _xrandrEventBase;
+    int _xrandrErrorBase;
 
     std::vector<std::unique_ptr<WebXDamageFilter>> _damageFilters;
     std::function<bool(const XEvent * event)> _filterFunction;

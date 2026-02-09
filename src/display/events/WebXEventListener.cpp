@@ -6,6 +6,7 @@
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/shape.h>
+#include <X11/extensions/Xrandr.h>
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
 
@@ -27,7 +28,9 @@ WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * di
     _xfixesEventBase(0),
     _xfixesErrorBase(0),
     _xshapeEventBase(0),
-    _xshapeErrorBase(0) {
+    _xshapeErrorBase(0),
+    _xrandrEventBase(0),
+    _xrandrErrorBase(0) {
 
     XSelectInput(this->_x11Display, this->_rootWindow, SubstructureNotifyMask);
 
@@ -44,6 +47,12 @@ WebXEventListener::WebXEventListener(const WebXSettings & settings, Display * di
 
     if (!XShapeQueryExtension(this->_x11Display, &this->_xshapeEventBase, &this->_xshapeErrorBase)) {
         spdlog::info("No X11 xshape extension detected");
+    }
+
+    if (XRRQueryExtension(this->_x11Display, &this->_xrandrEventBase, &this->_xrandrErrorBase)) {
+        XRRSelectInput (this->_x11Display,  this->_rootWindow, RRScreenChangeNotifyMask);
+    } else {
+        spdlog::info("No X11 xrandr extension detected");
     }
 
     if (settings.event.filterDamageAfterConfigureNotify) {
@@ -109,7 +118,7 @@ void WebXEventListener::handleXEvent(const XEvent * event) {
     } else if (event->type == SelectionRequest) {
         this->_selectionRequestEventHandler(WebXSelectionRequestEvent(event->xselectionrequest));
 
-    } else if (event->type == this->_damageEventBase +  XDamageNotify) {
+    } else if (event->type == this->_damageEventBase + XDamageNotify) {
         XDamageNotifyEvent * damageEvent = (XDamageNotifyEvent *)event;
         this->_damageEventHandler(WebXDamageEvent(*damageEvent));
 
@@ -119,7 +128,11 @@ void WebXEventListener::handleXEvent(const XEvent * event) {
     } else if (event->type == this->_xshapeEventBase + ShapeNotify) {
         XShapeEvent * shapeEvent = (XShapeEvent *)event;
         this->_shapeEventHandler(WebXShapeEvent(*shapeEvent));
-
+    
+    } else if (event->type == this->_xrandrEventBase + RRScreenChangeNotify) {
+        XRRScreenChangeNotifyEvent * screenChangeEvent = (XRRScreenChangeNotifyEvent *)event;
+        this->_randrEventHandler(WebXRandREvent(*screenChangeEvent));
+    
     // } else {
     //     spdlog::info("type = {:d} serial = {:d}", event->type, event->xany.serial);
     }

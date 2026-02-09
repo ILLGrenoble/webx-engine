@@ -55,6 +55,7 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
     this->_manager.setDamageEventHandler([this](const WebXWindowDamage damage) { this->_clientRegistry.addWindowDamage(damage); });
     this->_manager.setClipboardEventHandler([this](const std::string clipboardContent) { this->onClipboardEvent(clipboardContent); });
+    this->_manager.setScreenResizeEventHandler([this](int width, int height) { this->onScreenResizeEvent(width, height); });
 }
 
 WebXController::~WebXController() {
@@ -77,6 +78,7 @@ void WebXController::stop() {
     // Remove the display events listener
     this->_manager.setDisplayEventHandler(nullptr);
     this->_manager.setDamageEventHandler(nullptr);
+    this->_manager.setClipboardEventHandler(nullptr);
 }
 
 void WebXController::run(bool testing) {

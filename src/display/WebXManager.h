@@ -83,6 +83,14 @@ public:
     }
 
     /**
+     * @brief Sets the handler for screen resize events.
+     * @param handler Function to handle screen resize events.
+     */
+    void setScreenResizeEventHandler(std::function<void(int width, int height)> handler) {
+        this->_onScreenResizeEvent = handler;
+    }
+
+    /**
      * @brief Sets the content of the clipboard.
      * @param clipboardContent The content to set in the clipboard.
      */
@@ -136,6 +144,17 @@ private:
         }
     }
 
+    /**
+     * @brief Sends a screen resize event to the registered handler.
+     * @param width the screen width
+     * @param height the screen height
+     */
+    void sendScreenResizeEvent(int width, int height) {
+        if (this->_onScreenResizeEvent) {
+            this->_onScreenResizeEvent(width, height);
+        }
+    }
+
 private:
     const WebXSettings & _settings;
 
@@ -148,6 +167,7 @@ private:
     std::function<void(WebXDisplayEventType eventType)> _onDisplayEvent;
     std::function<void(const WebXWindowDamage & damage)> _onDamageEvent;
     std::function<void(const std::string & clipboardContent)> _onClipboardEvent;
+    std::function<void(int width, int height)> _onScreenResizeEvent;
 };
 
 
