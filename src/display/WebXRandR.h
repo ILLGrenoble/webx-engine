@@ -4,6 +4,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
+class WebXRandREvent;
+
 class WebXRandR {
 public:
     WebXRandR(Display * x11Display, Window rootWindow) :
@@ -14,16 +16,24 @@ public:
     virtual ~WebXRandR() {
     }
 
-    void resizeScreen(unsigned int width, unsigned int height);
+    bool canResizeScreen() const {
+        RROutput output;
+        bool available = this->getConnectedOutput(&output, false);
+        return available;
+    }
+
+    void resizeScreen(unsigned int width, unsigned int height) const;
+
+    bool isValidRandREvent(const WebXRandREvent & event) const;
 
 private:
-    XRRModeInfo * getMatchingModeInfo(int width, int height);
-    XRRModeInfo * getMatchingModeInfo(RRMode mode);
-    bool getConnectedOutput(RROutput * connectedOutput);
-    XRRModeInfo * createMode(int width, int height);
-    bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo);
-    void deleteMode(XRRModeInfo * modeInfo);
-    void cleanupModes(XRRModeInfo * currentModeInfo);
+    XRRModeInfo * getMatchingModeInfo(int width, int height) const;
+    XRRModeInfo * getMatchingModeInfo(RRMode mode) const;
+    bool getConnectedOutput(RROutput * connectedOutput, bool useFallback) const;
+    XRRModeInfo * createMode(int width, int height) const;
+    bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo) const;
+    void deleteMode(XRRModeInfo * modeInfo) const;
+    void cleanupModes(XRRModeInfo * currentModeInfo) const;
 
 private:
     Display * _x11Display;

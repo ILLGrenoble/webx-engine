@@ -36,6 +36,13 @@ public:
         return this->_screenChangeEvent.height;
     }
 
+    /**
+     * Get the raw event
+     */
+    XRRScreenChangeNotifyEvent * event() const {
+        return (XRRScreenChangeNotifyEvent *)&this->_screenChangeEvent;
+    }
+
 private:
     const XRRScreenChangeNotifyEvent _screenChangeEvent;
 };

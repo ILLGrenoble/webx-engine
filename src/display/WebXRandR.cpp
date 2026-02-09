@@ -1,8 +1,9 @@
 #include "WebXRandR.h"
 #include <utils/WebXStringUtils.h>
+#include "events/WebXRandREvent.h"
 #include <spdlog/spdlog.h>
 
-void WebXRandR::resizeScreen(unsigned int width, unsigned int height) {
+void WebXRandR::resizeScreen(unsigned int width, unsigned int height) const {
 
     XWindowAttributes attr;
     XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
@@ -18,7 +19,7 @@ void WebXRandR::resizeScreen(unsigned int width, unsigned int height) {
 
     RRMode mode;
     RROutput output;
-    if (!this->getConnectedOutput(&output)) {
+    if (!this->getConnectedOutput(&output, true)) {
         spdlog::error("Could not find connected output");
         return;
     }
@@ -43,8 +44,22 @@ void WebXRandR::resizeScreen(unsigned int width, unsigned int height) {
     }
 }
 
+bool WebXRandR::isValidRandREvent(const WebXRandREvent & screenChangeEvent) const {
+    XRRUpdateConfiguration((XEvent *)screenChangeEvent.event());
+    XWindowAttributes attr;
+    XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
+    int current_width  = attr.width;
+    int current_height  = attr.height;
 
-XRRModeInfo * WebXRandR::getMatchingModeInfo(int width, int height) {
+    if (screenChangeEvent.getWidth() != current_width || screenChangeEvent.getHeight() != current_height) {
+        // stale / transitional event: ignore
+        return false;
+    }
+
+    return true;
+}
+
+XRRModeInfo * WebXRandR::getMatchingModeInfo(int width, int height) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     XRRModeInfo * matchingModeInfo = nullptr;
@@ -60,7 +75,7 @@ XRRModeInfo * WebXRandR::getMatchingModeInfo(int width, int height) {
     return matchingModeInfo;
 }
 
-XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode) {
+XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     XRRModeInfo * matchingModeInfo = nullptr;
@@ -75,7 +90,7 @@ XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode) {
     return matchingModeInfo;
 }
 
-bool WebXRandR::getConnectedOutput(RROutput * connectedOutput) {
+bool WebXRandR::getConnectedOutput(RROutput * connectedOutput, bool useFallback) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     bool found = false;
@@ -92,7 +107,7 @@ bool WebXRandR::getConnectedOutput(RROutput * connectedOutput) {
         XRRFreeOutputInfo(outputInfo);
     }
 
-    if (!found && screenResources->noutput > 0) {
+    if (!found && useFallback && screenResources->noutput > 0) {
         spdlog::warn("Couldn't find connected output so selecting first one");
         *connectedOutput = screenResources->outputs[0];
         found = true;
@@ -103,7 +118,7 @@ bool WebXRandR::getConnectedOutput(RROutput * connectedOutput) {
     return found;
 }
 
-XRRModeInfo * WebXRandR::createMode(int width, int height) {
+XRRModeInfo * WebXRandR::createMode(int width, int height) const {
     XRRModeInfo modeInfo;
     memset(&modeInfo, 0, sizeof(modeInfo));
 
@@ -127,7 +142,7 @@ XRRModeInfo * WebXRandR::createMode(int width, int height) {
     return this->getMatchingModeInfo(mode);
 }
 
-bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo) {
+bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo) const {
     int current_width_mm  = DisplayWidthMM(this->_x11Display, DefaultScreen(this->_x11Display));
     int current_height_mm  = DisplayHeightMM(this->_x11Display, DefaultScreen(this->_x11Display));
 
@@ -160,17 +175,17 @@ bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo) {
     return true;
 }
 
-void WebXRandR::deleteMode(XRRModeInfo * modeInfo) {
+void WebXRandR::deleteMode(XRRModeInfo * modeInfo) const {
     spdlog::debug("Deleting the screen mode {}", modeInfo->name);
     RROutput output;
-    if (this->getConnectedOutput(&output)) {
+    if (this->getConnectedOutput(&output, true)) {
         XRRDeleteOutputMode(this->_x11Display, output, modeInfo->id);
     }
 
     XRRDestroyMode(this->_x11Display, modeInfo->id);
 }
 
-void WebXRandR::cleanupModes(XRRModeInfo * currentModeInfo) {
+void WebXRandR::cleanupModes(XRRModeInfo * currentModeInfo) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     XRRModeInfo * matchingModeInfo = nullptr;

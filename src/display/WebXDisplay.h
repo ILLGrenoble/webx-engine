@@ -16,6 +16,7 @@ class WebXImageConverter;
 class WebXMouse;
 class WebXKeyboard;
 class WebXRandR;
+class WebXRandREvent;
 
 /**
  * @class WebXDisplay
@@ -182,11 +183,24 @@ public:
     void loadKeyboardLayout(const std::string & layoutOrName);
     
     /**
+     * @brief Determines if the screen can be resized
+     * @return true if the screen can be resized
+     */
+    bool canResizeScreen() const;
+    
+    /**
      * @brief Resizes the screen
      * @param width The requested screen width.
      * @param height The requested screen height.
      */
-    void resizeScreen(unsigned int width, unsigned int height);
+    void resizeScreen(unsigned int width, unsigned int height) const;
+    
+    /**
+     * @brief Determines if the randr event is valid
+     * @param event The randr event.
+     * @return true if the event is valid
+     */
+    bool isValidRandREvent(const WebXRandREvent & event) const;
 
     /**
      * Generic method to allow retrieval of visible WebXWindow and function to be called on it (if the window is found/visible).

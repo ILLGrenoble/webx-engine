@@ -121,7 +121,10 @@ void WebXManager::init(const std::string & keyboardLayout) {
     });
 
     this->_eventListener->setRandREventHandler([this](const WebXRandREvent & event) {
-        this->sendScreenResizeEvent(event.getWidth(), event.getHeight());
+        if (this->_display->isValidRandREvent(event)) {
+            spdlog::trace("Got screen resize event of {}x{}", event.getWidth(), event.getHeight());
+            this->sendScreenResizeEvent(event.getWidth(), event.getHeight());
+        }
     });
 
     this->_display->loadKeyboardLayout(keyboardLayout);

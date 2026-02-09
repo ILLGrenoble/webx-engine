@@ -22,12 +22,14 @@ public:
      * @param screenSize The size of the screen.
      * @param engineVersion The version of the WebX Engine.
      * @param maxQualityIndex The maximum quality index.
+     * @param canResizeScreen Whether the screen can be resized or not
      */
-    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex, const WebXVersion & engineVersion) :
+    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex, const WebXVersion & engineVersion, bool canResizeScreen) :
         WebXMessage(Type::Screen, clientIndexMask, commandId),
         screenSize(screenSize),
         maxQualityIndex(maxQualityIndex),
-        engineVersion(engineVersion) {}
+        engineVersion(engineVersion),
+        canResizeScreen(canResizeScreen) {}
     
     /**
      * @brief Destructor for WebXScreenMessage.
@@ -37,6 +39,7 @@ public:
     const WebXSize screenSize;
     const int maxQualityIndex;
     const WebXVersion engineVersion;
+    const bool canResizeScreen;
 };
 
 #endif /* WEBX_SCREEN_MESSAGE_H */

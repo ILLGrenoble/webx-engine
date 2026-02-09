@@ -177,7 +177,12 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
     
         } else if (instruction->type == WebXInstruction::Type::Screen) {
             // Send message to specific client
-            this->sendMessage(std::make_shared<WebXScreenMessage>(client->getIndex(), instruction->id, display->getScreenSize(), WebXQuality::MaxQuality().index, WebXVersion(WEBX_ENGINE_VERSION)));
+            this->sendMessage(std::make_shared<WebXScreenMessage>(
+                client->getIndex(), instruction->id, 
+                display->getScreenSize(), 
+                WebXQuality::MaxQuality().index, 
+                WebXVersion(WEBX_ENGINE_VERSION),
+                display->canResizeScreen()));
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
             // Send message to specific client

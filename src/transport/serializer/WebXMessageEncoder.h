@@ -135,6 +135,7 @@ private:
      *   engineVersionMajor: 4 bytes
      *   enginveVersionMinor: 4 bytes
      *   enginveVersionPatch: 4 bytes
+     *   canResizeScreen: 4 bytes
      * 
      */
     zmq::message_t * createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const;
