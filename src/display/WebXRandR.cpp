@@ -1,12 +1,16 @@
 #include "WebXRandR.h"
+#include <utils/WebXStringUtils.h>
 #include <spdlog/spdlog.h>
 
 void WebXRandR::resizeScreen(unsigned int width, unsigned int height) {
 
-    int current_width  = DisplayWidth(this->_x11Display, DefaultScreen(this->_x11Display));
-    int current_height  = DisplayHeight(this->_x11Display, DefaultScreen(this->_x11Display));
+    XWindowAttributes attr;
+    XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
+    int current_width  = attr.width;
+    int current_height  = attr.height;
 
     if (width == current_width && height == current_height) {
+        spdlog::debug("Requested screen size {}x{} is same as the current size", width, height);
         return;
     }
 
@@ -35,12 +39,7 @@ void WebXRandR::resizeScreen(unsigned int width, unsigned int height) {
 
     // Set the mode in the output
     if (this->setOutputToMode(output, selectedModeInfo)) {
-        // Remove old mode if all ok
-        if (this->_previousCreatedModeInfo != nullptr) {
-            this->deleteMode(this->_previousCreatedModeInfo);
-        }
-
-        this->_previousCreatedModeInfo = createdMode;
+        this->cleanupModes(selectedModeInfo);
     }
 }
 
@@ -118,7 +117,7 @@ XRRModeInfo * WebXRandR::createMode(int width, int height) {
     modeInfo.dotClock = width * height * 60;
     modeInfo.modeFlags = RR_HSyncPositive | RR_VSyncPositive;
     
-    sprintf(name, "%dx%d", width, height);
+    sprintf(name, "%dx%d_webx", width, height);
     modeInfo.name = (char *)name;
     modeInfo.nameLength = strlen(name);
 
@@ -171,5 +170,17 @@ void WebXRandR::deleteMode(XRRModeInfo * modeInfo) {
     XRRDestroyMode(this->_x11Display, modeInfo->id);
 }
 
+void WebXRandR::cleanupModes(XRRModeInfo * currentModeInfo) {
+    XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
+    XRRModeInfo * matchingModeInfo = nullptr;
+    for (int i = 0; i < screenResources->nmode && matchingModeInfo == nullptr; i++) {
+        XRRModeInfo * modeInfo = &screenResources->modes[i];
+        if (WebXStringUtils::hasEnding(modeInfo->name, "_webx") && modeInfo->id != currentModeInfo->id) {
+            this->deleteMode(modeInfo);
+        }
+    }
 
+    XRRFreeScreenResources(screenResources);
+
+}

@@ -8,8 +8,7 @@ class WebXRandR {
 public:
     WebXRandR(Display * x11Display, Window rootWindow) :
         _x11Display(x11Display), 
-        _rootWindow(rootWindow),
-        _previousCreatedModeInfo(nullptr) {
+        _rootWindow(rootWindow) {
     }
     
     virtual ~WebXRandR() {
@@ -24,12 +23,11 @@ private:
     XRRModeInfo * createMode(int width, int height);
     bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo);
     void deleteMode(XRRModeInfo * modeInfo);
+    void cleanupModes(XRRModeInfo * currentModeInfo);
 
 private:
     Display * _x11Display;
     Window _rootWindow;
-
-    XRRModeInfo * _previousCreatedModeInfo; 
 };
 
 #endif /* WEBX_RANDR_H */

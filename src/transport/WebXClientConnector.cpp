@@ -107,7 +107,7 @@ void WebXClientConnector::mainLoop() {
                         this->sendMessage(clientResponder, ports);
 
                     } else if (instruction.rfind("ping", 0) == 0) {
-                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        std::vector<std::string> elements = WebXStringUtils::split(instruction, ',');
                         if (elements.size() == 1) {
                             // Standard/legacy ping command
                             this->sendMessage(clientResponder, "pong");
@@ -126,7 +126,7 @@ void WebXClientConnector::mainLoop() {
                         }
 
                     } else if (instruction.rfind("connect", 0) == 0) {
-                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        std::vector<std::string> elements = WebXStringUtils::split(instruction, ',');
                         if (elements.size() < 2) {
                             spdlog::warn("Invalid connect command received: {}", instruction);
                             this->sendMessage(clientResponder, "invalid connect command");
@@ -142,7 +142,7 @@ void WebXClientConnector::mainLoop() {
                         }
 
                     } else if (instruction.rfind("disconnect", 0) == 0) {
-                        std::vector<std::string> elements = StringUtils::split(instruction, ',');
+                        std::vector<std::string> elements = WebXStringUtils::split(instruction, ',');
                         if (elements.size() < 3) {
                             spdlog::warn("Invalid disconnect command received: {}", instruction);
                             this->sendMessage(clientResponder, "invalid disconnect command");
