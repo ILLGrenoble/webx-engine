@@ -3,12 +3,23 @@
 #include "events/WebXRandREvent.h"
 #include <spdlog/spdlog.h>
 
-void WebXRandR::resizeScreen(unsigned int width, unsigned int height) const {
+void WebXRandR::resizeScreen(unsigned int requestedWidth, unsigned int requestedHeight) const {
 
     XWindowAttributes attr;
     XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
     int current_width  = attr.width;
     int current_height  = attr.height;
+
+    int minWidth, minHeight;
+    int maxWidth, maxHeight;
+
+    XRRGetScreenSizeRange(this->_x11Display, this->_rootWindow, &minWidth, &minHeight, &maxWidth, &maxHeight);
+    int width = requestedWidth > maxWidth ? maxWidth : requestedWidth < minWidth ? minWidth : requestedWidth;
+    int height = requestedHeight > maxHeight ? maxHeight : requestedHeight < minHeight ? minHeight : requestedHeight;
+
+    if (width != requestedWidth || height != requestedHeight) {
+        spdlog::info("Request dimensions {}x{} are being clamped to {}x{}", requestedWidth, requestedHeight, width, height);
+    }
 
     if (width == current_width && height == current_height) {
         spdlog::debug("Requested screen size {}x{} is same as the current size", width, height);
