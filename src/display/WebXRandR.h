@@ -31,7 +31,8 @@ private:
     XRRModeInfo * getMatchingModeInfo(RRMode mode) const;
     bool getConnectedOutput(RROutput * connectedOutput, bool useFallback) const;
     XRRModeInfo * createMode(int width, int height) const;
-    bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo) const;
+    bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo, int currentWidth, int currentHeight) const;
+    void revert(Status s, RRCrtc crtc, XRRCrtcInfo * crtcInfo, XRRScreenResources * screenResources, int width, int height) const;
     void deleteMode(XRRModeInfo * modeInfo) const;
     void cleanupModes(XRRModeInfo * currentModeInfo) const;
 

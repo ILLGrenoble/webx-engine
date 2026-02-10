@@ -7,8 +7,8 @@ void WebXRandR::resizeScreen(unsigned int requestedWidth, unsigned int requested
 
     XWindowAttributes attr;
     XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
-    int current_width  = attr.width;
-    int current_height  = attr.height;
+    int currentWidth  = attr.width;
+    int currentHeight  = attr.height;
 
     int minWidth, minHeight;
     int maxWidth, maxHeight;
@@ -21,12 +21,12 @@ void WebXRandR::resizeScreen(unsigned int requestedWidth, unsigned int requested
         spdlog::info("Request dimensions {}x{} are being clamped to {}x{}", requestedWidth, requestedHeight, width, height);
     }
 
-    if (width == current_width && height == current_height) {
+    if (width == currentWidth && height == currentHeight) {
         spdlog::debug("Requested screen size {}x{} is same as the current size", width, height);
         return;
     }
 
-    spdlog::info("Resizing screen from {}x{} to {}x{}", current_width, current_height, width, height);
+    spdlog::info("Resizing screen from {}x{} to {}x{}", currentWidth, currentHeight, width, height);
 
     RRMode mode;
     RROutput output;
@@ -50,8 +50,11 @@ void WebXRandR::resizeScreen(unsigned int requestedWidth, unsigned int requested
     }
 
     // Set the mode in the output
-    if (this->setOutputToMode(output, selectedModeInfo)) {
+    if (this->setOutputToMode(output, selectedModeInfo, currentWidth, currentHeight)) {
         this->cleanupModes(selectedModeInfo);
+
+    } else if (createdMode != nullptr) {
+        this->deleteMode(createdMode);
     }
 }
 
@@ -59,10 +62,10 @@ bool WebXRandR::isValidRandREvent(const WebXRandREvent & screenChangeEvent) cons
     XRRUpdateConfiguration((XEvent *)screenChangeEvent.event());
     XWindowAttributes attr;
     XGetWindowAttributes(this->_x11Display, this->_rootWindow, &attr);
-    int current_width  = attr.width;
-    int current_height  = attr.height;
+    int currentWidth  = attr.width;
+    int currentHeight  = attr.height;
 
-    if (screenChangeEvent.getWidth() != current_width || screenChangeEvent.getHeight() != current_height) {
+    if (screenChangeEvent.getWidth() != currentWidth || screenChangeEvent.getHeight() != currentHeight) {
         // stale / transitional event: ignore
         return false;
     }
@@ -153,37 +156,83 @@ XRRModeInfo * WebXRandR::createMode(int width, int height) const {
     return this->getMatchingModeInfo(mode);
 }
 
-bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo) const {
-    int current_width_mm  = DisplayWidthMM(this->_x11Display, DefaultScreen(this->_x11Display));
-    int current_height_mm  = DisplayHeightMM(this->_x11Display, DefaultScreen(this->_x11Display));
-
-    // Set screen size
-    XRRSetScreenSize(this->_x11Display, this->_rootWindow, modeInfo->width, modeInfo->height, current_width_mm, current_height_mm);
-    XSync(this->_x11Display, False);
-
+bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo, int currentWidth, int currentHeight) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
+    // Get the output
     XRROutputInfo * outputInfo = XRRGetOutputInfo(this->_x11Display, screenResources, output);
     if (outputInfo == nullptr) {
         spdlog::warn("Failed to find output info for output {}", output);
         return false;
     }
 
-    // Select node
     spdlog::debug("Setting the current output to {}x{}", modeInfo->width, modeInfo->height);
-    RRCrtc crtc = outputInfo->crtc;
-    XRRSetCrtcConfig(this->_x11Display, screenResources, crtc, screenResources->configTimestamp, 0, 0, modeInfo->id, RR_Rotate_0, &output, 1);
 
-    // Resize screen and sync
-    XRRSetScreenSize(this->_x11Display, this->_rootWindow, modeInfo->width, modeInfo->height, current_width_mm, current_height_mm);
+    // Get the crtc info
+    RRCrtc crtc = outputInfo->crtc;
+    XRRCrtcInfo * crtcInfo = XRRGetCrtcInfo(this->_x11Display, screenResources, crtc);
+
+    // Disable the crtc
+    Status status = XRRSetCrtcConfig (this->_x11Display, screenResources, crtc, CurrentTime, 0, 0, None, RR_Rotate_0, NULL, 0);
+    bool retval = false;
+    if (status == RRSetConfigSuccess) {
+        // Calculate mm width and height based on 96dpi
+        int widthMM = modeInfo->width * 25.4 / 96;
+        int heightMM = modeInfo->height * 25.4 / 96;
+
+        // Set screen size
+        XRRSetScreenSize(this->_x11Display, this->_rootWindow, modeInfo->width, modeInfo->height, widthMM, heightMM);
+
+        // Set the desired mode
+        status = XRRSetCrtcConfig(this->_x11Display, screenResources, crtc, CurrentTime, 0, 0, modeInfo->id, RR_Rotate_0, &output, 1);
+        if (status == RRSetConfigSuccess) {
+            // XRRSetScreenSize(this->_x11Display, this->_rootWindow, modeInfo->width, modeInfo->height, widthMM, heightMM);
+            retval = true;
+
+        } else {
+            this->revert(status, crtc, crtcInfo, screenResources, currentWidth, currentHeight);
+        }
+
+    } else {
+        this->revert(status, crtc, crtcInfo, screenResources, currentWidth, currentHeight);
+    }
+
+    // Sync
     XSync(this->_x11Display, False);
-    XFlush(this->_x11Display);
 
     // Cleanup
+    XRRFreeCrtcInfo(crtcInfo);
     XRRFreeOutputInfo(outputInfo);
     XRRFreeScreenResources(screenResources);
 
-    return true;
+    return retval;
+}
+
+void WebXRandR::revert(Status status, RRCrtc crtc, XRRCrtcInfo * crtcInfo, XRRScreenResources * screenResources, int width, int height) const {
+    const char *message;
+    
+    switch (status) {
+        case RRSetConfigSuccess: message = "Conguration succeeded"; break;
+        case BadAlloc: message = "out of memory"; break;
+        case RRSetConfigFailed: message = "Configuration failed"; break;
+        case RRSetConfigInvalidConfigTime: message = "Invalid configuration time";  break;
+        case RRSetConfigInvalidTime: message = "Invalid time"; break;
+        default: message = "Unknown failure"; break;
+    }
+
+    spdlog::warn("Failed to configure crtc ({}): reverting to previous mode", message);
+
+    int widthMM = width * 25.4 / 96;
+    int heightMM = height * 25.4 / 96;
+    
+    // disable crtc
+    XRRSetCrtcConfig (this->_x11Display, screenResources, crtc, CurrentTime, 0, 0, None, RR_Rotate_0, NULL, 0);
+
+    // resize
+    XRRSetScreenSize(this->_x11Display, this->_rootWindow, width, height, widthMM, heightMM);
+
+    // enable previous mode
+    XRRSetCrtcConfig(this->_x11Display, screenResources, crtc, CurrentTime, crtcInfo->x, crtcInfo->y, crtcInfo->mode, crtcInfo->rotation, crtcInfo->outputs, crtcInfo->noutput);
 }
 
 void WebXRandR::deleteMode(XRRModeInfo * modeInfo) const {
