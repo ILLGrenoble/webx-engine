@@ -13,6 +13,7 @@
 #include <models/message/WebXClipboardMessage.h>
 #include <models/message/WebXShapeMessage.h>
 #include <models/message/WebXScreenResizeMessage.h>
+#include <models/message/WebXKeyboardLayoutMessage.h>
 #include <utils/WebXBinaryBuffer.h>
 #include <models/WebXSettings.h>
 #include <zmq.hpp>
@@ -66,6 +67,10 @@ zmq::message_t * WebXMessageEncoder::encode(std::shared_ptr<WebXMessage> message
         case WebXMessage::ScreenResize: {
             auto screenResizeMessage = std::static_pointer_cast<WebXScreenResizeMessage>(message);
             return this->createScreenResizeMessage(screenResizeMessage);
+        }
+        case WebXMessage::KeyboardLayout: {
+            auto keyboardLayoutMessage = std::static_pointer_cast<WebXKeyboardLayoutMessage>(message);
+            return this->createKeyboardLayoutMessage(keyboardLayoutMessage);
         }
 
         default:
@@ -315,3 +320,14 @@ zmq::message_t * WebXMessageEncoder::createScreenResizeMessage(std::shared_ptr<W
     return output; 
 }
 
+zmq::message_t * WebXMessageEncoder::createKeyboardLayoutMessage(std::shared_ptr<WebXKeyboardLayoutMessage> message) const {
+    const std::string & keyboardLayoutName = message->keyboardLayoutName;
+
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 4 + keyboardLayoutName.size();
+    zmq::message_t * output = new zmq::message_t(dataSize);
+    WebXBinaryBuffer buffer((unsigned char *)output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t)message->type);
+    buffer.write<uint32_t>(keyboardLayoutName.size());
+    buffer.append((unsigned char *)keyboardLayoutName.c_str(), keyboardLayoutName.size());
+
+    return output;
+}

@@ -27,6 +27,7 @@ public:
         Clipboard,
         Shape,
         ScreenResize,
+        KeyboardLayout,
     };
 
     WebXMessage(Type type, uint64_t clientIndexMask) :

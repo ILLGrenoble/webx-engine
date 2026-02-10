@@ -18,6 +18,7 @@
 #include <models/message/WebXSubImagesMessage.h>
 #include <models/message/WebXMouseMessage.h>
 #include <models/message/WebXShapeMessage.h>
+#include <models/message/WebXKeyboardLayoutMessage.h>
 #include <version.h>
 #include <image/WebXSubImage.h>
 #include <display/input/WebXMouse.h>
@@ -240,7 +241,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::KeyboardLayout) {
             auto keyboardLayoutInstruction = std::static_pointer_cast<WebXKeyboardLayoutInstruction>(instruction);
             if (display->loadKeyboardLayout(keyboardLayoutInstruction->keyboardLayout)) {
-                // this->sendMessage(std::make_shared<WebXKeyboardLayoutMessage>(GLOBAL_CLIENT_INDEX_MASK, keyboardLayoutInstruction->keyboardLayout));
+                this->sendMessage(std::make_shared<WebXKeyboardLayoutMessage>(GLOBAL_CLIENT_INDEX_MASK, keyboardLayoutInstruction->keyboardLayout));
             }
         }
     }

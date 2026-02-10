@@ -28,6 +28,7 @@ class WebXQualityMessage;
 class WebXClipboardMessage;
 class WebXShapeMessage;
 class WebXScreenResizeMessage;
+class WebXKeyboardLayoutMessage;
 
 class WebXMessageEncoder {
     public:
@@ -291,6 +292,22 @@ private:
      *   height: 4 bytes
      */
     zmq::message_t * createScreenResizeMessage(std::shared_ptr<WebXScreenResizeMessage> message) const;
+
+    /*
+     * Structure:
+     * Header: 48 bytes
+     *   sessionId: 16 bytes
+     *   clientIndexMask: 8 bytes
+     *   timestampMs: 8 bytes
+     *   type: 4 bytes
+     *   id: 4 bytes
+     *   length: 4 bytes
+     *   padding: 4 bytes
+     * Content:
+     *   keyboardLayoutNameLength: 4 bytes
+     *   keyboardLayoutName: n bytes
+     */
+    zmq::message_t * createKeyboardLayoutMessage(std::shared_ptr<WebXKeyboardLayoutMessage> message) const;
 
 private:
     const static int MESSAGE_HEADER_LENGTH = 48;
