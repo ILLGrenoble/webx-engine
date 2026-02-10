@@ -1,3 +1,19 @@
+1.5.0 10/02/2026
+================
+ * Add WebXRandR to manage dynamic screen resizing
+   - Create randr modes to match the required resolution
+   - Determine if a connected output can be resolved
+   - Update the CRTC to use the created mode
+   - Cleanup of webx-generated modes
+   - Determine if the display driver supports RandR operations (inform clients of capability through Screen message)
+   - Cap the requested resolution to max/min for the display driver
+   - Revert to previous mode if applying new one fails
+ * Handle RandR instructions from clients
+ * Listen to XRR events from the server
+ * Send RandR messages to clients when the screen has been resized
+ * Manage keyboard layout change instructions from clients
+ * Send keyboard layout messages to clients when layout changed
+
 1.4.4 07/09/2025
 ================
  * use root window attributes rather than default screen to get display size (was unreliable with xrandr).
