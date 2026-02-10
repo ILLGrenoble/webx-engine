@@ -10,6 +10,7 @@
 #include <models/instruction/WebXClipboardInstruction.h>
 #include <models/instruction/WebXShapeInstruction.h>
 #include <models/instruction/WebXScreenResizeInstruction.h>
+#include <models/instruction/WebXKeyboardLayoutInstruction.h>
 #include <models/message/WebXScreenMessage.h>
 #include <models/message/WebXWindowsMessage.h>
 #include <models/message/WebXImageMessage.h>
@@ -182,7 +183,8 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
                 display->getScreenSize(), 
                 WebXQuality::MaxQuality().index, 
                 WebXVersion(WEBX_ENGINE_VERSION),
-                display->canResizeScreen()));
+                display->canResizeScreen(),
+                display->getKeyboardLayoutName()));
 
         } else if (instruction->type == WebXInstruction::Type::Windows) {
             // Send message to specific client
@@ -234,6 +236,12 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
         } else if (instruction->type == WebXInstruction::Type::ScreenResize) {
             auto resizeInstruction = std::static_pointer_cast<WebXScreenResizeInstruction>(instruction);
             display->resizeScreen(resizeInstruction->width, resizeInstruction->height);
+
+        } else if (instruction->type == WebXInstruction::Type::KeyboardLayout) {
+            auto keyboardLayoutInstruction = std::static_pointer_cast<WebXKeyboardLayoutInstruction>(instruction);
+            if (display->loadKeyboardLayout(keyboardLayoutInstruction->keyboardLayout)) {
+                // this->sendMessage(std::make_shared<WebXKeyboardLayoutMessage>(GLOBAL_CLIENT_INDEX_MASK, keyboardLayoutInstruction->keyboardLayout));
+            }
         }
     }
 

@@ -13,6 +13,7 @@
 #include <models/instruction/WebXClipboardInstruction.h>
 #include <models/instruction/WebXShapeInstruction.h>
 #include <models/instruction/WebXScreenResizeInstruction.h>
+#include <models/instruction/WebXKeyboardLayoutInstruction.h>
 #include <utils/WebXBinaryBuffer.h>
 
 WebXInstructionDecoder::WebXInstructionDecoder() {
@@ -69,6 +70,9 @@ std::shared_ptr<WebXInstruction> WebXInstructionDecoder::decode(const unsigned c
 
     } else if (type == WebXInstruction::ScreenResize) {
         return this->createScreenResizeInstruction(clientId, instructionId, buffer);
+
+    } else if (type == WebXInstruction::KeyboardLayout) {
+        return this->createKeyboardLayoutInstruction(clientId, instructionId, buffer);
     }
 
     return nullptr;
@@ -137,3 +141,10 @@ inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createScreenResi
     uint32_t height = buffer.read<int32_t>();
     return std::make_shared<WebXScreenResizeInstruction>(clientId, instructionId, width, height);
 }
+
+inline std::shared_ptr<WebXInstruction> WebXInstructionDecoder::createKeyboardLayoutInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const {
+    uint32_t keyboardLayoutLength = buffer.read<uint32_t>();
+    std::string keyboardLayout = buffer.readSring(keyboardLayoutLength);
+    return std::make_shared<WebXKeyboardLayoutInstruction>(clientId, instructionId, keyboardLayout);
+}
+    

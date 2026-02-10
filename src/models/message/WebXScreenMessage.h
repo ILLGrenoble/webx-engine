@@ -23,13 +23,15 @@ public:
      * @param engineVersion The version of the WebX Engine.
      * @param maxQualityIndex The maximum quality index.
      * @param canResizeScreen Whether the screen can be resized or not
+     * @param keyboardLayoutName The current keyboard layout name
      */
-    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex, const WebXVersion & engineVersion, bool canResizeScreen) :
+    WebXScreenMessage(uint64_t clientIndexMask, uint32_t commandId, WebXSize screenSize, int maxQualityIndex, const WebXVersion & engineVersion, bool canResizeScreen, const std::string & keyboardLayoutName) :
         WebXMessage(Type::Screen, clientIndexMask, commandId),
         screenSize(screenSize),
         maxQualityIndex(maxQualityIndex),
         engineVersion(engineVersion),
-        canResizeScreen(canResizeScreen) {}
+        canResizeScreen(canResizeScreen),
+        keyboardLayoutName(keyboardLayoutName) {}
     
     /**
      * @brief Destructor for WebXScreenMessage.
@@ -40,6 +42,7 @@ public:
     const int maxQualityIndex;
     const WebXVersion engineVersion;
     const bool canResizeScreen;
+    const std::string keyboardLayoutName;
 };
 
 #endif /* WEBX_SCREEN_MESSAGE_H */

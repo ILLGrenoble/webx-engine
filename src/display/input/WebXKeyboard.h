@@ -43,6 +43,17 @@ public:
      */
     bool loadKeyboardLayout(const std::string & layoutOrName);
 
+    /**
+     * @brief Returns the current keyboard layout name.
+     * @return the current keyboard layout name.
+     */
+    std::string getKeyboardLayoutName() const {
+        if (this->_keyboardMapping != nullptr) {
+            return this->_keyboardMapping->name;
+        }
+        return "";
+    }
+
 private:
     /**
      * Get the keyboard mapping for a specific layout.

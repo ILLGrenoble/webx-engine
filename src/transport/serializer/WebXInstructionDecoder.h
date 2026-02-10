@@ -194,6 +194,20 @@ private:
      */
     std::shared_ptr<WebXInstruction> createScreenResizeInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
 
+    /*
+     * Create a keyboard layout instruction
+     * Structure:
+     *   Header: 16 bytes
+     *    type: 4 bytes
+     *    id: 4 bytes
+     *    length: 4 bytes
+     *    padding: 4 bytes
+     *   Content:
+     *     keyboardLayoutLength: 4 bytes
+     *     keyboardLayout: N bytes
+     */
+    std::shared_ptr<WebXInstruction> createKeyboardLayoutInstruction(uint32_t clientId, uint32_t instructionId, WebXBinaryBuffer & buffer) const;
+
 private:
 
 };

@@ -179,8 +179,15 @@ public:
     /**
      * @brief Loads a keyboard layout.
      * @param layout Keyboard layout or name string.
+     * @return true if the keyboard was loaded successfully
      */
-    void loadKeyboardLayout(const std::string & layoutOrName);
+    bool loadKeyboardLayout(const std::string & layoutOrName);
+
+    /**
+     * @brief Returns the current keyboard layout name.
+     * @return the current keyboard layout name.
+     */
+    std::string getKeyboardLayoutName() const;
     
     /**
      * @brief Determines if the screen can be resized

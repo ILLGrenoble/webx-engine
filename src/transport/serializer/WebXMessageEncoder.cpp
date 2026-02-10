@@ -142,7 +142,9 @@ zmq::message_t * WebXMessageEncoder::createMouseMessage(std::shared_ptr<WebXMous
 }
 
 zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const {
-    size_t dataSize = MESSAGE_HEADER_LENGTH + 32;
+    const std::string & keyboardLayoutName = message->keyboardLayoutName;
+
+    size_t dataSize = MESSAGE_HEADER_LENGTH + 36 + keyboardLayoutName.size();
     zmq::message_t * output= new zmq::message_t(dataSize);
     WebXBinaryBuffer buffer((unsigned char *) output->data(), dataSize, this->_sessionId, message->clientIndexMask, (uint32_t) message->type);
     buffer.write<uint32_t>(message->commandId);
@@ -153,6 +155,8 @@ zmq::message_t * WebXMessageEncoder::createScreenMessage(std::shared_ptr<WebXScr
     buffer.write<int32_t>(message->engineVersion.minor);
     buffer.write<int32_t>(message->engineVersion.patch);
     buffer.write<int32_t>(message->canResizeScreen);
+    buffer.write<int32_t>(message->keyboardLayoutName.size());
+    buffer.append((unsigned char *)keyboardLayoutName.c_str(), keyboardLayoutName.size());
     return output;
 }
 

@@ -136,6 +136,8 @@ private:
      *   enginveVersionMinor: 4 bytes
      *   enginveVersionPatch: 4 bytes
      *   canResizeScreen: 4 bytes
+     *   keyboardLayoutNameLength: 4 bytes
+     *   keyboardLayoutName: n bytes
      * 
      */
     zmq::message_t * createScreenMessage(std::shared_ptr<WebXScreenMessage> message) const;

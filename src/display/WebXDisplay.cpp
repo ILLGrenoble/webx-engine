@@ -305,10 +305,15 @@ void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
     this->_keyboard->handleKeySym(keysym, pressed, true);
 }
 
-void WebXDisplay::loadKeyboardLayout(const std::string & layoutOrName) {
+bool WebXDisplay::loadKeyboardLayout(const std::string & layoutOrName) {
     if (!layoutOrName.empty()) {
-        this->_keyboard->loadKeyboardLayout(layoutOrName);
+        return this->_keyboard->loadKeyboardLayout(layoutOrName);
     }
+    return false;
+}
+
+std::string WebXDisplay::getKeyboardLayoutName() const {
+    return this->_keyboard->getKeyboardLayoutName();
 }
 
 bool WebXDisplay::canResizeScreen() const {
