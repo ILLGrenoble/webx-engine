@@ -1,18 +1,3 @@
-## -- Debian 11
-FROM debian:11-slim AS debian11
-
-RUN apt update
-RUN apt install -y file cmake dpkg-dev pkg-config build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrandr-dev libxrender-dev libxext-dev libxfixes-dev libxcomposite-dev libxkbfile-dev libxtst-dev
-
-WORKDIR /app
-
-COPY . .
-
-RUN cmake -DCMAKE_BUILD_TYPE=Release .
-RUN cmake --build . -j 4 --target webx-engine
-RUN cpack -G DEB
-
-
 ## -- Debian 12
 FROM debian:12-slim AS debian12
 
@@ -24,21 +9,6 @@ WORKDIR /app
 COPY . .
 
 RUN cmake -DCMAKE_BUILD_TYPE=Release .
-RUN cmake --build . -j 4 --target webx-engine
-RUN cpack -G DEB
-
-
-## -- Ubuntu 20.04
-FROM ubuntu:20.04 AS ubuntu20
-
-RUN apt update
-RUN DEBIAN_FRONTEND=noninteractive apt install -y file cmake dpkg-dev pkg-config build-essential libzmq3-dev libpng-dev libwebp-dev libjpeg-dev libxdamage-dev libxrandr-dev libxrender-dev libxext-dev libxfixes-dev libxcomposite-dev libxkbfile-dev libxtst-dev
-
-WORKDIR /app
-
-COPY . .
-
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DAMAGE_FIX=ON .
 RUN cmake --build . -j 4 --target webx-engine
 RUN cpack -G DEB
 
