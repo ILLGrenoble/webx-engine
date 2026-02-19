@@ -85,9 +85,10 @@ private:
      *
      * \param width The desired width in pixels
      * \param height The desired height in pixels
-     * \return Pointer to the matching XRRModeInfo, or nullptr if no match found
+     * \param matchingMode Output parameter to store the matching mode
+     * \return true if mode found
      */
-    XRRModeInfo * getMatchingModeInfo(int width, int height) const;
+    bool getMatchingMode(int width, int height, RRMode * matchingMode) const;
 
     /**
      * \brief Gets mode information for a specific RandR mode ID.
@@ -95,9 +96,10 @@ private:
      * Retrieves the XRRModeInfo structure associated with the given mode ID.
      *
      * \param mode The RandR mode identifier
+     * \param screenResources Pointer to the screen resources information
      * \return Pointer to the XRRModeInfo for the given mode ID
      */
-    XRRModeInfo * getMatchingModeInfo(RRMode mode) const;
+    XRRModeInfo * getMatchingModeInfo(RRMode mode, XRRScreenResources * screenResources) const;
 
     /**
      * \brief Finds a connected output/monitor on the display.
@@ -119,9 +121,9 @@ private:
      *
      * \param width The width in pixels for the new mode
      * \param height The height in pixels for the new mode
-     * \return Pointer to the newly created XRRModeInfo, or nullptr if creation failed
+     * \return The newly created RRMode
      */
-    XRRModeInfo * createMode(int width, int height) const;
+    RRMode createMode(int width, int height) const;
 
     /**
      * \brief Sets an output to use the specified display mode.
@@ -131,12 +133,12 @@ private:
      * fails then the CRTC is reverted to the previous mode.
      *
      * \param output The RROutput to configure
-     * \param modeInfo Pointer to the XRRModeInfo to apply
+     * \param mode The RRMode to apply
      * \param currentWidth The current screen width in pixels
      * \param currentHeight The current screen height in pixels
      * \return true if the mode was successfully applied, false otherwise
      */
-    bool setOutputToMode(RROutput output, XRRModeInfo * modeInfo, int currentWidth, int currentHeight) const;
+    bool setOutputToMode(RROutput output, RRMode mode, int currentWidth, int currentHeight) const;
 
     /**
      * \brief Reverts the display configuration to a previous state.
@@ -158,18 +160,18 @@ private:
      *
      * Removes a previously created custom XRR mode from the display server.
      *
-     * \param modeInfo Pointer to the XRRModeInfo of the mode to delete
+     * \param mode The RRMode to delete
      */
-    void deleteMode(XRRModeInfo * modeInfo) const;
+    void deleteMode(RRMode mode) const;
 
     /**
      * \brief Cleans up unused custom display modes.
      *
      * Removes custom modes that are no longer in use.
      *
-     * \param currentModeInfo Pointer to the currently active mode to preserve
+     * \param currentMode The currently active mode to preserve
      */
-    void cleanupModes(XRRModeInfo * currentModeInfo) const;
+    void cleanupModes(RRMode currentMode) const;
 
 private:
     Display * _x11Display;

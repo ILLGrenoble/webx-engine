@@ -36,24 +36,25 @@ void WebXRandR::resizeScreen(unsigned int requestedWidth, unsigned int requested
     }
 
     // Determine if mode already exists
-    XRRModeInfo * createdMode = nullptr;
-    XRRModeInfo * selectedModeInfo = this->getMatchingModeInfo(width, height);
-    if (selectedModeInfo == nullptr) {
+    RRMode createdMode = -1;
+    RRMode selectedMode;
+    if (!this->getMatchingMode(width, height, &selectedMode)) {
         // Create mode since it doesn't exist
-        selectedModeInfo = this->createMode(width, height);
+        selectedMode = this->createMode(width, height);
 
         // Add mode to the output
-        XRRAddOutputMode(this->_x11Display, output, selectedModeInfo->id);
+        XRRAddOutputMode(this->_x11Display, output, selectedMode);
 
         // Store mode if created
-        createdMode = selectedModeInfo;
+        createdMode = selectedMode;
     }
 
     // Set the mode in the output
-    if (this->setOutputToMode(output, selectedModeInfo, currentWidth, currentHeight)) {
-        this->cleanupModes(selectedModeInfo);
+    if (this->setOutputToMode(output, selectedMode, currentWidth, currentHeight)) {
+        this->cleanupModes(selectedMode);
 
-    } else if (createdMode != nullptr) {
+    } else if (createdMode != -1) {
+        spdlog::debug("Failed to switch modes: deleting the created screen mode {}", createdMode);
         this->deleteMode(createdMode);
     }
 }
@@ -73,24 +74,24 @@ bool WebXRandR::isValidRandREvent(const WebXRandREvent & screenChangeEvent) cons
     return true;
 }
 
-XRRModeInfo * WebXRandR::getMatchingModeInfo(int width, int height) const {
+bool WebXRandR::getMatchingMode(int width, int height, RRMode * matchingMode) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
-    XRRModeInfo * matchingModeInfo = nullptr;
-    for (int i = 0; i < screenResources->nmode && matchingModeInfo == nullptr; i++) {
+    bool found = false;
+    for (int i = 0; i < screenResources->nmode && !found; i++) {
         XRRModeInfo * modeInfo = &screenResources->modes[i];
         if (modeInfo->width == width && modeInfo->height == height) {
             spdlog::debug("Found existing mode for screen size {}x{}: {}", width, height, modeInfo->name);
-            matchingModeInfo = modeInfo;
+            *matchingMode = modeInfo->id;
+            found = true;
         }
     }
 
     XRRFreeScreenResources(screenResources);
-    return matchingModeInfo;
+    return found;
 }
 
-XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode) const {
-    XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
+XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode, XRRScreenResources * screenResources) const {
 
     XRRModeInfo * matchingModeInfo = nullptr;
     for (int i = 0; i < screenResources->nmode && matchingModeInfo == nullptr; i++) {
@@ -100,7 +101,6 @@ XRRModeInfo * WebXRandR::getMatchingModeInfo(RRMode mode) const {
         }
     }
 
-    XRRFreeScreenResources(screenResources);
     return matchingModeInfo;
 }
 
@@ -132,7 +132,7 @@ bool WebXRandR::getConnectedOutput(RROutput * connectedOutput, bool useFallback)
     return found;
 }
 
-XRRModeInfo * WebXRandR::createMode(int width, int height) const {
+RRMode WebXRandR::createMode(int width, int height) const {
     XRRModeInfo modeInfo;
     memset(&modeInfo, 0, sizeof(modeInfo));
 
@@ -153,16 +153,22 @@ XRRModeInfo * WebXRandR::createMode(int width, int height) const {
     RRMode mode = XRRCreateMode(this->_x11Display, this->_rootWindow, &modeInfo);
     spdlog::debug("Created mode {} for screen size {}x{}", modeInfo.name, width, height);
 
-    return this->getMatchingModeInfo(mode);
+    return mode;
 }
 
-bool WebXRandR::setOutputToMode(RROutput output, XRRModeInfo * modeInfo, int currentWidth, int currentHeight) const {
+bool WebXRandR::setOutputToMode(RROutput output, RRMode mode, int currentWidth, int currentHeight) const {
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     // Get the output
     XRROutputInfo * outputInfo = XRRGetOutputInfo(this->_x11Display, screenResources, output);
     if (outputInfo == nullptr) {
         spdlog::warn("Failed to find output info for output {}", output);
+        return false;
+    }
+
+    XRRModeInfo * modeInfo = this->getMatchingModeInfo(mode, screenResources);
+    if (modeInfo == nullptr) {
+        spdlog::warn("Failed to find mode info for mode {}", mode);
         return false;
     }
 
@@ -235,27 +241,40 @@ void WebXRandR::revert(Status status, RRCrtc crtc, XRRCrtcInfo * crtcInfo, XRRSc
     XRRSetCrtcConfig(this->_x11Display, screenResources, crtc, CurrentTime, crtcInfo->x, crtcInfo->y, crtcInfo->mode, crtcInfo->rotation, crtcInfo->outputs, crtcInfo->noutput);
 }
 
-void WebXRandR::deleteMode(XRRModeInfo * modeInfo) const {
-    spdlog::debug("Deleting the screen mode {}", modeInfo->name);
-    RROutput output;
-    if (this->getConnectedOutput(&output, true)) {
-        XRRDeleteOutputMode(this->_x11Display, output, modeInfo->id);
+void WebXRandR::deleteMode(RRMode mode) const {
+    XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
+    XRRModeInfo * modeInfo = this->getMatchingModeInfo(mode, screenResources);
+    if (modeInfo == nullptr) {
+        spdlog::warn("Failed to find mode info for mode {} to delete", mode);
+        return;
     }
 
-    XRRDestroyMode(this->_x11Display, modeInfo->id);
+    RROutput output;
+    if (this->getConnectedOutput(&output, true)) {
+        XRRDeleteOutputMode(this->_x11Display, output, mode);
+    }
+
+    XRRDestroyMode(this->_x11Display, mode);
+    XRRFreeScreenResources(screenResources);
 }
 
-void WebXRandR::cleanupModes(XRRModeInfo * currentModeInfo) const {
+void WebXRandR::cleanupModes(RRMode currentMode) const {
+    RROutput output;
+    bool outputOk = this->getConnectedOutput(&output, true);
     XRRScreenResources * screenResources = XRRGetScreenResources(this->_x11Display, this->_rootWindow);
 
     XRRModeInfo * matchingModeInfo = nullptr;
     for (int i = 0; i < screenResources->nmode && matchingModeInfo == nullptr; i++) {
         XRRModeInfo * modeInfo = &screenResources->modes[i];
-        if (WebXStringUtils::hasEnding(modeInfo->name, "_webx") && modeInfo->id != currentModeInfo->id) {
-            this->deleteMode(modeInfo);
+        if (WebXStringUtils::hasEnding(modeInfo->name, "_webx") && modeInfo->id != currentMode) {
+            spdlog::debug("Cleanup of screen mode {}", modeInfo->name);
+
+            if (outputOk) {
+                XRRDeleteOutputMode(this->_x11Display, output, modeInfo->id);
+            }
+            XRRDestroyMode(this->_x11Display, modeInfo->id);
         }
     }
 
     XRRFreeScreenResources(screenResources);
-
 }
