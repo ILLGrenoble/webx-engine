@@ -1,3 +1,8 @@
+1.5.1 19/02/2026
+================
+ * avoid nullptr access on mouse cursors
+ * Refactor access to XRR structures to avoid memory access errors (use info objects only while SccreenResources are valid)
+
 1.5.0 10/02/2026
 ================
  * Add WebXRandR to manage dynamic screen resizing
