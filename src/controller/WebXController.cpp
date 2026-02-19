@@ -215,7 +215,9 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
             std::shared_ptr<WebXMouseCursor> mouseCursor = mouse->getCursor(cursorImageInstruction->cursorId);
             
             // Send message to specific client
-            this->sendMessage(std::make_shared<WebXCursorImageMessage>(client->getIndex(), instruction->id, mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage()));
+            if (mouseCursor != nullptr) {
+                this->sendMessage(std::make_shared<WebXCursorImageMessage>(client->getIndex(), instruction->id, mouseState->getX(), mouseState->getY(), mouseCursor->getXhot(), mouseCursor->getYhot(), mouseCursor->getId(), mouseCursor->getImage()));
+            }
 
         } else if (instruction->type == WebXInstruction::Type::Quality) {
             auto qualityInstruction = std::static_pointer_cast<WebXQualityInstruction>(instruction);
@@ -350,11 +352,16 @@ void WebXController::onClientMouseInstruction(WebXDisplay * display, const std::
         // Set bitmask to all clients except the one sending the instruction (if it exists)
         uint64_t clientIndexMask = client ? ~client->getIndex() : GLOBAL_CLIENT_INDEX_MASK;
 
+        std::shared_ptr<WebXMouseCursor> cursor = mouseState->getCursor();
+        uint32_t cursorId = cursor != nullptr ? cursor->getId() : 0;
+    
         // Send message with position to all clients (other that the one sending the instruction)
-        this->sendMessage(std::make_shared<WebXMouseMessage>(clientIndexMask, mouseInstruction->x, mouseInstruction->y, mouse->getState()->getCursor()->getId()));
+        this->sendMessage(std::make_shared<WebXMouseMessage>(clientIndexMask, mouseInstruction->x, mouseInstruction->y, cursorId));
 
         // Send message with just cursor Id to the client sending the instruction
-        this->sendMessage(std::make_shared<WebXMouseMessage>(client->getIndex(), -1, -1, mouse->getState()->getCursor()->getId()));
+        if (cursor != nullptr) {
+            this->sendMessage(std::make_shared<WebXMouseMessage>(client->getIndex(), -1, -1, cursorId));
+        }
     }
 }
 
@@ -364,14 +371,19 @@ void WebXController::notifyCursorChanged(WebXMouse * mouse) {
     const WebXMouseState * mouseState = mouse->getState();
 
     // Send message to all clients
-    this->sendMessage(std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, -1, -1, mouseState->getCursor()->getId()));
+    std::shared_ptr<WebXMouseCursor> cursor = mouseState->getCursor();
+    if (cursor != nullptr) {
+        this->sendMessage(std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, -1, -1, cursor->getId()));
+    }
 }
 
 void WebXController::notifyMousePositionChanged(WebXMouse * mouse) {
     const WebXMouseState * mouseState = mouse->getState();
 
     // Send message to all clients
-    this->sendMessage(std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), mouseState->getCursor()->getId()));
+    std::shared_ptr<WebXMouseCursor> cursor = mouseState->getCursor();
+    uint32_t cursorId = cursor != nullptr ? cursor->getId() : 0;
+    this->sendMessage(std::make_shared<WebXMouseMessage>(GLOBAL_CLIENT_INDEX_MASK, mouseState->getX(), mouseState->getY(), cursorId));
 }
 
 WebXController::WebXImageUpdateVerification WebXController::verifyImageUpdate(std::shared_ptr<WebXImage> & image, const std::unique_ptr<WebXClientWindow> & window) {
