@@ -37,6 +37,7 @@ void printUsage() {
     std::cout << "Usage: webx-engine [options]\n"
               << "Options:\n"
               << "  -s, --standalone         Run in stand-alone mode\n"
+              << "  -r, --root               Run in root-window mode (individual windows ignored)\n"
               << "  -t, --test               Run in test mode\n"
               << "  -k, --keyboard LAYOUT    Set keyboard layout (e.g., 'gb')\n"
               << "      --version            Print version and exit\n"
@@ -69,22 +70,29 @@ int main(int argc, char *argv[]) {
     int opt;
     std::string keyboardLayout = "";
     bool standAlone = false;
+    bool rootWindowMode = false;
     bool testing = false;
 
     const struct option long_options[] = {
         {"keyboard", required_argument, nullptr, 'k'},
         {"standalone", no_argument, nullptr, 's'},
+        {"root", no_argument, nullptr, 'r'},
         {"test", no_argument, nullptr, 't'},
-        {"version", no_argument, nullptr, 1},
-        {"help", no_argument, nullptr, 2},
+        {"version", no_argument, nullptr, 'v'},
+        {"help", no_argument, nullptr, 'h'},
         {nullptr, 0, nullptr, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "k:st", long_options, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "k:strvh", long_options, nullptr)) != -1) {
         switch (opt) {
             case 's':
                 standAlone = true;
                 spdlog::info("Starting WebX in stand-alone mode");
+                break;
+
+            case 'r':
+                rootWindowMode = true;
+                spdlog::info("Starting WebX in root-window mode (individual windows ignored)");
                 break;
 
             case 'k':
@@ -96,11 +104,11 @@ int main(int argc, char *argv[]) {
                 spdlog::info("Starting WebX in test mode");
                 break;
 
-            case 1: // --version
+            case 'v':
                 std::cout << "webx-engine " << WEBX_ENGINE_VERSION << std::endl;
                 return 0;
 
-            case 2: // --help
+            case 'h':
                 printUsage();
                 return 0;
     
@@ -117,7 +125,7 @@ int main(int argc, char *argv[]) {
     WebXGateway gateway;
 
     // Initialise Manager, Display and Event Listener
-    controller = new WebXController(gateway, settings, keyboardLayout);
+    controller = new WebXController(gateway, settings, keyboardLayout, rootWindowMode);
 
     // Start transport
     WebXTransport transport(gateway, settings.transport, standAlone);

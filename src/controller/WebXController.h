@@ -34,8 +34,9 @@ public:
      * @param gateway Reference to the WebXGateway for communication.
      * @param settings Reference to the WebXSettings for configuration.
      * @param keyboardLayout Optional keyboard layout string.
+     * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout = "");
+    WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
 
     /**
      * @brief Destructor for WebXController.

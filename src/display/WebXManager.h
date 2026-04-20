@@ -37,8 +37,9 @@ public:
      * @brief Constructs a WebXManager instance.
      * @param settings Reference to the WebXSettings instance.
      * @param keyboardLayout Optional keyboard layout string.
+     * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    WebXManager(const WebXSettings & settings, const std::string & keyboardLayout = "");
+    WebXManager(const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
 
     /**
      * @brief Destructor.
@@ -100,8 +101,9 @@ private:
     /**
      * @brief Initializes the manager with the specified keyboard layout.
      * @param keyboardLayout Optional keyboard layout string.
+     * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    void init(const std::string & keyboardLayout = "");
+    void init(const std::string & keyboardLayout = "", bool rootWindowMode = false);
 
     /**
      * @brief Handles the configuration of a window.

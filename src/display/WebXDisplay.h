@@ -40,8 +40,9 @@ public:
 
     /**
      * @brief Initializes the display.
+     * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    void init();
+    void init(bool rootWindowMode = false);
 
     /**
      * @brief Retrieves the screen size of the display.

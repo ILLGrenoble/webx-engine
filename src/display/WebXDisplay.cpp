@@ -47,7 +47,7 @@ WebXDisplay::~WebXDisplay() {
 
 }
 
-void WebXDisplay::init() {
+void WebXDisplay::init(bool rootWindowMode) {
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
     this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
     this->_keyboard = new WebXKeyboard(this->_x11Display);
@@ -55,9 +55,15 @@ void WebXDisplay::init() {
 
     this->_rootWindow = this->createWindow(rootX11Window);
     if (this->_rootWindow) {
-        this->createTree(this->_rootWindow);
+        if (rootWindowMode) {
+            this->_rootWindow->enableDamage();
+            this->_visibleWindows.push_back(this->_rootWindow);
+            this->updateWindowCoverage();
 
-        this->updateVisibleWindows();
+        } else {
+            this->createTree(this->_rootWindow);
+            this->updateVisibleWindows();
+        }
 
         this->_randr = new WebXRandR(this->_x11Display, rootX11Window);
     }

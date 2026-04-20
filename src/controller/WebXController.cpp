@@ -31,10 +31,10 @@
 
 const uint64_t WebXController::GLOBAL_CLIENT_INDEX_MASK = ~0x00; // Sets all bits
 
-WebXController::WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout) :
+WebXController::WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout, bool rootWindowMode) :
     _gateway(gateway),
     _settings(settings),
-    _manager(settings, keyboardLayout),
+    _manager(settings, keyboardLayout, rootWindowMode),
     _clientRegistry(settings, [&gateway](std::shared_ptr<WebXMessage> message) {
         gateway.publishMessage(message);
     }),

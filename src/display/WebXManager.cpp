@@ -14,7 +14,7 @@ int WebXManager::IO_ERROR_HANDLER(Display *display) {
     return 0;
 }
 
-WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyboardLayout) :
+WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyboardLayout, bool rootWindowMode) :
     _settings(settings),
     _x11Display(NULL),
     _display(NULL),
@@ -22,7 +22,7 @@ WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyb
     _clipboard(NULL),
     _displayRequiresUpdate(false) {
 
-    this->init(keyboardLayout);
+    this->init(keyboardLayout, rootWindowMode);
 }
 
 WebXManager::~WebXManager() {
@@ -50,7 +50,7 @@ WebXManager::~WebXManager() {
 }
 
 
-void WebXManager::init(const std::string & keyboardLayout) {
+void WebXManager::init(const std::string & keyboardLayout, bool rootWindowMode) {
     using namespace std::placeholders;
 
     XInitThreads();
@@ -65,7 +65,7 @@ void WebXManager::init(const std::string & keyboardLayout) {
     XSynchronize(this->_x11Display, True);
 
     this->_display = new WebXDisplay(this->_x11Display);
-    this->_display->init();
+    this->_display->init(rootWindowMode);
 
     this->_clipboard = new WebXClipboard(this->_x11Display, this->_display->getRootWindow()->getX11Window(), [this](const std::string & content) {
         this->sendClipboardEvent(content);
@@ -73,43 +73,45 @@ void WebXManager::init(const std::string & keyboardLayout) {
 
     this->_eventListener = new WebXEventListener(this->_settings, this->_x11Display, this->_display->getRootWindow()->getX11Window());
     
-    this->_eventListener->setMapEventHandler([this](const WebXMapEvent & event) {
-        spdlog::trace("Got Map Event for window 0x{:x} {:d}", event.getWindow(), event.getSerial());
-        this->_display->createWindowInTree(event.getWindow());
-        this->_displayRequiresUpdate = true;
-    });
-    
-    this->_eventListener->setUnmapEventHandler([this](const WebXUnmapEvent & event) {
-        spdlog::trace("Got Unmap Event for window 0x{:x}", event.getWindow());
-        this->_display->removeWindowFromTree(event.getWindow());
-        this->_displayRequiresUpdate = true;
-    });
-    
-    this->_eventListener->setReparentEventHandler([this](const WebXReparentEvent & event) {
-        spdlog::trace("Got Reparent Event for window 0x{:x}", event.getWindow());
-        this->_display->reparentWindow(event.getWindow(), event.getParentWindow());
-        this->_displayRequiresUpdate = true;
-    });
-    
-    this->_eventListener->setConfigureEventHandler([this](const WebXConfigureEvent & event) {
-        spdlog::trace("Got Configure Event for window 0x{:x}", event.getWindow());
-        this->handleWindowConfigureEvent(event);
-    });
+    if (!rootWindowMode) {
+        this->_eventListener->setMapEventHandler([this](const WebXMapEvent & event) {
+            spdlog::trace("Got Map Event for window 0x{:x} {:d}", event.getWindow(), event.getSerial());
+            this->_display->createWindowInTree(event.getWindow());
+            this->_displayRequiresUpdate = true;
+        });
+        
+        this->_eventListener->setUnmapEventHandler([this](const WebXUnmapEvent & event) {
+            spdlog::trace("Got Unmap Event for window 0x{:x}", event.getWindow());
+            this->_display->removeWindowFromTree(event.getWindow());
+            this->_displayRequiresUpdate = true;
+        });
+        
+        this->_eventListener->setReparentEventHandler([this](const WebXReparentEvent & event) {
+            spdlog::trace("Got Reparent Event for window 0x{:x}", event.getWindow());
+            this->_display->reparentWindow(event.getWindow(), event.getParentWindow());
+            this->_displayRequiresUpdate = true;
+        });
+        
+        this->_eventListener->setConfigureEventHandler([this](const WebXConfigureEvent & event) {
+            spdlog::trace("Got Configure Event for window 0x{:x}", event.getWindow());
+            this->handleWindowConfigureEvent(event);
+        });
+
+        this->_eventListener->setCursorEventHandler([this](const WebXCursorEvent & event) {
+            spdlog::trace("Got new mouse cursor event");
+            this->_display->updateMouseCursor();
+            this->sendDisplayEvent(CursorEvent);
+        });
+
+        this->_eventListener->setShapeEventHandler([this](const WebXShapeEvent & event) {
+            spdlog::trace("Got new shape event for window 0x{:x}", event.getWindow());
+            this->_display->updateWindowShape(event.getWindow());
+        });
+    }
     
     this->_eventListener->setDamageEventHandler([this](const WebXDamageEvent & event) {
         spdlog::trace("Got damage Event for window 0x{:x} {:d}", event.getWindow(), event.getSerial());
         this->sendDamageEvent(WebXWindowDamage(event.getWindow(), event.getRectangle()));
-    });
-
-    this->_eventListener->setCursorEventHandler([this](const WebXCursorEvent & event) {
-        spdlog::trace("Got new mouse cursor event");
-        this->_display->updateMouseCursor();
-        this->sendDisplayEvent(CursorEvent);
-    });
-
-    this->_eventListener->setShapeEventHandler([this](const WebXShapeEvent & event) {
-        spdlog::trace("Got new shape event for window 0x{:x}", event.getWindow());
-        this->_display->updateWindowShape(event.getWindow());
     });
     
     this->_eventListener->setSelectionEventHandler([this](const WebXSelectionEvent & event) {
