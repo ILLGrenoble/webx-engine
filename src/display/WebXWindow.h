@@ -32,14 +32,13 @@ public:
      * @brief Constructs a WebXWindow instance.
      * @param display Pointer to the X11 display.
      * @param window X11 window handle.
-     * @param isRoot Indicates if the window is the root window.
      * @param x X-coordinate of the window.
      * @param y Y-coordinate of the window.
      * @param width Width of the window.
      * @param height Height of the window.
      * @param isViewable Indicates if the window is viewable.
      */
-    WebXWindow(Display * display, Window window, bool isRoot, int x, int y, int width, int height, bool isViewable);
+    WebXWindow(Display * display, Window window, int x, int y, int width, int height, bool isViewable);
 
     /**
      * @brief Destructor.
@@ -53,14 +52,6 @@ public:
     Window getX11Window() const {
         return this->_x11Window;
     } 
-
-    /**
-     * @brief Checks if the window is the root window.
-     * @return True if the window is the root window, false otherwise.
-     */
-    bool isRoot() const {
-        return this->_isRoot;
-    }
 
     /**
      * @brief Retrieves the rectangle representing the window's position and size.
@@ -213,7 +204,6 @@ private:
     Display * _display;
     Window _x11Window;
     Damage _damage;
-    bool _isRoot;
 
     WebXWindow * _parent;
     std::vector<WebXWindow *> _children;

@@ -266,10 +266,9 @@ private:
     /**
      * @brief Creates a WebXWindow instance.
      * @param x11Window X11 window ID.
-     * @param isRoot True if the window is the root window, false otherwise.
      * @return Pointer to the created WebXWindow instance.
      */
-    WebXWindow * createWindow(Window x11Window, bool isRoot = false);
+    WebXWindow * createWindow(Window x11Window);
 
     /**
      * @brief Deletes a WebXWindow instance.

@@ -53,7 +53,7 @@ void WebXDisplay::init() {
     this->_keyboard = new WebXKeyboard(this->_x11Display);
     this->_keyboard->init();
 
-    this->_rootWindow = this->createWindow(rootX11Window, true);
+    this->_rootWindow = this->createWindow(rootX11Window);
     if (this->_rootWindow) {
         this->createTree(this->_rootWindow);
 
@@ -329,14 +329,14 @@ bool WebXDisplay::isValidRandREvent(const WebXRandREvent & event) const {
 }
 
 
-WebXWindow * WebXDisplay::createWindow(Window x11Window, bool isRoot) {
+WebXWindow * WebXDisplay::createWindow(Window x11Window) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);
     if (window == NULL) {
         XWindowAttributes attr;
         Status status = XGetWindowAttributes(this->_x11Display, x11Window, &attr);
         if (status != BadWindow && attr.map_state == IsViewable && attr.c_class == InputOutput) {
-            window = new WebXWindow(this->_x11Display, x11Window, isRoot, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
+            window = new WebXWindow(this->_x11Display, x11Window, attr.x, attr.y, attr.width, attr.height, (attr.map_state == IsViewable));
 
             this->_allWindows[x11Window] = window;
         }
@@ -364,7 +364,7 @@ void WebXDisplay::createTree(WebXWindow * window) {
 
             // printf("Creating window with id 0x%08lx, child of 0x%08lx\n", child, window->getX11Window());
             // Create window and add window
-            WebXWindow * childWindow = this->createWindow(child, false);
+            WebXWindow * childWindow = this->createWindow(child);
 
             if (childWindow) {
                 // Add child to parent

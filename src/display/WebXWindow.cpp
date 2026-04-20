@@ -8,11 +8,10 @@
 #include <X11/Xutil.h>
 #include <spdlog/spdlog.h>
 
-WebXWindow::WebXWindow(Display * display, Window x11Window, bool isRoot, int x, int y, int width, int height, bool isViewable) :
+WebXWindow::WebXWindow(Display * display, Window x11Window, int x, int y, int width, int height, bool isViewable) :
     _display(display),
     _x11Window(x11Window),
     _damage(0),
-    _isRoot(isRoot),
     _parent(NULL),
     _visibility(x11Window, WebXRectangle(x, y, width, height), isViewable),
     _shape(display, x11Window, width, height) {
