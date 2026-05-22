@@ -1,5 +1,5 @@
 #include "WebXController.h"
-#include <display/WebXDisplay.h>
+#include <display/x11/WebXDisplay.h>
 #include <models/instruction/WebXMouseInstruction.h>
 #include <models/instruction/WebXKeyboardInstruction.h>
 #include <models/instruction/WebXImageInstruction.h>
@@ -21,7 +21,7 @@
 #include <models/message/WebXKeyboardLayoutMessage.h>
 #include <version.h>
 #include <image/WebXSubImage.h>
-#include <display/input/WebXMouse.h>
+#include <display/x11/input/WebXMouse.h>
 #include <utils/WebXResult.h>
 #include <models/WebXQuality.h>
 #include <models/WebXPosition.h>

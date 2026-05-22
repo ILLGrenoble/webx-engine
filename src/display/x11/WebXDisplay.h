@@ -7,7 +7,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
-#include "WebXWindowProperties.h"
+#include <display/WebXWindowProperties.h>
 #include <models/WebXQuality.h>
 #include <models/WebXSize.h>
 
@@ -17,6 +17,9 @@ class WebXMouse;
 class WebXKeyboard;
 class WebXRandR;
 class WebXRandREvent;
+class WebXImage;
+class WebXWindowVisibility;
+class WebXRectangle;
 
 /**
  * @class WebXDisplay
@@ -81,31 +84,13 @@ public:
      * @brief Retrieves the visibility properties of all visible windows.
      * @return Vector of pointers to the visibility properties of visible windows.
      */
-    const std::vector<const WebXWindowVisibility *> getWindowVisiblities() {
-        const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
-        std::vector<const WebXWindowVisibility *> windowVisibilities;
-
-        std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(windowVisibilities), [](WebXWindow * window) { 
-            return &window->getVisibility();
-        });
-
-        return windowVisibilities;
-    }
+    const std::vector<const WebXWindowVisibility *> getWindowVisiblities();
 
     /**
      * @brief Retrieves the properties of all visible windows.
      * @return Vector of WebXWindowProperties for visible windows.
      */
-    const std::vector<WebXWindowProperties> getVisibleWindowsProperties() {
-        const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
-        std::vector<WebXWindowProperties> visibleWindowsProperties;
-
-        std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(visibleWindowsProperties), [](WebXWindow * window) { 
-            return WebXWindowProperties(window);
-        });
-
-        return visibleWindowsProperties;
-    }
+    const std::vector<WebXWindowProperties> getVisibleWindowsProperties();
 
     /**
      * @brief Retrieves the root window of the display.

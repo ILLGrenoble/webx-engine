@@ -157,6 +157,27 @@ void WebXDisplay::reparentWindow(Window x11Window, Window parentX11Window) {
     }
 }
 
+const std::vector<const WebXWindowVisibility *> WebXDisplay::getWindowVisiblities() {
+    const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
+    std::vector<const WebXWindowVisibility *> windowVisibilities;
+
+    std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(windowVisibilities), [](WebXWindow * window) { 
+        return &window->getVisibility();
+    });
+
+    return windowVisibilities;
+}
+
+const std::vector<WebXWindowProperties> WebXDisplay::getVisibleWindowsProperties() {
+    const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
+    std::vector<WebXWindowProperties> visibleWindowsProperties;
+
+    std::transform(this->_visibleWindows.begin(), this->_visibleWindows.end(), std::back_inserter(visibleWindowsProperties), [](WebXWindow * window) { 
+        return WebXWindowProperties((unsigned long)window->getX11Window(), window->getRectangle().x(), window->getRectangle().y(), window->getRectangle().size().width(), window->getRectangle().size().height(), window->hasShape());
+    });
+
+    return visibleWindowsProperties;
+}
 
 void WebXDisplay::updateVisibleWindows() {
 

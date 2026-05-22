@@ -8,7 +8,7 @@
 #include <mutex>
 #include <string>
 #include "WebXStats.h"
-#include <display/WebXManager.h>
+#include <display/x11/WebXManager.h>
 #include <gateway/WebXGateway.h>
 #include "client/WebXClientRegistry.h"
 #include <display/WebXWindowProperties.h>
@@ -22,6 +22,7 @@ class WebXInstruction;
 class WebXMouse;
 class WebXMouseInstruction;
 class WebXMessage;
+class WebXImage;
 
 /**
  * @class WebXController

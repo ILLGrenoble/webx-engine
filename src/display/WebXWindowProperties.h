@@ -1,8 +1,6 @@
 #ifndef WEBX_WINDOW_PROPERTIES_H
 #define WEBX_WINDOW_PROPERTIES_H
 
-#include "WebXWindow.h"
-
 /**
  * @class WebXWindowProperties
  * @brief Represents the properties of a WebXWindow, such as its position, size, and ID.
@@ -15,15 +13,20 @@ class WebXWindowProperties {
 public:
     /**
      * @brief Constructs WebXWindowProperties from a WebXWindow instance.
-     * @param window Pointer to the WebXWindow instance.
+     * @param id the window Id
+     * @param x the window x coordinate
+     * @param y the window y coordinate
+     * @param width the window width
+     * @param height the window height
+     * @param hasShape specified if the window has a shape mask
      */
-    WebXWindowProperties(WebXWindow * window) :
-        id((unsigned long)window->getX11Window()),
-        x(window->getRectangle().x()),
-        y(window->getRectangle().y()),
-        width(window->getRectangle().size().width()),
-        height(window->getRectangle().size().height()),
-        hasShape(window->hasShape()) {
+    WebXWindowProperties(unsigned long id, int x, int y, int width, int height, bool hasShape) :
+        id(id),
+        x(x),
+        y(y),
+        width(width),
+        height(height),
+        hasShape(hasShape) {
     }
 
     /**

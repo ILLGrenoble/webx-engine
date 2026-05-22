@@ -1,6 +1,6 @@
 #include "WebXEventListener.h"
 #include "WebXDamageOverride.h"
-#include <display/WebXWindow.h>
+#include <display/x11/WebXWindow.h>
 #include <models/WebXSettings.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xdamage.h>
