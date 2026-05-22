@@ -14,7 +14,7 @@
 
 class WebXWindow;
 class WebXImageConverter;
-class WebXX11Mouse;
+class WebXx11Mouse;
 class WebXKeyboard;
 class WebXRandR;
 class WebXRandREvent;
@@ -23,24 +23,24 @@ class WebXWindowVisibility;
 class WebXRectangle;
 
 /**
- * @class WebXX11Display
+ * @class WebXx11Display
  * @brief Manages the X11 display and its associated windows.
  * 
  * This class provides methods to initialize the display, manage windows, retrieve
  * window properties, and handle mouse and keyboard interactions.
  */
-class WebXX11Display : public WebXDisplay {
+class WebXx11Display : public WebXDisplay {
 public:
     /**
-     * @brief Constructs a WebXX11Display instance.
+     * @brief Constructs a WebXx11Display instance.
      * @param display Pointer to the X11 display.
      */
-    WebXX11Display(Display * display);
+    WebXx11Display(Display * display);
 
     /**
      * @brief Destructor.
      */
-    virtual ~WebXX11Display();
+    virtual ~WebXx11Display();
 
     /**
      * @brief Initializes the display.
@@ -296,7 +296,7 @@ private:
 
     WebXImageConverter * _imageConverter;
 
-    WebXX11Mouse * _mouse;
+    WebXx11Mouse * _mouse;
     WebXKeyboard * _keyboard;
     WebXRandR * _randr;
 };

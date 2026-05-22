@@ -18,21 +18,21 @@
 class WebXMouseState;
 
 /**
- * Represents the WebXX11Mouse, which manages mouse state, cursor, and interactions.
+ * Represents the WebXx11Mouse, which manages mouse state, cursor, and interactions.
  */
-class WebXX11Mouse : public WebXMouse {
+class WebXx11Mouse : public WebXMouse {
 public:
     /**
-     * Constructor for WebXX11Mouse.
+     * Constructor for WebXx11Mouse.
      * @param x11Display The X11 display connection.
      * @param rootWindow The root window of the X11 display.
      */
-    WebXX11Mouse(Display * x11Display, Window rootWindow);
+    WebXx11Mouse(Display * x11Display, Window rootWindow);
 
     /**
-     * Destructor for WebXX11Mouse.
+     * Destructor for WebXx11Mouse.
      */
-    virtual ~WebXX11Mouse();
+    virtual ~WebXx11Mouse();
 
     /**
      * Send a client instruction to update the mouse state.
@@ -44,7 +44,7 @@ public:
     
     /**
      * Get the current mouse state.
-     * @return A pointer to the WebXX11MouseState object.
+     * @return A pointer to the WebXx11MouseState object.
      */
     virtual WebXMouseState * getState() const {
         return this->_state;
@@ -58,7 +58,7 @@ public:
     /**
      * Get a cursor by its ID.
      * @param cursorId The ID of the cursor (default is 0).
-     * @return A shared pointer to the WebXX11MouseCursor object.
+     * @return A shared pointer to the WebXx11MouseCursor object.
      */
     virtual std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
 
@@ -87,7 +87,7 @@ public:
 private:
     /**
      * Create the default mouse state.
-     * @return A pointer to the newly created WebXX11MouseState object.
+     * @return A pointer to the newly created WebXx11MouseState object.
      */
     WebXMouseState * createDefaultMouseState();
 

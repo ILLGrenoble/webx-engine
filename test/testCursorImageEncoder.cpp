@@ -1,7 +1,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>
 #include <chrono>
-#include <display/x11/input/WebXX11Mouse.h>
+#include <display/x11/input/WebXx11Mouse.h>
 #include <display/x11/input/cursor/WebXMouseCursorFactory.h>
 #include <image/WebXImage.h>
 
@@ -10,7 +10,7 @@ int main() {
     // Convert raw image data to WebXImage
     int screen = XDefaultScreen(display);
     Window rootWindow = XRootWindow(display, screen);
-    WebXX11Mouse mouse(display, rootWindow);
+    WebXx11Mouse mouse(display, rootWindow);
     WebXMouseCursorFactory cursorFactory(display);
 
     XFixesCursorImage * cursor = XFixesGetCursorImage(display);

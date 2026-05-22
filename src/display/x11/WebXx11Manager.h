@@ -12,19 +12,19 @@
 #include <models/WebXWindowDamage.h>
 
 class WebXWindow;
-class WebXX11Display;
+class WebXx11Display;
 class WebXEventListener;
 class WebXClipboard;
 
 /**
- * @class WebXX11Manager
+ * @class WebXx11Manager
  * @brief Manages the interaction with the X11 display and handles events.
  * 
  * This class is responsible for initializing the X11 display, handling window
  * and damage events, and providing an interface for managing the display and
  * its associated windows.
  */
-class WebXX11Manager : public WebXManager {
+class WebXx11Manager : public WebXManager {
 
 public:
     /**
@@ -35,17 +35,17 @@ public:
     static int IO_ERROR_HANDLER(Display *disp);
 
     /**
-     * @brief Constructs a WebXX11Manager instance.
+     * @brief Constructs a WebXx11Manager instance.
      * @param settings Reference to the WebXSettings instance.
      * @param keyboardLayout Optional keyboard layout string.
      * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    WebXX11Manager(const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
+    WebXx11Manager(const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
 
     /**
      * @brief Destructor.
      */
-    virtual ~WebXX11Manager();
+    virtual ~WebXx11Manager();
 
     /**
      * @brief Retrieves the WebXDisplay instance.
@@ -160,7 +160,7 @@ private:
     const WebXSettings & _settings;
 
     Display * _x11Display;
-    WebXX11Display * _display;
+    WebXx11Display * _display;
     WebXEventListener * _eventListener;
     WebXClipboard * _clipboard;
     bool _displayRequiresUpdate;

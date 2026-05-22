@@ -1,10 +1,10 @@
-#include "WebXX11Mouse.h"
+#include "WebXx11Mouse.h"
 #include <display/input/WebXMouseState.h>
 #include <X11/X.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/XTest.h>
 
-WebXX11Mouse::WebXX11Mouse(Display * x11Display, Window rootWindow) :
+WebXx11Mouse::WebXx11Mouse(Display * x11Display, Window rootWindow) :
     WebXMouse(),
     _x11Display(x11Display),
     _rootWindow(rootWindow),
@@ -13,11 +13,11 @@ WebXX11Mouse::WebXX11Mouse(Display * x11Display, Window rootWindow) :
     _isDirty(false) {
 }
 
-WebXX11Mouse::~WebXX11Mouse() {
+WebXx11Mouse::~WebXx11Mouse() {
     delete _state;
 }
 
-void WebXX11Mouse::sendClientInstruction(int x, int y, unsigned int buttonMask) {
+void WebXx11Mouse::sendClientInstruction(int x, int y, unsigned int buttonMask) {
     sendMouseMovement(x, y);
     sendMouseButtons(buttonMask);
     _state->setState(x, y, buttonMask);
@@ -27,7 +27,7 @@ void WebXX11Mouse::sendClientInstruction(int x, int y, unsigned int buttonMask) 
     this->_isDirty = false;
 }
 
-void WebXX11Mouse::sendMouseButtons(unsigned int newButtonMask) {
+void WebXx11Mouse::sendMouseButtons(unsigned int newButtonMask) {
     int currentButtonMask = _state->getButtonMask();
     int buttonMaskDelta = currentButtonMask ^newButtonMask;
     unsigned int buttonMasks[5] = {LeftButtonMask, MiddleButtonMask, RightButtonMask, ScrollUpButtonMask, ScrollDownButtonMask};
@@ -43,11 +43,11 @@ void WebXX11Mouse::sendMouseButtons(unsigned int newButtonMask) {
     _state->setButtonMask(0);
 }
 
-void WebXX11Mouse::sendMouseButton(unsigned int button, Bool isPressed) {
+void WebXx11Mouse::sendMouseButton(unsigned int button, Bool isPressed) {
     XTestFakeButtonEvent(_x11Display, button, isPressed, 0);
 }
 
-void WebXX11Mouse::sendMouseMovement(int newX, int newY) {
+void WebXx11Mouse::sendMouseMovement(int newX, int newY) {
     int currentX = _state->getX();
     int currentY = _state->getY();
     if (newX != currentX || newY != currentY) {
@@ -55,14 +55,14 @@ void WebXX11Mouse::sendMouseMovement(int newX, int newY) {
     }
 }
 
-void WebXX11Mouse::updateCursor() {
+void WebXx11Mouse::updateCursor() {
     std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory.createCursor();
     if (cursor) {
         _state->setCursor(cursor);
     }
 }
 
-std::shared_ptr<WebXMouseCursor> WebXX11Mouse::getCursor(uint32_t cursorId) {
+std::shared_ptr<WebXMouseCursor> WebXx11Mouse::getCursor(uint32_t cursorId) {
     if (cursorId == 0) {
         return this->_state->getCursor();
     } else {
@@ -70,7 +70,7 @@ std::shared_ptr<WebXMouseCursor> WebXX11Mouse::getCursor(uint32_t cursorId) {
     }
 }
 
-void WebXX11Mouse::updatePosition() {
+void WebXx11Mouse::updatePosition() {
     // Get the mouse cursor position
     int win_x, win_y, root_x, root_y = 0;
     unsigned int mask = 0;
@@ -84,7 +84,7 @@ void WebXX11Mouse::updatePosition() {
     }
 }
 
-WebXMouseState * WebXX11Mouse::createDefaultMouseState() {
+WebXMouseState * WebXx11Mouse::createDefaultMouseState() {
     std::shared_ptr<WebXMouseCursor> cursor = this->_cursorFactory.createCursor();
     return new WebXMouseState(cursor);
 }
