@@ -1,29 +1,30 @@
-#ifndef WEBX_MANAGER_H
-#define WEBX_MANAGER_H
+#ifndef WEBX_X11_MANAGER_H
+#define WEBX_X11_MANAGER_H
 
 #include <X11/Xlib.h>
 #include <string>
 #include <vector>
 #include <functional>
+#include <display/WebXManager.h>
 #include <display/WebXDisplayEventType.h>
 #include "events/WebXConfigureEvent.h"
 #include <models/WebXSettings.h>
 #include <models/WebXWindowDamage.h>
 
 class WebXWindow;
-class WebXDisplay;
+class WebXX11Display;
 class WebXEventListener;
 class WebXClipboard;
 
 /**
- * @class WebXManager
+ * @class WebXX11Manager
  * @brief Manages the interaction with the X11 display and handles events.
  * 
  * This class is responsible for initializing the X11 display, handling window
  * and damage events, and providing an interface for managing the display and
  * its associated windows.
  */
-class WebXManager {
+class WebXX11Manager : public WebXManager {
 
 public:
     /**
@@ -34,36 +35,34 @@ public:
     static int IO_ERROR_HANDLER(Display *disp);
 
     /**
-     * @brief Constructs a WebXManager instance.
+     * @brief Constructs a WebXX11Manager instance.
      * @param settings Reference to the WebXSettings instance.
      * @param keyboardLayout Optional keyboard layout string.
      * @param rootWindowMode Optional root-window mode (individual windows ignored, only damage events on root window used)
      */
-    WebXManager(const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
+    WebXX11Manager(const WebXSettings & settings, const std::string & keyboardLayout = "", bool rootWindowMode = false);
 
     /**
      * @brief Destructor.
      */
-    virtual ~WebXManager();
+    virtual ~WebXX11Manager();
 
     /**
      * @brief Retrieves the WebXDisplay instance.
      * @return Pointer to the WebXDisplay instance.
      */
-    WebXDisplay * getDisplay() const {
-        return this->_display;
-    }
+    virtual WebXDisplay * getDisplay() const;
 
     /**
      * @brief Processes all pending X11 events.
      */
-    void handlePendingEvents();
+    virtual void handlePendingEvents();
 
     /**
      * @brief Sets the handler for display-related events.
      * @param handler Function to handle display events.
      */
-    void setDisplayEventHandler(std::function<void(WebXDisplayEventType eventType)> handler) {
+    virtual void setDisplayEventHandler(std::function<void(WebXDisplayEventType eventType)> handler) {
         this->_onDisplayEvent = handler;
     }
 
@@ -71,7 +70,7 @@ public:
      * @brief Sets the handler for damage-related events.
      * @param handler Function to handle damage events.
      */
-    void setDamageEventHandler(std::function<void(const WebXWindowDamage & damage)> handler) {
+    virtual void setDamageEventHandler(std::function<void(const WebXWindowDamage & damage)> handler) {
         this->_onDamageEvent = handler;
     }
 
@@ -79,7 +78,7 @@ public:
      * @brief Sets the handler for clipboard-related events.
      * @param handler Function to handle clipboard events.
      */
-    void setClipboardEventHandler(std::function<void(const std::string & clipboardContent)> handler) {
+    virtual void setClipboardEventHandler(std::function<void(const std::string & clipboardContent)> handler) {
         this->_onClipboardEvent = handler;
     }
 
@@ -87,7 +86,7 @@ public:
      * @brief Sets the handler for screen resize events.
      * @param handler Function to handle screen resize events.
      */
-    void setScreenResizeEventHandler(std::function<void(int width, int height)> handler) {
+    virtual void setScreenResizeEventHandler(std::function<void(int width, int height)> handler) {
         this->_onScreenResizeEvent = handler;
     }
 
@@ -95,7 +94,7 @@ public:
      * @brief Sets the content of the clipboard.
      * @param clipboardContent The content to set in the clipboard.
      */
-    void setClipboardContent(const std::string & clipboardContent);
+    virtual void setClipboardContent(const std::string & clipboardContent);
 
 private:
     /**
@@ -161,7 +160,7 @@ private:
     const WebXSettings & _settings;
 
     Display * _x11Display;
-    WebXDisplay * _display;
+    WebXX11Display * _display;
     WebXEventListener * _eventListener;
     WebXClipboard * _clipboard;
     bool _displayRequiresUpdate;
@@ -173,4 +172,4 @@ private:
 };
 
 
-#endif /* WEBX_MANAGER_H */
+#endif /* WEBX_X11_MANAGER_H */

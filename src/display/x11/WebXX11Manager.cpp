@@ -1,5 +1,5 @@
-#include "WebXManager.h"
-#include "WebXDisplay.h"
+#include "WebXX11Manager.h"
+#include "WebXX11Display.h"
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
 #include "WebXClipboard.h"
@@ -9,12 +9,13 @@
 #include <stdio.h>
 #include <spdlog/spdlog.h>
 
-int WebXManager::IO_ERROR_HANDLER(Display *display) {
+int WebXX11Manager::IO_ERROR_HANDLER(Display *display) {
     spdlog::error("X11 quit unexpectedly");
     return 0;
 }
 
-WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyboardLayout, bool rootWindowMode) :
+WebXX11Manager::WebXX11Manager(const WebXSettings & settings, const std::string & keyboardLayout, bool rootWindowMode) :
+    WebXManager(),
     _settings(settings),
     _x11Display(NULL),
     _display(NULL),
@@ -25,7 +26,7 @@ WebXManager::WebXManager(const WebXSettings & settings, const std::string & keyb
     this->init(keyboardLayout, rootWindowMode);
 }
 
-WebXManager::~WebXManager() {
+WebXX11Manager::~WebXX11Manager() {
     spdlog::info("Stopping manager...");
     if (this->_clipboard) {
         delete this->_clipboard;
@@ -50,7 +51,7 @@ WebXManager::~WebXManager() {
 }
 
 
-void WebXManager::init(const std::string & keyboardLayout, bool rootWindowMode) {
+void WebXX11Manager::init(const std::string & keyboardLayout, bool rootWindowMode) {
     using namespace std::placeholders;
 
     XInitThreads();
@@ -61,10 +62,10 @@ void WebXManager::init(const std::string & keyboardLayout, bool rootWindowMode) 
     }
 
     XSetErrorHandler(WebXErrorHandler::setLastError);
-    XSetIOErrorHandler(WebXManager::IO_ERROR_HANDLER);
+    XSetIOErrorHandler(WebXX11Manager::IO_ERROR_HANDLER);
     XSynchronize(this->_x11Display, True);
 
-    this->_display = new WebXDisplay(this->_x11Display);
+    this->_display = new WebXX11Display(this->_x11Display);
     this->_display->init(rootWindowMode);
 
     this->_clipboard = new WebXClipboard(this->_x11Display, this->_display->getRootWindow()->getX11Window(), [this](const std::string & content) {
@@ -132,17 +133,21 @@ void WebXManager::init(const std::string & keyboardLayout, bool rootWindowMode) 
     this->_display->loadKeyboardLayout(keyboardLayout);
 }
 
-void WebXManager::handlePendingEvents() {
+WebXDisplay * WebXX11Manager::getDisplay() const {
+    return this->_display;
+}
+
+void WebXX11Manager::handlePendingEvents() {
     this->_clipboard->updateClipboard();
     this->_eventListener->flushQueuedEvents();
     this->updateDisplay();
 }
 
-void WebXManager::setClipboardContent(const std::string & clipboardContent) {
+void WebXX11Manager::setClipboardContent(const std::string & clipboardContent) {
     this->_clipboard->setClipboardContent(clipboardContent);
 }
 
-void WebXManager::handleWindowConfigureEvent(const WebXConfigureEvent & event) {
+void WebXX11Manager::handleWindowConfigureEvent(const WebXConfigureEvent & event) {
     this->_display->callIfWindowVisible(event.getWindow(), [event, this](WebXWindow * window) {
         window->setRectangle(WebXRectangle(event.getX(), event.getY(), event.getWidth(), event.getHeight()));
 
@@ -157,7 +162,7 @@ void WebXManager::handleWindowConfigureEvent(const WebXConfigureEvent & event) {
     });
 }
 
-void WebXManager::updateDisplay() {
+void WebXX11Manager::updateDisplay() {
     if (this->_displayRequiresUpdate) {
         this->_display->updateVisibleWindows();
         this->sendDisplayEvent(WindowLayoutEvent);

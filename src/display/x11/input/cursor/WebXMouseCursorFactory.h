@@ -8,7 +8,7 @@
 #include <mutex>
 #include <image/WebXImage.h>
 #include <image/WebXPNGImageConverter.h>
-#include "WebXMouseCursor.h"
+#include <display/input/cursor/WebXMouseCursor.h>
 
 class WebXMouseCursorFactory {
 public:

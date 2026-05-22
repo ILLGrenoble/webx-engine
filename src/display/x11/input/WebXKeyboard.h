@@ -1,7 +1,7 @@
 #ifndef WEBX_KEYBOARD_H
 #define WEBX_KEYBOARD_H
 
-#include "WebXKeyboardMapping.h"
+#include <display/input/WebXKeyboardMapping.h>
 #include <X11/Xlib.h>
 
 #define WEBX_XBD_RULES_PATH "/usr/share/X11/xkb/rules/"

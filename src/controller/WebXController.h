@@ -8,7 +8,6 @@
 #include <mutex>
 #include <string>
 #include "WebXStats.h"
-#include <display/x11/WebXManager.h>
 #include <gateway/WebXGateway.h>
 #include "client/WebXClientRegistry.h"
 #include <display/WebXWindowProperties.h>
@@ -17,6 +16,7 @@
 #include <models/message/WebXClipboardMessage.h>
 #include <models/message/WebXScreenResizeMessage.h>
 
+class WebXManager;
 class WebXDisplay;
 class WebXInstruction;
 class WebXMouse;
@@ -179,7 +179,7 @@ private:
 
     WebXGateway & _gateway;
     const WebXSettings & _settings;
-    WebXManager _manager;
+    WebXManager * _manager;
     WebXClientRegistry _clientRegistry;
     WebXStats _stats;
 

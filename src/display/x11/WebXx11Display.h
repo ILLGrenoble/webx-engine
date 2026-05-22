@@ -1,5 +1,5 @@
-#ifndef WEBX_DISPLAY_H
-#define WEBX_DISPLAY_H
+#ifndef WEBX_X11_DISPLAY_H
+#define WEBX_X11_DISPLAY_H
 
 #include <X11/Xlib.h>
 #include <map>
@@ -7,13 +7,14 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <display/WebXDisplay.h>
 #include <display/WebXWindowProperties.h>
 #include <models/WebXQuality.h>
 #include <models/WebXSize.h>
 
 class WebXWindow;
 class WebXImageConverter;
-class WebXMouse;
+class WebXX11Mouse;
 class WebXKeyboard;
 class WebXRandR;
 class WebXRandREvent;
@@ -22,24 +23,24 @@ class WebXWindowVisibility;
 class WebXRectangle;
 
 /**
- * @class WebXDisplay
+ * @class WebXX11Display
  * @brief Manages the X11 display and its associated windows.
  * 
  * This class provides methods to initialize the display, manage windows, retrieve
  * window properties, and handle mouse and keyboard interactions.
  */
-class WebXDisplay {
+class WebXX11Display : public WebXDisplay {
 public:
     /**
-     * @brief Constructs a WebXDisplay instance.
+     * @brief Constructs a WebXX11Display instance.
      * @param display Pointer to the X11 display.
      */
-    WebXDisplay(Display * display);
+    WebXX11Display(Display * display);
 
     /**
      * @brief Destructor.
      */
-    virtual ~WebXDisplay();
+    virtual ~WebXX11Display();
 
     /**
      * @brief Initializes the display.
@@ -51,7 +52,7 @@ public:
      * @brief Retrieves the screen size of the display.
      * @return Reference to the screen size.
      */
-    const WebXSize getScreenSize() const;
+    virtual const WebXSize getScreenSize() const;
 
     /**
      * @brief Retrieves a window by its X11 window ID.
@@ -84,13 +85,13 @@ public:
      * @brief Retrieves the visibility properties of all visible windows.
      * @return Vector of pointers to the visibility properties of visible windows.
      */
-    const std::vector<const WebXWindowVisibility *> getWindowVisiblities();
+    virtual const std::vector<const WebXWindowVisibility *> getWindowVisiblities();
 
     /**
      * @brief Retrieves the properties of all visible windows.
      * @return Vector of WebXWindowProperties for visible windows.
      */
-    const std::vector<WebXWindowProperties> getVisibleWindowsProperties();
+    virtual const std::vector<WebXWindowProperties> getVisibleWindowsProperties();
 
     /**
      * @brief Retrieves the root window of the display.
@@ -119,14 +120,14 @@ public:
      * @param imageRectangle Optional rectangle representing the area to capture.
      * @return Shared pointer to the captured image.
      */
-    std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle = nullptr);
+    virtual std::shared_ptr<WebXImage> getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle = nullptr);
 
     /**
      * @brief Retrieves the shape mask image of a window.
      * @param x11Window X11 window ID.
      * @return Shared pointer to the captured image.
      */
-    std::shared_ptr<WebXImage> getWindowShapeMask(Window x11Window);
+    virtual std::shared_ptr<WebXImage> getWindowShapeMask(Window x11Window);
 
     /**
      * @brief Specifies that the shape for the specified window needs to be recalculated (typically after a shape-related event)
@@ -138,9 +139,7 @@ public:
      * @brief Retrieves the mouse instance associated with the display.
      * @return Pointer to the WebXMouse instance.
      */
-    WebXMouse * getMouse() const {
-        return this->_mouse;
-    }
+    virtual WebXMouse * getMouse() const;
 
     /**
      * @brief Updates the mouse cursor position.
@@ -153,40 +152,40 @@ public:
      * @param y Y-coordinate of the mouse position.
      * @param buttonMask Button mask representing mouse button states.
      */
-    void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
+    virtual void sendClientMouseInstruction(int x, int y, unsigned int buttonMask);
 
     /**
      * @brief Sends a keyboard event to the client.
      * @param keysym Key symbol of the key.
      * @param pressed True if the key is pressed, false if released.
      */
-    void sendKeyboard(int keysym, bool pressed);
+    virtual void sendKeyboard(int keysym, bool pressed);
 
     /**
      * @brief Loads a keyboard layout.
      * @param layout Keyboard layout or name string.
      * @return true if the keyboard was loaded successfully
      */
-    bool loadKeyboardLayout(const std::string & layoutOrName);
+    virtual bool loadKeyboardLayout(const std::string & layoutOrName);
 
     /**
      * @brief Returns the current keyboard layout name.
      * @return the current keyboard layout name.
      */
-    std::string getKeyboardLayoutName() const;
+    virtual std::string getKeyboardLayoutName() const;
     
     /**
      * @brief Determines if the screen can be resized
      * @return true if the screen can be resized
      */
-    bool canResizeScreen() const;
+    virtual bool canResizeScreen() const;
     
     /**
      * @brief Resizes the screen
      * @param width The requested screen width.
      * @param height The requested screen height.
      */
-    void resizeScreen(unsigned int width, unsigned int height) const;
+    virtual void resizeScreen(unsigned int width, unsigned int height) const;
     
     /**
      * @brief Determines if the randr event is valid
@@ -297,10 +296,10 @@ private:
 
     WebXImageConverter * _imageConverter;
 
-    WebXMouse * _mouse;
+    WebXX11Mouse * _mouse;
     WebXKeyboard * _keyboard;
     WebXRandR * _randr;
 };
 
 
-#endif /* WEBX_DISPLAY_H */
+#endif /* WEBX_X11_DISPLAY_H */

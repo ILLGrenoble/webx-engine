@@ -1,5 +1,5 @@
 #include "WebXController.h"
-#include <display/x11/WebXDisplay.h>
+#include <display/WebXDisplay.h>
 #include <models/instruction/WebXMouseInstruction.h>
 #include <models/instruction/WebXKeyboardInstruction.h>
 #include <models/instruction/WebXImageInstruction.h>
@@ -21,7 +21,8 @@
 #include <models/message/WebXKeyboardLayoutMessage.h>
 #include <version.h>
 #include <image/WebXSubImage.h>
-#include <display/x11/input/WebXMouse.h>
+#include <display/input/WebXMouse.h>
+#include <display/WebXManagerFactory.h>
 #include <utils/WebXResult.h>
 #include <models/WebXQuality.h>
 #include <models/WebXPosition.h>
@@ -34,7 +35,7 @@ const uint64_t WebXController::GLOBAL_CLIENT_INDEX_MASK = ~0x00; // Sets all bit
 WebXController::WebXController(WebXGateway & gateway, const WebXSettings & settings, const std::string & keyboardLayout, bool rootWindowMode) :
     _gateway(gateway),
     _settings(settings),
-    _manager(settings, keyboardLayout, rootWindowMode),
+    _manager(buildWebXManager(settings, keyboardLayout, rootWindowMode)),
     _clientRegistry(settings, [&gateway](std::shared_ptr<WebXMessage> message) {
         gateway.publishMessage(message);
     }),
@@ -54,13 +55,17 @@ WebXController::WebXController(WebXGateway & gateway, const WebXSettings & setti
     this->_gateway.setClientDisconnectFunc([this](uint32_t clientId) { return this->_clientRegistry.removeClient(clientId); });
 
     // Listen to events from the display
-    this->_manager.setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
-    this->_manager.setDamageEventHandler([this](const WebXWindowDamage damage) { this->_clientRegistry.addWindowDamage(damage); });
-    this->_manager.setClipboardEventHandler([this](const std::string clipboardContent) { this->onClipboardEvent(clipboardContent); });
-    this->_manager.setScreenResizeEventHandler([this](int width, int height) { this->onScreenResizeEvent(width, height); });
+    this->_manager->setDisplayEventHandler([this](WebXDisplayEventType eventType) { this->onDisplayEvent(eventType); });
+    this->_manager->setDamageEventHandler([this](const WebXWindowDamage damage) { this->_clientRegistry.addWindowDamage(damage); });
+    this->_manager->setClipboardEventHandler([this](const std::string clipboardContent) { this->onClipboardEvent(clipboardContent); });
+    this->_manager->setScreenResizeEventHandler([this](int width, int height) { this->onScreenResizeEvent(width, height); });
 }
 
 WebXController::~WebXController() {
+    if (this->_manager) {
+        delete this->_manager;
+        this->_manager = nullptr;
+    }
 }
 
 void WebXController::stop() {
@@ -78,9 +83,9 @@ void WebXController::stop() {
     this->_gateway.setClientDisconnectFunc(nullptr);
     
     // Remove the display events listener
-    this->_manager.setDisplayEventHandler(nullptr);
-    this->_manager.setDamageEventHandler(nullptr);
-    this->_manager.setClipboardEventHandler(nullptr);
+    this->_manager->setDisplayEventHandler(nullptr);
+    this->_manager->setDamageEventHandler(nullptr);
+    this->_manager->setClipboardEventHandler(nullptr);
 }
 
 void WebXController::run(bool testing) {
@@ -94,7 +99,7 @@ void WebXController::run(bool testing) {
     std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point lastMouseRefreshTime = lastTime;
 
-    WebXDisplay * display = this->_manager.getDisplay();
+    WebXDisplay * display = this->_manager->getDisplay();
     WebXMouse * mouse = display->getMouse();
 
     this->_state = WebXControllerState::Running;
@@ -113,7 +118,7 @@ void WebXController::run(bool testing) {
             this->handleClientInstructions(display);
 
             // Handle all pending X11 events
-            this->_manager.handlePendingEvents();
+            this->_manager->handlePendingEvents();
 
             // If window layout has changed, send layout to clients
             if (this->_displayDirty) {
@@ -234,7 +239,7 @@ void WebXController::handleClientInstructions(WebXDisplay * display) {
 
         } else if (instruction->type == WebXInstruction::Type::Clipboard) {
             auto clipboardInstruction = std::static_pointer_cast<WebXClipboardInstruction>(instruction);
-            this->_manager.setClipboardContent(clipboardInstruction->clipboardContent);
+            this->_manager->setClipboardContent(clipboardInstruction->clipboardContent);
 
         } else if (instruction->type == WebXInstruction::Type::ScreenResize) {
             auto resizeInstruction = std::static_pointer_cast<WebXScreenResizeInstruction>(instruction);

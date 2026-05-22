@@ -1,15 +1,17 @@
-#include "WebXDisplay.h"
+#include "WebXX11Display.h"
 #include "WebXWindow.h"
 #include "WebXRandR.h"
 #include <image/WebXJPGImageConverter.h>
 #include <algorithm>
 #include <X11/Xatom.h>
 #include <spdlog/spdlog.h>
-#include "input/WebXMouse.h"
+#include "input/WebXX11Mouse.h"
 #include "input/WebXKeyboard.h"
 #include <models/WebXWindowCoverage.h>
+#include <display/input/WebXMouseState.h>
 
-WebXDisplay::WebXDisplay(Display * display) :
+WebXX11Display::WebXX11Display(Display * display) :
+    WebXDisplay(),
     _x11Display(display),
     _rootWindow(NULL),
     _imageConverter(new WebXJPGImageConverter()),
@@ -19,7 +21,7 @@ WebXDisplay::WebXDisplay(Display * display) :
 
 }
 
-WebXDisplay::~WebXDisplay() {
+WebXX11Display::~WebXX11Display() {
     this->deleteTree(this->_rootWindow);
 
     // Delete and remove window
@@ -47,9 +49,9 @@ WebXDisplay::~WebXDisplay() {
 
 }
 
-void WebXDisplay::init(bool rootWindowMode) {
+void WebXX11Display::init(bool rootWindowMode) {
     Window rootX11Window = RootWindow(this->_x11Display, DefaultScreen(this->_x11Display));
-    this->_mouse = new WebXMouse(this->_x11Display, rootX11Window);
+    this->_mouse = new WebXX11Mouse(this->_x11Display, rootX11Window);
     this->_keyboard = new WebXKeyboard(this->_x11Display);
     this->_keyboard->init();
 
@@ -69,7 +71,7 @@ void WebXDisplay::init(bool rootWindowMode) {
     }
 }
 
-const WebXSize WebXDisplay::getScreenSize() const {
+const WebXSize WebXX11Display::getScreenSize() const {
     XWindowAttributes attr;
     XGetWindowAttributes(this->_x11Display, this->_rootWindow->getX11Window(), &attr);
 
@@ -77,7 +79,7 @@ const WebXSize WebXDisplay::getScreenSize() const {
     return WebXSize(attr.width, attr.height);
 }
 
-WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
+WebXWindow * WebXX11Display::getWindow(Window x11Window) const {
     std::map<Window, WebXWindow *>::const_iterator it = this->_allWindows.find(x11Window);
     if (it != this->_allWindows.end()) {
         WebXWindow * window = it->second;
@@ -88,7 +90,7 @@ WebXWindow * WebXDisplay::getWindow(Window x11Window) const {
     return NULL;
 }
 
-WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
+WebXWindow * WebXX11Display::createWindowInTree(Window x11Window) {
     WebXWindow * window = this->createWindow(x11Window);
     if (window != NULL) {
         // Create descendents of window
@@ -112,7 +114,7 @@ WebXWindow * WebXDisplay::createWindowInTree(Window x11Window) {
 /**
  * Window has been removed from the X11 tree (the window is no longer valid and will generate errors if X calls are made on it) 
  */
-void WebXDisplay::removeWindowFromTree(Window x11Window) {
+void WebXX11Display::removeWindowFromTree(Window x11Window) {
     WebXWindow * window = this->getWindow(x11Window);
     if (window != NULL) {
         // Detele descendents
@@ -139,7 +141,7 @@ void WebXDisplay::removeWindowFromTree(Window x11Window) {
     }
 }
 
-void WebXDisplay::reparentWindow(Window x11Window, Window parentX11Window) {
+void WebXX11Display::reparentWindow(Window x11Window, Window parentX11Window) {
     WebXWindow * window = this->getWindow(x11Window);
     if (window != NULL) {
         WebXWindow * parent = window->getParent();
@@ -157,7 +159,7 @@ void WebXDisplay::reparentWindow(Window x11Window, Window parentX11Window) {
     }
 }
 
-const std::vector<const WebXWindowVisibility *> WebXDisplay::getWindowVisiblities() {
+const std::vector<const WebXWindowVisibility *> WebXX11Display::getWindowVisiblities() {
     const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
     std::vector<const WebXWindowVisibility *> windowVisibilities;
 
@@ -168,7 +170,7 @@ const std::vector<const WebXWindowVisibility *> WebXDisplay::getWindowVisiblitie
     return windowVisibilities;
 }
 
-const std::vector<WebXWindowProperties> WebXDisplay::getVisibleWindowsProperties() {
+const std::vector<WebXWindowProperties> WebXX11Display::getVisibleWindowsProperties() {
     const std::lock_guard<std::mutex> lock(this->_visibleWindowsMutex);
     std::vector<WebXWindowProperties> visibleWindowsProperties;
 
@@ -179,7 +181,7 @@ const std::vector<WebXWindowProperties> WebXDisplay::getVisibleWindowsProperties
     return visibleWindowsProperties;
 }
 
-void WebXDisplay::updateVisibleWindows() {
+void WebXX11Display::updateVisibleWindows() {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -243,7 +245,7 @@ void WebXDisplay::updateVisibleWindows() {
     spdlog::trace("Updated visible windows: {:d} windows in {:.2f}ms (update = {:.2f}ms, coverage = {:.2f}ms)", this->_visibleWindows.size(), duration.count(), updateDuration.count(), coverageDuration.count());
 }
 
-void WebXDisplay::updateWindowCoverage() {
+void WebXX11Display::updateWindowCoverage() {
 
     const WebXMouseState * mouseState = this->getMouse()->getState();
 
@@ -261,7 +263,7 @@ void WebXDisplay::updateWindowCoverage() {
     }
 }
 
-void WebXDisplay::debugTree(Window window, int indent) {
+void WebXX11Display::debugTree(Window window, int indent) {
 
     if (window == 0) {
         window = this->_rootWindow->getX11Window();
@@ -287,7 +289,7 @@ void WebXDisplay::debugTree(Window window, int indent) {
     }
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle) {
+std::shared_ptr<WebXImage> WebXX11Display::getImage(Window x11Window, const WebXQuality & quality, const WebXRectangle * imageRectangle) {
     std::shared_ptr<WebXImage> image = nullptr;
     auto imageConverter = this->_imageConverter;
     this->callIfWindowVisible(x11Window, [&image, imageRectangle, imageConverter, quality](WebXWindow * window) {
@@ -297,7 +299,7 @@ std::shared_ptr<WebXImage> WebXDisplay::getImage(Window x11Window, const WebXQua
     return image;
 }
 
-std::shared_ptr<WebXImage> WebXDisplay::getWindowShapeMask(Window x11Window) {
+std::shared_ptr<WebXImage> WebXX11Display::getWindowShapeMask(Window x11Window) {
     std::shared_ptr<WebXImage> image = nullptr;
     auto imageConverter = this->_imageConverter;
     this->callIfWindowVisible(x11Window, [&image, imageConverter](WebXWindow * window) {
@@ -310,53 +312,57 @@ std::shared_ptr<WebXImage> WebXDisplay::getWindowShapeMask(Window x11Window) {
     return image;
 }
 
-void WebXDisplay::updateWindowShape(Window x11Window) {
+void WebXX11Display::updateWindowShape(Window x11Window) {
     auto imageConverter = this->_imageConverter;
     this->callIfWindowVisible(x11Window, [imageConverter](WebXWindow * window) {
         window->updateShape(imageConverter, true);
     });
 }
 
-void WebXDisplay::updateMouseCursor() {
+WebXMouse * WebXX11Display::getMouse() const {
+    return this->_mouse;
+}
+
+void WebXX11Display::updateMouseCursor() {
     this->_mouse->updateCursor();
 }
 
-void WebXDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
+void WebXX11Display::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
     spdlog::trace("Sending mouse instruction x={}, y={}, buttonMask={}", x, y, buttonMask);
     this->_mouse->sendClientInstruction(x, y, buttonMask);
     this->updateWindowCoverage();
 }
 
-void WebXDisplay::sendKeyboard(int keysym, bool pressed) {
+void WebXX11Display::sendKeyboard(int keysym, bool pressed) {
     spdlog::trace("Sending keyboard instruction key={}, pressed={}", keysym, pressed);
     this->_keyboard->handleKeySym(keysym, pressed, true);
 }
 
-bool WebXDisplay::loadKeyboardLayout(const std::string & layoutOrName) {
+bool WebXX11Display::loadKeyboardLayout(const std::string & layoutOrName) {
     if (!layoutOrName.empty()) {
         return this->_keyboard->loadKeyboardLayout(layoutOrName);
     }
     return false;
 }
 
-std::string WebXDisplay::getKeyboardLayoutName() const {
+std::string WebXX11Display::getKeyboardLayoutName() const {
     return this->_keyboard->getKeyboardLayoutName();
 }
 
-bool WebXDisplay::canResizeScreen() const {
+bool WebXX11Display::canResizeScreen() const {
     return this->_randr->canResizeScreen();
 }
 
-void WebXDisplay::resizeScreen(unsigned int width, unsigned int height) const {
+void WebXX11Display::resizeScreen(unsigned int width, unsigned int height) const {
     this->_randr->resizeScreen(width, height);
 }
 
-bool WebXDisplay::isValidRandREvent(const WebXRandREvent & event) const {
+bool WebXX11Display::isValidRandREvent(const WebXRandREvent & event) const {
     return this->_randr->isValidRandREvent(event);
 }
 
 
-WebXWindow * WebXDisplay::createWindow(Window x11Window) {
+WebXWindow * WebXX11Display::createWindow(Window x11Window) {
     // See if already exists
     WebXWindow * window = this->getWindow(x11Window);
     if (window == NULL) {
@@ -372,7 +378,7 @@ WebXWindow * WebXDisplay::createWindow(Window x11Window) {
     return window;
 }
 
-void WebXDisplay::deleteWindow(WebXWindow * window) {
+void WebXX11Display::deleteWindow(WebXWindow * window) {
     if (window != NULL) {
         std::map<Window, WebXWindow *>::const_iterator it = this->_allWindows.find(window->getX11Window());
         if (it != this->_allWindows.end()) {
@@ -383,7 +389,7 @@ void WebXDisplay::deleteWindow(WebXWindow * window) {
     }
 }
 
-void WebXDisplay::createTree(WebXWindow * window) {
+void WebXX11Display::createTree(WebXWindow * window) {
     WebXTreeDetails tree;
     if (queryTree(this->_x11Display, window->getX11Window(), tree)) {
         for (unsigned int i = 0; i < tree.numberOfChildren; i++) {
@@ -407,7 +413,7 @@ void WebXDisplay::createTree(WebXWindow * window) {
     }
 }
 
-void WebXDisplay::deleteTree(WebXWindow * window) {
+void WebXX11Display::deleteTree(WebXWindow * window) {
     if (window) {
         std::vector<WebXWindow *> children = window->getChildren();
         for (std::vector<WebXWindow *>::iterator it = children.begin(); it != children.end(); it++) {
@@ -426,7 +432,7 @@ void WebXDisplay::deleteTree(WebXWindow * window) {
     }
 }
 
-WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
+WebXWindow*  WebXX11Display::getParent(WebXWindow * window) {
     WebXWindow * parent = NULL;
     WebXTreeDetails tree;
     if (queryTree(this->_x11Display, window->getX11Window(), tree)) {
@@ -443,7 +449,7 @@ WebXWindow*  WebXDisplay::getParent(WebXWindow * window) {
     return parent;
 }
 
-void WebXDisplay::callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable) {
+void WebXX11Display::callIfWindowVisible(Window x11Window, std::function<void(WebXWindow * window)> visibleWindowCallable) {
     std::lock_guard<std::mutex> windowsLock(this->_visibleWindowsMutex);
     
     // Find visible window

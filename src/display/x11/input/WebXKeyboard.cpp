@@ -1,6 +1,6 @@
 #include "WebXKeyboard.h"
 #include "WebXKB.h"
-#include "WebXKeyboardSymbolMapping.h"
+#include <display/input/WebXKeyboardSymbolMapping.h>
 #include <X11/extensions/XTest.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>

@@ -1,10 +1,7 @@
 #ifndef WEBX_MOUSE_STATE_H
 #define WEBX_MOUSE_STATE_H
 
-#include <X11/Xlib.h>
-#include <X11/extensions/Xfixes.h>
 #include <cstring>
-#include <spdlog/spdlog.h>
 #include "cursor/WebXMouseCursor.h"
 
 /**

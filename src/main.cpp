@@ -1,8 +1,6 @@
-#include <display/x11/WebXManager.h>
 #include <controller/WebXController.h>
 #include <gateway/WebXGateway.h>
 #include <transport/WebXTransport.h>
-#include <display/x11/WebXDisplay.h>
 #include <models/WebXSettings.h>
 #include <version.h>
 #include <spdlog/spdlog.h>

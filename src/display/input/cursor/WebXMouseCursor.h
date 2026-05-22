@@ -4,9 +4,6 @@
 #include <memory>
 #include <image/WebXImage.h>
 
-class WebXMouseCursorImage;
-class WebXMouseCursorImageConverter;
-
 class WebXMouseCursor {
 public:
 

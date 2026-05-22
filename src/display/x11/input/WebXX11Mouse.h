@@ -1,5 +1,5 @@
-#ifndef WEBX_MOUSE_H
-#define WEBX_MOUSE_H
+#ifndef WEBX_X11_MOUSE_H
+#define WEBX_X11_MOUSE_H
 
 #define LeftButtonMask Button1Mask
 #define MiddleButtonMask Button2Mask
@@ -12,25 +12,27 @@
 #define ScrollUpButton Button4
 #define ScrollDownButton Button5
 
-#include "WebXMouseState.h"
+#include <display/input/WebXMouse.h>
 #include "cursor/WebXMouseCursorFactory.h"
 
+class WebXMouseState;
+
 /**
- * Represents the WebXMouse, which manages mouse state, cursor, and interactions.
+ * Represents the WebXX11Mouse, which manages mouse state, cursor, and interactions.
  */
-class WebXMouse {
+class WebXX11Mouse : public WebXMouse {
 public:
     /**
-     * Constructor for WebXMouse.
+     * Constructor for WebXX11Mouse.
      * @param x11Display The X11 display connection.
      * @param rootWindow The root window of the X11 display.
      */
-    WebXMouse(Display * x11Display, Window rootWindow);
+    WebXX11Mouse(Display * x11Display, Window rootWindow);
 
     /**
-     * Destructor for WebXMouse.
+     * Destructor for WebXX11Mouse.
      */
-    virtual ~WebXMouse();
+    virtual ~WebXX11Mouse();
 
     /**
      * Send a client instruction to update the mouse state.
@@ -42,9 +44,9 @@ public:
     
     /**
      * Get the current mouse state.
-     * @return A pointer to the WebXMouseState object.
+     * @return A pointer to the WebXX11MouseState object.
      */
-    WebXMouseState * getState() const {
+    virtual WebXMouseState * getState() const {
         return this->_state;
     }
 
@@ -56,21 +58,21 @@ public:
     /**
      * Get a cursor by its ID.
      * @param cursorId The ID of the cursor (default is 0).
-     * @return A shared pointer to the WebXMouseCursor object.
+     * @return A shared pointer to the WebXX11MouseCursor object.
      */
-    std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
+    virtual std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
 
     /**
      * Update the mouse position based on the current state.
      */
-    void updatePosition();
+    virtual void updatePosition();
 
     /**
      * Check if the mouse position is dirty (requires client notification)
      * @return True if the mouse position is dirty, false otherwise.
      * This is used to determine if the mouse position has changed and needs to be sent to clients.
      */
-    bool isDirty() const {
+    virtual bool isDirty() const {
         return this->_isDirty;
     }
 
@@ -78,14 +80,14 @@ public:
      * Set the mouse dirty state.
      * @param dirty The new dirty state.
      */
-    void setDirty(bool dirty) {
+    virtual void setDirty(bool dirty) {
         this->_isDirty = dirty;
     }
 
 private:
     /**
      * Create the default mouse state.
-     * @return A pointer to the newly created WebXMouseState object.
+     * @return A pointer to the newly created WebXX11MouseState object.
      */
     WebXMouseState * createDefaultMouseState();
 
@@ -117,4 +119,4 @@ private:
     bool _isDirty;
 };
 
-#endif //WEBX_MOUSE_H
+#endif //WEBX_X11_MOUSE_H
