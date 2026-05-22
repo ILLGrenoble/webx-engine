@@ -24,8 +24,8 @@ endif ()
 
 find_package(Threads REQUIRED)
 
+pkg_check_modules(FREERDP REQUIRED freerdp3 freerdp-client3 winpr3)
 pkg_check_modules(LIBPNG libpng)
-pkg_check_modules(WEBP REQUIRED libwebp)
 pkg_check_modules(X11 REQUIRED x11)
 pkg_check_modules(XEXT REQUIRED xext)
 
@@ -38,7 +38,6 @@ target_link_libraries(
     ${PROJECT_NAME}
     ${LIBPNG_LIBRARIES}
     -ljpeg
-    -lwebp
     ${X11_LIBRARIES}
     ${XEXT_LIBRARIES}
     -lXdamage
@@ -65,7 +64,6 @@ target_link_libraries(
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
     -lpng
-    -lwebp
     -lXtst
     -lX11
 )
@@ -77,7 +75,6 @@ target_link_libraries(
     ${LIBPNG_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     -ljpeg
-    -lwebp
 )
 
 file(GLOB_RECURSE TEST_CURSOR_IMAGE_ENCODER_SOURCES test/testCursorImageEncoder.cpp src/display/input/* src/utils/* src/models/* src/image/* lib/crc32/*)
@@ -89,7 +86,6 @@ target_link_libraries(
     -lXfixes
     -lxkbfile
     -ljpeg
-    -lwebp
     -lpng
 )
 
@@ -117,6 +113,20 @@ target_link_libraries(
     testShape
     ${X11_LIBRARIES}
     ${XEXT_LIBRARIES}
+)
+
+file(GLOB_RECURSE TEST_RDP_SOURCES test/testRdpClient.cpp src/image/WebXImage.cpp src/image/WebXJPGImageConverter.cpp src/models/WebXQuality.cpp)
+add_executable(testRdpClient ${TEST_RDP_SOURCES})
+target_link_libraries(
+    testRdpClient
+    ${X11_LIBRARIES}
+    ${FREERDP_LIBRARIES}
+    -ljpeg
+)
+target_include_directories(
+    testRdpClient
+    PRIVATE
+    ${FREERDP_INCLUDE_DIRS}
 )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "/usr/bin")
