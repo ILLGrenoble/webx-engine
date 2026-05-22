@@ -12,8 +12,6 @@
  * This class provides methods to convert raw image data into PNG format
  * using the libpng library. It supports both full window and sub-region conversions.
  */
-class WebXImage;
-
 class WebXPNGImageConverter : public WebXImageConverter {
 public:
     /**
@@ -29,11 +27,11 @@ public:
     /**
      * @brief Converts an XImage object into a WebXImage in PNG format.
      * 
-     * @param image The XImage object to convert.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality The quality settings for the conversion.
      * @return A pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convert(XImage * image, const WebXQuality & quality) const;
+    virtual WebXImage * convert(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const;
 
     /**
      * @brief Converts raw image data into a WebXImage in PNG format.
@@ -51,11 +49,11 @@ public:
     /*
      * Converts raw image data (from a monochromatic image) into a WebXImage object in PNG format.
      * 
-     * @param image: Pointer to the XImage object to be converted.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality: Quality settings for the conversion.
      * @return Pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convertMono(XImage * image, const WebXQuality & quality) const;
+    virtual WebXImage * convertMono(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const;
 
 private:
     /**

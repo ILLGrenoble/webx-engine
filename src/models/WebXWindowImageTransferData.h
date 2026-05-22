@@ -1,7 +1,6 @@
 #ifndef WEBX_WINDOW_IMAGE_TRANSFER_H
 #define WEBX_WINDOW_IMAGE_TRANSFER_H
 
-#include <X11/Xlib.h>
 #include <memory>
 #include <chrono>
 
@@ -23,11 +22,11 @@ public:
 
     /**
      * @brief Constructs a WebXWindowImageTransferData object with a status.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      * @param status The image transfer status.
      */
-    WebXWindowImageTransferData(Window x11Window, WebXWindowImageTransferStatus status) :
-        x11Window(x11Window),
+    WebXWindowImageTransferData(unsigned long windowId, WebXWindowImageTransferStatus status) :
+        windowId(windowId),
         timestamp(std::chrono::high_resolution_clock::now()),
         imageSizeKB(0),
         rgbChecksum(0),
@@ -36,11 +35,11 @@ public:
 
     /**
      * @brief Constructs a WebXWindowImageTransferData object with image size.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      * @param imageSizeKB The size of the image in kilobytes.
      */
-    WebXWindowImageTransferData(Window x11Window, float imageSizeKB) :
-        x11Window(x11Window),
+    WebXWindowImageTransferData(unsigned long windowId, float imageSizeKB) :
+        windowId(windowId),
         timestamp(std::chrono::high_resolution_clock::now()),
         imageSizeKB(imageSizeKB),
         rgbChecksum(0),
@@ -49,13 +48,13 @@ public:
 
     /**
      * @brief Constructs a WebXWindowImageTransferData object with image size and checksums.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      * @param imageSizeKB The size of the image in kilobytes.
      * @param rgbChecksum The RGB checksum of the image.
      * @param alphaChecksum The alpha checksum of the image.
      */
-    WebXWindowImageTransferData(Window x11Window, float imageSizeKB, uint32_t rgbChecksum, uint32_t alphaChecksum) :
-        x11Window(x11Window),
+    WebXWindowImageTransferData(unsigned long windowId, float imageSizeKB, uint32_t rgbChecksum, uint32_t alphaChecksum) :
+        windowId(windowId),
         timestamp(std::chrono::high_resolution_clock::now()),
         imageSizeKB(imageSizeKB),
         rgbChecksum(rgbChecksum),
@@ -67,7 +66,7 @@ public:
      * @param transferData The object to copy from.
      */
     WebXWindowImageTransferData(const WebXWindowImageTransferData & transferData) :
-        x11Window(transferData.x11Window),
+        windowId(transferData.windowId),
         timestamp(transferData.timestamp),
         imageSizeKB(transferData.imageSizeKB),
         rgbChecksum(transferData.rgbChecksum),
@@ -80,7 +79,7 @@ public:
     virtual ~WebXWindowImageTransferData() {
     }
 
-    const Window x11Window;
+    const unsigned long windowId;
     const std::chrono::high_resolution_clock::time_point timestamp;
     const float imageSizeKB;
     const uint32_t rgbChecksum;

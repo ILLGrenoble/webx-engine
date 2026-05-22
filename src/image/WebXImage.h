@@ -1,7 +1,6 @@
 #ifndef WEBX_IMAGE_H
 #define WEBX_IMAGE_H
 
-#include <X11/Xlib.h>
 #include <string>
 #include <utils/WebXDataBuffer.h>
 #include <spdlog/spdlog.h>

@@ -1,7 +1,6 @@
 #ifndef WEBX_WINDOW_DAMAGE_H
 #define WEBX_WINDOW_DAMAGE_H
 
-#include <X11/Xlib.h>
 #include <vector>
 #include "WebXRectangle.h"
 
@@ -13,21 +12,21 @@ class WebXWindowDamage {
 public:
     /**
      * @brief Constructs a WebXWindowDamage object for a specific X11 window.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      */
-    WebXWindowDamage(Window x11Window) :
-        _x11Window(x11Window),
+    WebXWindowDamage(unsigned long windowId) :
+        _windowId(windowId),
         _isFullWindow(false) {
     }
 
     /**
      * @brief Constructs a WebXWindowDamage object with a specific damage area.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      * @param damageArea The rectangle representing the damaged area.
      * @param fullWindow Whether the entire window is damaged.
      */
-    WebXWindowDamage(Window x11Window, const WebXRectangle & damageArea, bool fullWindow = false) :
-        _x11Window(x11Window),
+    WebXWindowDamage(unsigned long windowId, const WebXRectangle & damageArea, bool fullWindow = false) :
+        _windowId(windowId),
         _isFullWindow(fullWindow) {
         this->_damageAreas.push_back(damageArea);
     }
@@ -37,7 +36,7 @@ public:
      * @param windowDamage The object to copy from.
      */
     WebXWindowDamage(const WebXWindowDamage & windowDamage) :
-        _x11Window(windowDamage._x11Window),
+        _windowId(windowDamage._windowId),
         _damageAreas(windowDamage._damageAreas),
         _isFullWindow(windowDamage._isFullWindow) {
     }
@@ -55,7 +54,7 @@ public:
      */
     WebXWindowDamage & operator=(const WebXWindowDamage & windowDamage) {
         if (this != &windowDamage) {
-            this->_x11Window = windowDamage._x11Window;
+            this->_windowId = windowDamage._windowId;
             this->_damageAreas = windowDamage._damageAreas;
             this->_isFullWindow = windowDamage._isFullWindow;
         }
@@ -87,11 +86,11 @@ public:
     }
 
     /**
-     * @brief Gets the X11 window handle.
-     * @return The X11 window handle.
+     * @brief Gets the window Id.
+     * @return The window Id.
      */
-    Window getX11Window() const {
-        return this->_x11Window;
+    unsigned long getWindowId() const {
+        return this->_windowId;
     }
 
     /**
@@ -182,7 +181,7 @@ private:
     }    
 
 private:
-    Window _x11Window;
+    unsigned long _windowId;
     std::vector<WebXRectangle> _damageAreas;
     bool _isFullWindow;
 };

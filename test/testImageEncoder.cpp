@@ -1,14 +1,13 @@
 #include <image/WebXImage.h>
+#include <image/WebXPixelBuffer.h>
 #include <image/WebXPNGImageConverter.h>
 #include <image/WebXJPGImageConverter.h>
-#include <image/WebXWebPImageConverter.h>
 #include <models/WebXQuality.h>
 
 #include <png.h>
 #include <stdlib.h>
 #include <cstring>
 #include <memory>
-#include <X11/Xlib.h>
 
 int width, height;
 png_byte color_type;
@@ -90,13 +89,13 @@ void read_png_file(const char * filename) {
     fclose(fp);
 }
 
-TestResult test_convert(XImage & xImage, WebXImageConverter & converter, int nIter) {
+TestResult test_convert(WebXPixelBuffer & pixelBuffer, WebXImageConverter & converter, int nIter) {
     double cummulativeTimeUs = 0;
     size_t fileSize = 0;
     TestResult result;
 
     for (int i = 0; i < nIter; i++) {
-        WebXImage * image = converter.convert(&xImage, WebXQuality::MaxQuality());
+        WebXImage * image = converter.convert(&pixelBuffer, WebXQuality::MaxQuality());
         cummulativeTimeUs += image->getEncodingTimeUs();
 
         if (i == 0) {
@@ -120,8 +119,8 @@ int main() {
     read_png_file(filename);
 
     printf("Converting png to rawdata %d x %d...\n", width, height);
-    unsigned char * imageData = (unsigned char *)malloc(width * height * 4);
-    unsigned int bytes_per_line = width * 4;
+    char * imageData = (char *)malloc(width * height * 4);
+    unsigned int bytesPerLine = width * 4;
     unsigned int offset = 0;
     for (int y = 0; y < height; y++) {
         png_bytep row = row_pointers[y];
@@ -137,23 +136,15 @@ int main() {
     printf("... done\n");
 
 
-    XImage xImage;
-    xImage.width = width;
-    xImage.height = height;
-    xImage.data = (char *)imageData;
-    xImage.bytes_per_line = bytes_per_line;
-    xImage.depth = 24;
+    WebXPixelBuffer pixelBuffer = {imageData, width, height, bytesPerLine, 24};
 
     WebXJPGImageConverter jpgConverter;
     WebXPNGImageConverter pngConverter;
-    WebXWebPImageConverter webPConverter;
     int nIter = 10;
-    TestResult result = test_convert(xImage, jpgConverter, nIter);
+    TestResult result = test_convert(pixelBuffer, jpgConverter, nIter);
     printf("JPG  test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
-    result = test_convert(xImage, pngConverter, nIter);
+    result = test_convert(pixelBuffer, pngConverter, nIter);
     printf("PNG test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
-    result = test_convert(xImage, webPConverter, nIter);
-    printf("WebP test completed: %d iterations in %fms\n%fms / iteration for %luKB\n", nIter, result.cummulativeTimeUs / 1000, (result.cummulativeTimeUs / nIter) / 1000, result.fileSize / 1024);
 
 
 }

@@ -1,6 +1,7 @@
 #include "WebXWindow.h"
 #include "WebXErrorHandler.h"
 #include <image/WebXImage.h>
+#include <image/WebXPixelBuffer.h>
 #include "events/WebXDamageOverride.h"
 #include <models/WebXQuality.h>
 #include <utils/WebXWindowImageUtils.h>
@@ -116,7 +117,8 @@ std::shared_ptr<WebXImage> WebXWindow::getImage(const WebXRectangle * imageRecta
         bool hasTransparency = checkTransparent(image);
         image->depth = hasTransparency ? 32 : 24;
 
-        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(image, quality));
+        WebXPixelBuffer pixelBuffer = { image->data, image->width, image->height, image->bytes_per_line, image->depth };
+        webXImage = std::shared_ptr<WebXImage>(imageConverter->convert(&pixelBuffer, quality));
 
         XDestroyImage(image);
 

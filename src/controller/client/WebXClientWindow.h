@@ -1,7 +1,6 @@
 #ifndef WEBX_CLIENT_WINDOW_H
 #define WEBX_CLIENT_WINDOW_H
 
-#include <X11/Xlib.h>
 #include "WebXWindowQualityHandler.h"
 #include <models/WebXSettings.h>
 #include <models/WebXQuality.h>
@@ -26,7 +25,7 @@ public:
      * @param shapeMaskChecksum The window's shape mask checksum
      * @param settings The quality settings to be used.
      */
-    WebXClientWindow(Window id, const WebXQuality & desiredQuality, const WebXRectangle & rectangle, const WebXWindowCoverage & coverage, uint32_t shapeMaskChecksum, const WebXQualitySettings & settings) :
+    WebXClientWindow(unsigned long id, const WebXQuality & desiredQuality, const WebXRectangle & rectangle, const WebXWindowCoverage & coverage, uint32_t shapeMaskChecksum, const WebXQualitySettings & settings) :
         _id(id),
         _damage(id),
         _qualityHandler(id, desiredQuality, coverage, settings),
@@ -46,7 +45,7 @@ public:
      * @param damage The damage information for the window.
      * @param settings The quality settings to be used.
      */
-    WebXClientWindow(Window id, const WebXQuality & desiredQuality, const WebXWindowDamage & damage, const WebXQualitySettings & settings) :
+    WebXClientWindow(unsigned long id, const WebXQuality & desiredQuality, const WebXWindowDamage & damage, const WebXQualitySettings & settings) :
         _id(id),
         _damage(damage),
         _qualityHandler(id, desiredQuality, settings),
@@ -67,7 +66,7 @@ public:
      * @brief Gets the unique identifier of the window.
      * @return The window ID.
      */
-    const Window & getId() const {
+    const unsigned long & getId() const {
         return this->_id;
     }
 
@@ -240,7 +239,7 @@ public:
 private:
     const static int QUALITY_REFRESH_TIME_MS = 500;
 
-    Window _id;
+    unsigned long _id;
     WebXWindowDamage _damage;
     WebXWindowQualityHandler _qualityHandler;
     WebXSize _windowSize;

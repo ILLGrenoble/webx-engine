@@ -2,6 +2,7 @@
 #include "WebXErrorHandler.h"
 #include <image/WebXImageConverter.h>
 #include <image/WebXImage.h>
+#include <image/WebXPixelBuffer.h>
 #include <X11/extensions/shape.h>
 #include <spdlog/spdlog.h>
 #include <crc32/Crc32.h>
@@ -101,7 +102,8 @@ void WebXWindowShape::create(WebXImageConverter * imageConverter, const WebXQual
     XImage * shapeImage = XGetImage(this->_display, pixmap, 0, 0, this->_width, this->_height, AllPlanes, ZPixmap);
 
     if (shapeImage) {
-        this->_shapeMask = std::shared_ptr<WebXImage>(imageConverter->convertMono(shapeImage, quality));
+        WebXPixelBuffer pixelBuffer = { shapeImage->data, shapeImage->width, shapeImage->height, shapeImage->bytes_per_line, shapeImage->depth };
+        this->_shapeMask = std::shared_ptr<WebXImage>(imageConverter->convertMono(&pixelBuffer, quality));
         this->_shapeMaskChecksum = this->_shapeMask->calculateImageChecksum();
 
         XDestroyImage(shapeImage);

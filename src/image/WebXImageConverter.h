@@ -1,11 +1,11 @@
 #ifndef WEBX_IMAGE_CONVERTER_H
 #define WEBX_IMAGE_CONVERTER_H
 
-#include <X11/Xlib.h>
 #include <spdlog/spdlog.h>
 #include <models/WebXQuality.h>
 
 class WebXImage;
+class WebXPixelBuffer;
 
 /*
  * WebXImageConverter
@@ -28,11 +28,11 @@ public:
     /*
      * Converts an XImage object into a WebXImage object.
      * 
-     * @param image: Pointer to the XImage object to be converted.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality: Quality settings for the conversion.
      * @return Pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convert(XImage * image, const WebXQuality & quality) const = 0;
+    virtual WebXImage * convert(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const = 0;
 
     /*
      * Converts raw image data into a WebXImage object.
@@ -50,11 +50,11 @@ public:
     /*
      * Converts raw image data (from a monochromatic image) into a WebXImage object.
      * 
-     * @param image: Pointer to the XImage object to be converted.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality: Quality settings for the conversion.
      * @return Pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convertMono(XImage * image, const WebXQuality & quality) const = 0;
+    virtual WebXImage * convertMono(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const = 0;
 };
 
 #endif /* WEBX_IMAGE_CONVERTER_H */

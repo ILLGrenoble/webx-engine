@@ -4,7 +4,6 @@
 #include "WebXImageConverter.h"
 #include <stdlib.h>
 
-class WebXImage;
 class WebXDataBuffer;
 
 /**
@@ -29,11 +28,11 @@ public:
     /**
      * @brief Converts an XImage object into a WebXImage in JPEG format.
      * 
-     * @param image The XImage object to convert.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality The quality settings for the conversion.
      * @return A pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convert(XImage * image, const WebXQuality & quality) const;
+    virtual WebXImage * convert(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const;
 
     /**
      * @brief Converts raw image data into a WebXImage in JPEG format.
@@ -51,11 +50,11 @@ public:
     /*
      * Converts raw image data (from a monochromatic image) into a WebXImage in JPEG format.
      * 
-     * @param image The XImage object to convert.
+     * @param pixelBuffer: Pointer to the WebXPixelBuffer containing ram image data.
      * @param quality: Quality settings for the conversion.
      * @return Pointer to the converted WebXImage object.
      */
-    virtual WebXImage * convertMono(XImage * image, const WebXQuality & quality) const;
+    virtual WebXImage * convertMono(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const;
 
 private:
     /**

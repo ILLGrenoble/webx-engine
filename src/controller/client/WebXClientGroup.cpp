@@ -17,7 +17,7 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
     // Remove windows that no longer exist
     this->_windows.erase(std::remove_if(this->_windows.begin(), this->_windows.end(), [&windowVisibilities](const std::unique_ptr<WebXClientWindow> & window) {
         auto it = std::find_if(windowVisibilities.begin(), windowVisibilities.end(), [&window](const WebXWindowVisibility * windowVisibility) {
-            return windowVisibility->getX11Window() == window->getId();
+            return windowVisibility->getWindowId() == window->getId();
         });
 
         return it == windowVisibilities.end();
@@ -26,11 +26,11 @@ void WebXClientGroup::updateVisibleWindows(const std::vector<const WebXWindowVis
     // Add or update windows
     for (const WebXWindowVisibility * windowVisibility : windowVisibilities) {
         auto it = std::find_if(this->_windows.begin(), this->_windows.end(), [&windowVisibility](const std::unique_ptr<WebXClientWindow> & window) {
-            return windowVisibility->getX11Window() == window->getId();
+            return windowVisibility->getWindowId() == window->getId();
         });
 
         if (it == this->_windows.end()) {
-            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(windowVisibility->getX11Window(), this->_quality, windowVisibility->getRectangle(), windowVisibility->getCoverage(), windowVisibility->getShapeMaskChecksum(), this->_settings.quality)));
+            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(windowVisibility->getWindowId(), this->_quality, windowVisibility->getRectangle(), windowVisibility->getCoverage(), windowVisibility->getShapeMaskChecksum(), this->_settings.quality)));
         
         } else {
             std::unique_ptr<WebXClientWindow> & window = *it;

@@ -1,7 +1,6 @@
 #ifndef WEBX_WINDOW_VISIBILITY_H
 #define WEBX_WINDOW_VISIBILITY_H
 
-#include <X11/Xlib.h>
 #include "WebXWindowCoverage.h"
 
 /**
@@ -12,12 +11,12 @@ class WebXWindowVisibility {
 public:
     /**
      * @brief Constructs a WebXWindowVisibility object.
-     * @param x11Window The X11 window handle.
+     * @param windowId The window Id.
      * @param rectangle The rectangle representing the window's dimensions.
      * @param isViewable Whether the window is viewable.
      */
-    WebXWindowVisibility(Window x11Window, const WebXRectangle & rectangle, bool isViewable) :
-        _x11Window(x11Window),
+    WebXWindowVisibility(unsigned long windowId, const WebXRectangle & rectangle, bool isViewable) :
+        _windowId(windowId),
         _rectangle(rectangle),
         _isViewable(isViewable),
         _shapeMaskChecksum(0) {}
@@ -28,11 +27,11 @@ public:
     virtual ~WebXWindowVisibility() {}
 
     /**
-     * @brief Gets the X11 window handle.
-     * @return The X11 window handle.
+     * @brief Gets the window Id.
+     * @return The window Id.
      */
-    Window getX11Window() const {
-        return this->_x11Window;
+    unsigned long getWindowId() const {
+        return this->_windowId;
     }
 
     /**
@@ -109,7 +108,7 @@ public:
     }
 
 private:
-    Window _x11Window;
+    unsigned long _windowId;
     WebXWindowCoverage _coverage;
     WebXRectangle _rectangle;
     bool _isViewable;

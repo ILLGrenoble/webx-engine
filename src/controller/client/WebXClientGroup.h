@@ -111,12 +111,12 @@ public:
     void addWindowDamage(const WebXWindowDamage & damage) {
         // See if window exists or create new one
         auto it = std::find_if(this->_windows.begin(), this->_windows.end(), [&damage](const std::unique_ptr<WebXClientWindow> & window) {
-            return window->getId() == damage.getX11Window();
+            return window->getId() == damage.getWindowId();
         });
     
         // Modify or add window damage
         if (it == this->_windows.end()) {
-            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(damage.getX11Window(), this->_quality, damage, this->_settings.quality)));
+            this->_windows.push_back(std::unique_ptr<WebXClientWindow>(new WebXClientWindow(damage.getWindowId(), this->_quality, damage, this->_settings.quality)));
 
         } else {
             std::unique_ptr<WebXClientWindow> & window = *it;

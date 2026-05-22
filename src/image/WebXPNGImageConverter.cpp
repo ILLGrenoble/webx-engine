@@ -1,5 +1,6 @@
 #include "WebXPNGImageConverter.h"
 #include "WebXImage.h"
+#include "WebXPixelBuffer.h"
 #include <chrono>
 
 void WebXPNGImageConverter::RawDataWriter(png_struct * png, png_byte * data, size_t length) {
@@ -15,8 +16,8 @@ WebXPNGImageConverter::WebXPNGImageConverter() {
 WebXPNGImageConverter::~WebXPNGImageConverter() {
 }
 
-WebXImage * WebXPNGImageConverter::convert(XImage * image, const WebXQuality & quality) const {
-    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth, quality);
+WebXImage * WebXPNGImageConverter::convert(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const {
+    return convert((unsigned char *)pixelBuffer->pixels, pixelBuffer->width, pixelBuffer->height, pixelBuffer->bytesPerLine, pixelBuffer->colorDepth, quality);
 }
 
 WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const {
@@ -99,6 +100,6 @@ WebXImage * WebXPNGImageConverter::convert(unsigned char * data, int width, int 
     return webXImage;
 }
 
-WebXImage * WebXPNGImageConverter::convertMono(XImage * image, const WebXQuality & quality) const {
+WebXImage * WebXPNGImageConverter::convertMono(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const {
     return nullptr;
 }

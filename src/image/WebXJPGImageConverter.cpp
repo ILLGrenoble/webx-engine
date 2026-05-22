@@ -1,5 +1,6 @@
 #include "WebXJPGImageConverter.h"
 #include "WebXImage.h"
+#include "WebXPixelBuffer.h"
 #include <utils/WebXImageUtils.h>
 #include <jpeglib.h>
 #include <cstring>
@@ -13,8 +14,8 @@ WebXJPGImageConverter::~WebXJPGImageConverter() {
 
 }
 
-WebXImage * WebXJPGImageConverter::convert(XImage * image, const WebXQuality & quality) const {
-    return convert((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, image->depth, quality);
+WebXImage * WebXJPGImageConverter::convert(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const {
+    return convert((unsigned char *)pixelBuffer->pixels, pixelBuffer->width, pixelBuffer->height, pixelBuffer->bytesPerLine, pixelBuffer->colorDepth, quality);
 }
 
 WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int height, int bytesPerLine, int imageDepth, const WebXQuality & quality) const {
@@ -51,18 +52,18 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     return webXImage;
 }
 
-WebXImage * WebXJPGImageConverter::convertMono(XImage * image, const WebXQuality & quality) const {
+WebXImage * WebXJPGImageConverter::convertMono(WebXPixelBuffer * pixelBuffer, const WebXQuality & quality) const {
 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     WebXImage * webXImage = nullptr;
 
-    WebXDataBuffer * rawData = this->_convertMono((unsigned char *)image->data, image->width, image->height, image->bytes_per_line, quality.rgbQuality);
+    WebXDataBuffer * rawData = this->_convertMono((unsigned char *)pixelBuffer->pixels, pixelBuffer->width, pixelBuffer->height, pixelBuffer->bytesPerLine, quality.rgbQuality);
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> duration = end - start;
 
-    webXImage = new WebXImage(WebXImageTypeJPG, image->width, image->height, rawData, nullptr, 8, duration.count());
+    webXImage = new WebXImage(WebXImageTypeJPG, pixelBuffer->width, pixelBuffer->height, rawData, nullptr, 8, duration.count());
 
     return webXImage;
 }
@@ -81,8 +82,8 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
     cinfo.image_width = width;
     cinfo.image_height = height;
-    cinfo.input_components = 4;
-    cinfo.in_color_space = JCS_EXT_BGRA;
+    cinfo.input_components = bytesPerLine / width;
+    cinfo.in_color_space = cinfo.input_components == 3 ? JCS_EXT_BGR : JCS_EXT_BGRA;
     
     jpeg_set_defaults(&cinfo);
 

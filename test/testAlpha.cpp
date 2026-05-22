@@ -1,4 +1,5 @@
 #include <image/WebXImage.h>
+#include <image/WebXPixelBuffer.h>
 #include <image/WebXJPGImageConverter.h>
 #include <models/WebXQuality.h>
 
@@ -6,7 +7,6 @@
 #include <stdlib.h>
 #include <cstring>
 #include <memory>
-#include <X11/Xlib.h>
 #include <chrono>
 
 int width, height;
@@ -90,8 +90,8 @@ int main() {
 
     printf("Converting png to rawdata %d x %d...\n", width, height);
     unsigned int imageSize = width * height;
-    unsigned char * imageData = (unsigned char *)malloc(imageSize * 4);
-    unsigned int bytes_per_line = width * 4;
+    char * imageData = (char *)malloc(imageSize * 4);
+    int bytesPerLine = width * 4;
     unsigned int offset = 0;
     for (int y = 0; y < height; y++) {
         png_bytep row = row_pointers[y];
@@ -107,12 +107,7 @@ int main() {
     printf("... done\n");
 
 
-    XImage xImage;
-    xImage.width = width;
-    xImage.height = height;
-    xImage.data = (char *)imageData;
-    xImage.bytes_per_line = bytes_per_line;
-    xImage.depth = 32;
+    WebXPixelBuffer pixelBuffer = {imageData, width, height, bytesPerLine, 24};
 
     WebXJPGImageConverter converter;
     int nIter = 10;
@@ -122,7 +117,7 @@ int main() {
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-        WebXImage * image = converter.convert(&xImage, WebXQuality::MaxQuality());
+        WebXImage * image = converter.convert(&pixelBuffer, WebXQuality::MaxQuality());
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> duration = end - start;
