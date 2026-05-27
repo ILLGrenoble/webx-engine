@@ -120,9 +120,7 @@ private:
      * @param eventType The type of the display event.
      */
     void sendDisplayEvent(WebXDisplayEventType eventType) {
-        if (this->_onDisplayEvent) {
-            this->_onDisplayEvent(eventType);
-        }
+        this->_onDisplayEvent(eventType);
     }
 
     /**
@@ -130,9 +128,7 @@ private:
      * @param damage The damage event data.
      */
     void sendDamageEvent(const WebXWindowDamage & damage) {
-        if (this->_onDamageEvent) {
-            this->_onDamageEvent(damage);
-        }
+        this->_onDamageEvent(damage);
     }
 
     /**
@@ -140,9 +136,7 @@ private:
      * @param clipboardContent The content of the clipboard.
      */
     void sendClipboardEvent(const std::string & clipboardContent) {
-        if (this->_onClipboardEvent) {
-            this->_onClipboardEvent(clipboardContent);
-        }
+        this->_onClipboardEvent(clipboardContent);
     }
 
     /**
@@ -151,9 +145,7 @@ private:
      * @param height the screen height
      */
     void sendScreenResizeEvent(int width, int height) {
-        if (this->_onScreenResizeEvent) {
-            this->_onScreenResizeEvent(width, height);
-        }
+        this->_onScreenResizeEvent(width, height);
     }
 
 private:

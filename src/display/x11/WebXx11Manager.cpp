@@ -21,7 +21,11 @@ WebXx11Manager::WebXx11Manager(const WebXSettings & settings, const std::string 
     _display(NULL),
     _eventListener(NULL),
     _clipboard(NULL),
-    _displayRequiresUpdate(false) {
+    _displayRequiresUpdate(false),
+    _onDisplayEvent([](WebXDisplayEventType eventType) {}),
+    _onDamageEvent([](const WebXWindowDamage & damage) {}),
+    _onClipboardEvent([](const std::string & clipboardContent) {}),
+    _onScreenResizeEvent([](int width, int height) {}) {
 
     this->init(keyboardLayout, rootWindowMode);
 }

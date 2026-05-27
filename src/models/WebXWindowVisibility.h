@@ -26,6 +26,16 @@ public:
      */
     virtual ~WebXWindowVisibility() {}
 
+    WebXWindowVisibility & operator=(const WebXWindowVisibility & windowVisibility) {
+        if (this != &windowVisibility) {
+            this->_windowId = windowVisibility._windowId;
+            this->_rectangle = windowVisibility._rectangle;
+            this->_isViewable = windowVisibility._isViewable;
+            this->_shapeMaskChecksum = windowVisibility._shapeMaskChecksum;
+        }
+        return *this;
+    }
+
     /**
      * @brief Gets the window Id.
      * @return The window Id.

@@ -185,7 +185,7 @@ public:
      * @param width The requested screen width.
      * @param height The requested screen height.
      */
-    virtual void resizeScreen(unsigned int width, unsigned int height) const;
+    virtual void resizeScreen(unsigned int width, unsigned int height);
     
     /**
      * @brief Determines if the randr event is valid

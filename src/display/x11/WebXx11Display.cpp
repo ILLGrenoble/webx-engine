@@ -353,7 +353,7 @@ bool WebXx11Display::canResizeScreen() const {
     return this->_randr->canResizeScreen();
 }
 
-void WebXx11Display::resizeScreen(unsigned int width, unsigned int height) const {
+void WebXx11Display::resizeScreen(unsigned int width, unsigned int height) {
     this->_randr->resizeScreen(width, height);
 }
 
