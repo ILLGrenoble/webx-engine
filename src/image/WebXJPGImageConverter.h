@@ -63,11 +63,12 @@ private:
      * @param data The raw image data.
      * @param width The width of the image.
      * @param height The height of the image.
+     * @param bytesPerLine The number of bytes per pixel.
      * @param bytesPerLine The number of bytes per line in the image data.
      * @param quality The quality level for the conversion.
      * @return A pointer to the WebXDataBuffer containing the JPEG data.
      */
-    WebXDataBuffer * _convert(unsigned char * data, int width, int height, int bytesPerLine, float quality) const;
+    WebXDataBuffer * _convert(unsigned char * data, int width, int height, int bytesPerPixel, int bytesPerLine, float quality) const;
 
     /**
      * @brief Converts raw grayscale image data into a JPEG buffer.

@@ -23,12 +23,13 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
     std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     WebXImage * webXImage = nullptr;
+    int bytesPerPixel = imageDepth = 24 ? 3 : 4;
 
-    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerLine, quality.rgbQuality);
+    WebXDataBuffer * rawData = this->_convert(data, width, height, bytesPerPixel, bytesPerLine, quality.rgbQuality);
     WebXDataBuffer * alphaData = nullptr;
 
     if (imageDepth == 32) {
-        unsigned int imageSize = width * height;
+        unsigned int imageSize = bytesPerLine * height / bytesPerPixel;
 
         std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -41,7 +42,7 @@ WebXImage * WebXJPGImageConverter::convert(unsigned char * data, int width, int 
 
         // Generate alphaMap: offset data pointer so that alpha is aligned with expected green component (green used by three.js in alphaMap)
         // Use low quality alpha map
-        alphaData = this->_convert(data + 2, width, height, bytesPerLine, quality.alphaQuality);
+        alphaData = this->_convert(data + 2, width, height, bytesPerPixel, bytesPerLine, quality.alphaQuality);
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
@@ -68,7 +69,7 @@ WebXImage * WebXJPGImageConverter::convertMono(WebXPixelBuffer * pixelBuffer, co
     return webXImage;
 }
 
-WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerLine, float quality) const {
+WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width, int height, int bytesPerPixel, int bytesPerLine, float quality) const {
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -82,7 +83,7 @@ WebXDataBuffer * WebXJPGImageConverter::_convert(unsigned char * data, int width
 
     cinfo.image_width = width;
     cinfo.image_height = height;
-    cinfo.input_components = bytesPerLine / width;
+    cinfo.input_components = bytesPerPixel;
     cinfo.in_color_space = cinfo.input_components == 3 ? JCS_EXT_BGR : JCS_EXT_BGRA;
     
     jpeg_set_defaults(&cinfo);
