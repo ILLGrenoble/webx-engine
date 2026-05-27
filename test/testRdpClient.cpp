@@ -108,18 +108,6 @@ static int wait_for_handles(freerdp * instance, int timeout_ms) {
     return 1;
 }
 
-BOOL client_new(freerdp * instance, rdpContext * context) {
-    auto * webxRdpContext = reinterpret_cast<WebXRdpContext*>(context);
-    webxRdpContext->running = true;
-    webxRdpContext->work_done= 0;
-
-	instance->PreConnect = pre_connect;
-    instance->PostConnect = post_connect;
-    instance->PostDisconnect = post_disconnect;
-
-    return TRUE;
-}
-
 void output_image(freerdp * instance) {
 	rdpContext * context = instance->context;
 	rdpGdi * gdi = context->gdi;

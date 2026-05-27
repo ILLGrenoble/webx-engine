@@ -120,7 +120,7 @@ int main() {
 
     printf("Converting png to rawdata %d x %d...\n", width, height);
     char * imageData = (char *)malloc(width * height * 4);
-    unsigned int bytesPerLine = width * 4;
+    int bytesPerLine = width * 4;
     unsigned int offset = 0;
     for (int y = 0; y < height; y++) {
         png_bytep row = row_pointers[y];

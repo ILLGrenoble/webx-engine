@@ -40,6 +40,7 @@ target_link_libraries(
     -ljpeg
     ${X11_LIBRARIES}
     ${XEXT_LIBRARIES}
+    ${FREERDP_LIBRARIES}
     -lXdamage
     -lXrandr
     ${CMAKE_THREAD_LIBS_INIT}
@@ -54,6 +55,7 @@ target_include_directories(
     PUBLIC
     ${LIBPNG_INCLUDEDIR}
     ${ZeroMQ_INCLUDE_DIR}
+    ${FREERDP_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE TEST_IMAGE_SOURCES test/testImageEncoder.cpp src/image/*.cpp src/utils/*.cpp src/models/* lib/*.cpp)
