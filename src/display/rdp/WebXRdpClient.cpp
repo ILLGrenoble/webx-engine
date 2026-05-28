@@ -1,11 +1,15 @@
 #include "WebXRdpClient.h"
 #include <spdlog/spdlog.h>
+#include <freerdp/pointer.h>
+#include <freerdp/input.h>
+#include <freerdp/update.h>
 
 WebXRdpClient::WebXRdpClient() :
     _thread(nullptr),
     _running(false),
     _paintInProgress(false),
     _instance(nullptr),
+    _pointer(nullptr),
     _desktopSizeIsDirty(false),
     _desktopWidth(0),
     _desktopHeight(0),
@@ -15,6 +19,10 @@ WebXRdpClient::WebXRdpClient() :
 
 WebXRdpClient::~WebXRdpClient() {
     this->terminate();
+    if (this->_pointer) {
+        delete this->_pointer;
+        this->_pointer = nullptr;
+    }
 }
 
 bool WebXRdpClient::connect(const WebXRdpClientSettings & rdpClientSettings) {
@@ -46,10 +54,22 @@ bool WebXRdpClient::connect(const WebXRdpClientSettings & rdpClientSettings) {
 	freerdp_settings_set_bool(settings, FreeRDP_TlsSecurity, TRUE);
 	freerdp_settings_set_bool(settings, FreeRDP_RdpSecurity, FALSE);
 
-    freerdp_settings_set_bool(settings, FreeRDP_SoftwareGdi, TRUE);
-    freerdp_settings_set_uint32(settings, FreeRDP_ColorDepth, 24);
-	freerdp_settings_set_bool(settings, FreeRDP_RemoteFxCodec, TRUE);
-	freerdp_settings_set_bool(settings, FreeRDP_SupportGraphicsPipeline, TRUE);
+    // Try to avoid all types of compression, get raw bitmap data if possible from rdp
+    freerdp_settings_set_bool(settings, FreeRDP_RemoteFxCodec,           FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_NSCodec,                 FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_JpegCodec,               FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_SupportGraphicsPipeline, FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_GfxAVC444,               FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_GfxAVC444v2,             FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_GfxH264,                 FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_GfxProgressive,          FALSE);
+    freerdp_settings_set_bool(settings, FreeRDP_BitmapCompressionDisabled, TRUE);
+    freerdp_settings_set_bool(settings, FreeRDP_CompressionEnabled,     FALSE);
+
+    // freerdp_settings_set_bool(settings, FreeRDP_SoftwareGdi, TRUE);
+    // freerdp_settings_set_uint32(settings, FreeRDP_ColorDepth, 24);
+	// freerdp_settings_set_bool(settings, FreeRDP_RemoteFxCodec, TRUE);
+	// freerdp_settings_set_bool(settings, FreeRDP_SupportGraphicsPipeline, TRUE);
 
     freerdp_settings_set_uint32(settings, FreeRDP_ConnectionType, CONNECTION_TYPE_LAN);
 
@@ -59,6 +79,18 @@ bool WebXRdpClient::connect(const WebXRdpClientSettings & rdpClientSettings) {
 
     freerdp_settings_set_bool(settings, FreeRDP_FastPathInput, TRUE);
     freerdp_settings_set_bool(settings, FreeRDP_FastPathOutput, TRUE);
+
+
+    this->_pointer = new WebXRdpPointer(this->_instance);
+    rdpGraphics * graphics = this->_instance->context->graphics;
+    rdpPointer pointer = *graphics->Pointer_Prototype;
+    pointer.New = PointerNew;
+    pointer.Free = PointerFree;
+    pointer.Set = PointerSet;
+    pointer.SetNull = PointerSetNull;
+    pointer.SetDefault = PointerSetDefault;
+    pointer.SetPosition = PointerSetPosition;
+    graphics_register_pointer(graphics, &pointer);
 
 
     spdlog::info("Connecting to RDP server at {:s}:{:d}...", rdpClientSettings.hostname, rdpClientSettings.port);
@@ -84,7 +116,7 @@ void WebXRdpClient::terminate() {
     this->_running = false;
     if (this->_thread != nullptr) {
         if (this->_paintInProgress) {
-            this->_frameUpdateMutex.unlock();
+            // this->_frameUpdateMutex.unlock();
         }
 
         // Join thread and cleanup
@@ -98,7 +130,7 @@ void WebXRdpClient::terminate() {
 
 void WebXRdpClient::flushEvents() {
     // Wait for framecomplete mutex
-    std::lock_guard<std::mutex> frameLock(this->_frameUpdateMutex);
+    // std::lock_guard<std::mutex> frameLock(this->_frameUpdateMutex);
 
     // Stop any other events during event flush
     std::lock_guard<std::mutex> eventLock(this->_eventMutex);
@@ -112,14 +144,15 @@ void WebXRdpClient::flushEvents() {
     // Update framebuffer
     rdpContext * context = this->_instance->context;
     rdpGdi * gdi = context->gdi;
-
     WebXPixelBuffer pixelBuffer = {(char *)gdi->primary_buffer, gdi->width, gdi->height, (int)gdi->stride, 24};
-
     this->_framebufferEventHandler(this->_invalidRectangles, pixelBuffer);
-
     this->_invalidRectangles.clear();
 
     // Get the current mouse position
+    if (this->_pointer->cursorDirty()) {
+        this->_cursorEventHandler();
+        this->_pointer->cursorDirty(false);
+    }
 
 }
 
@@ -204,7 +237,7 @@ void WebXRdpClient::postDisconnect(freerdp * instance) {
 BOOL WebXRdpClient::beginPaint(rdpContext * context) {
     std::lock_guard<std::mutex> lock(this->_eventMutex);
     if (!this->_paintInProgress) {
-        this->_frameUpdateMutex.lock();
+        // this->_frameUpdateMutex.lock();
         this->_paintInProgress = true;
         spdlog::info("Begin Paint mutex locked");
     }
@@ -263,7 +296,7 @@ BOOL WebXRdpClient::surfaceFrameAcknowledge(rdpContext * context, const uint32_t
     std::lock_guard<std::mutex> lock(this->_eventMutex);
     spdlog::info("Surface Frame Acknowledge");
     if (this->_paintInProgress) {
-        this->_frameUpdateMutex.unlock();
+        // this->_frameUpdateMutex.unlock();
         this->_paintInProgress = false;
         spdlog::info("Unlocked");
     }

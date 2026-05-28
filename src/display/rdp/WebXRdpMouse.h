@@ -4,7 +4,13 @@
 #include <display/input/WebXMouse.h>
 
 class WebXMouseState;
-class WebXRdpClient;
+class WebXRdpPointer;
+
+#define LeftButton PTR_FLAGS_BUTTON1
+#define MiddleButton PTR_FLAGS_BUTTON3
+#define RightButton PTR_FLAGS_BUTTON2
+#define ScrollUpButton PTR_FLAGS_WHEEL | 0x78
+#define ScrollDownButton PTR_FLAGS_WHEEL | PTR_FLAGS_WHEEL_NEGATIVE | 0x88
 
 /**
  * Represents the WebXRdpMouse, which manages mouse state, cursor, and interactions.
@@ -14,7 +20,7 @@ public:
     /**
      * Constructor for WebXRdpMouse.
      */
-    WebXRdpMouse(WebXRdpClient * rdpClient);
+    WebXRdpMouse(WebXRdpPointer * rdpPointer);
 
     /**
      * Destructor for WebXRdpMouse.
@@ -44,6 +50,8 @@ public:
      */
     virtual std::shared_ptr<WebXMouseCursor> getCursor(uint32_t cursorId = 0);
 
+    void updateCursor();
+
     /**
      * Update the mouse position based on the current state.
      */
@@ -67,6 +75,10 @@ public:
     }
 
 private: 
+    void sendMouseButtons(unsigned int newButtonMask);
+    void sendMouseButton(unsigned int button, bool isPressed);
+    void sendMouseMovement(int newX, int newY);
+
     /**
      * Create the default mouse state.
      * @return A pointer to the newly created WebXx11MouseState object.
@@ -74,7 +86,7 @@ private:
     WebXMouseState * createDefaultMouseState();
 
 private:
-    WebXRdpClient * _rdpClient;
+    WebXRdpPointer * _rdpPointer;
     WebXMouseState * _state;
     bool _isDirty;
 };

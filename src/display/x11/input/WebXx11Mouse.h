@@ -1,11 +1,6 @@
 #ifndef WEBX_X11_MOUSE_H
 #define WEBX_X11_MOUSE_H
 
-#define LeftButtonMask Button1Mask
-#define MiddleButtonMask Button2Mask
-#define RightButtonMask Button3Mask
-#define ScrollUpButtonMask Button4Mask
-#define ScrollDownButtonMask Button5Mask
 #define LeftButton Button1
 #define MiddleButton Button2
 #define RightButton Button3

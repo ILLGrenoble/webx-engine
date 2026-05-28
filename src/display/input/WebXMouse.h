@@ -3,6 +3,12 @@
 
 #include "WebXMouseState.h"
 
+#define LeftButtonMask          (1<<8)
+#define MiddleButtonMask        (1<<9)
+#define RightButtonMask         (1<<10)
+#define ScrollUpButtonMask      (1<<11)
+#define ScrollDownButtonMask	(1<<12)
+
 /**
  * Represents the WebXMouse, which manages mouse state, cursor, and interactions.
  */

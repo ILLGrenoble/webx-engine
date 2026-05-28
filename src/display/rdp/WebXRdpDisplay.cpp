@@ -25,7 +25,7 @@ WebXRdpDisplay::~WebXRdpDisplay() {
 void WebXRdpDisplay::init() {
     // Create framebuffer to copy rdp gdi buffer
 
-    this->_mouse = new WebXRdpMouse(this->_rdpClient);
+    this->_mouse = new WebXRdpMouse(this->_rdpClient->getPointer());
 
 }
 
@@ -88,6 +88,11 @@ std::shared_ptr<WebXImage> WebXRdpDisplay::getWindowShapeMask(unsigned long wind
 WebXMouse * WebXRdpDisplay::getMouse() const {
     return this->_mouse;
 }
+
+void WebXRdpDisplay::updateMouseCursor() {
+    this->_mouse->updateCursor();
+}
+
 
 void WebXRdpDisplay::sendClientMouseInstruction(int x, int y, unsigned int buttonMask) {
     this->_mouse->sendClientInstruction(x, y, buttonMask);

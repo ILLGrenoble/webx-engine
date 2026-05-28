@@ -68,6 +68,8 @@ public:
      */
     virtual WebXMouse * getMouse() const;
 
+    void updateMouseCursor();
+
     /**
      * @brief Sends a mouse instruction to the client.
      * @param x X-coordinate of the mouse position.

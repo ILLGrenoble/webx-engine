@@ -1,6 +1,7 @@
 #ifndef WEBX_RDP_CLIENT_H
 #define WEBX_RDP_CLIENT_H
 
+#include "WebXRdpPointer.h"
 #include <models/WebXRectangle.h>
 #include <image/WebXPixelBuffer.h>
 #include <freerdp/freerdp.h>
@@ -38,6 +39,7 @@ struct WebXRdpClientContext {
     WebXRdpClient * rdpClient;
 };
 
+
 class WebXRdpClient {
 public:
     WebXRdpClient();
@@ -62,7 +64,15 @@ public:
         this->_resizeEventHandler = handler;
     }
 
+    void setCursorEventHandler(std::function<void()> handler) {
+        this->_cursorEventHandler = handler;
+    }
+
     WebXPixelBuffer getFramebuffer() const;
+
+    WebXRdpPointer * getPointer() const {
+        return this->_pointer;
+    }
 
 private:
     void mainLoop();
@@ -122,6 +132,35 @@ private:
         return clientContext->rdpClient->desktopResize(context);
     }
 
+    static BOOL PointerNew(rdpContext* context, rdpPointer* pointer) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerNew(pointer);
+    }
+
+    static void PointerFree(rdpContext * context, rdpPointer * pointer) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerFree(pointer);
+    }
+    
+    static BOOL PointerSet(rdpContext* context, rdpPointer* pointer) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerSet(pointer);
+    }
+    
+    static BOOL PointerSetNull(rdpContext* context) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerSetNull();
+    }
+    
+    static BOOL PointerSetDefault(rdpContext* context) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerSetDefault();
+    }
+    
+    static BOOL PointerSetPosition(rdpContext* context, uint32_t x, uint32_t y) {
+        WebXRdpClientContext * clientContext = reinterpret_cast<WebXRdpClientContext *>(context);
+        return clientContext->rdpClient->_pointer->pointerSetPosition(x, y);
+    }
 
     int waitForHandles(int timeoutMs);
 
@@ -133,6 +172,9 @@ private:
     bool _paintInProgress;
     
     freerdp * _instance;
+
+    WebXRdpPointer * _pointer;
+
     bool _desktopSizeIsDirty;
     uint32_t _desktopWidth;
     uint32_t _desktopHeight;
@@ -141,6 +183,7 @@ private:
 
     std::function<void(const std::vector<WebXRectangle> & invalidRectangles, const WebXPixelBuffer & framebuffer)> _framebufferEventHandler;
     std::function<void(uint32_t desktopWidth, uint32_t desktopHeight)> _resizeEventHandler;
+    std::function<void()> _cursorEventHandler;
 
 };
 

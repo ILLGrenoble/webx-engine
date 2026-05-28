@@ -39,11 +39,11 @@ void WebXRdpManager::init() {
     this->_display = new WebXRdpDisplay(this->_rdpClient);
     this->_display->init();
 
-    // this->_rdpClient->setCursorEventHandler([this](const WebXCursorEvent & event) {
-    //     spdlog::trace("Got new mouse cursor event");
-    //     this->_display->updateMouseCursor();
-    //     this->sendDisplayEvent(CursorEvent);
-    // });
+    this->_rdpClient->setCursorEventHandler([this]() {
+        spdlog::trace("Got new mouse cursor event");
+        this->_display->updateMouseCursor();
+        this->sendDisplayEvent(CursorEvent);
+    });
     
     this->_rdpClient->setFramebufferEventHandler([this](const std::vector<WebXRectangle> & invalidRectangles, const WebXPixelBuffer & framebuffer) {
         this->_display->updateFramebuffer(invalidRectangles, framebuffer);
